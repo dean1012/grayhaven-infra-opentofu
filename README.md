@@ -1,10 +1,12 @@
 # Grayhaven Infrastructure (OpenTofu)
 
-Infrastructure-as-code repository for Grayhaven Systems LLC using OpenTofu and DigitalOcean.
+Infrastructure-as-code repository for Grayhaven Systems LLC using OpenTofu and
+DigitalOcean.
 
 ## Overview
 
-This repository contains reusable OpenTofu modules and deployment configuration used to provision and manage Grayhaven Systems LLC infrastructure.
+This repository contains reusable OpenTofu modules and deployment configuration
+used to provision and manage Grayhaven Systems LLC infrastructure.
 
 Current infrastructure goals include:
 
@@ -24,13 +26,15 @@ This repository is intended for:
 - Personal infrastructure projects
 - Public portfolio and educational reference
 
-Client infrastructure, credentials, deployment data, and operational state are not stored in this repository.
+Client infrastructure, credentials, deployment data, and operational state are
+not stored in this repository.
 
 ## Planned Infrastructure
 
 Initial planned infrastructure includes:
 
-- Shared web infrastructure in a production environment with a future goal towards adding development and staging environments
+- Shared web infrastructure in a production environment with a future goal
+  towards adding development and staging environments
 - Bastion host
 - DigitalOcean VPC networking
 - Tag-driven firewall management
