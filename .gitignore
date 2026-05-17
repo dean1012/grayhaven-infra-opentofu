@@ -1,0 +1,23 @@
+# Local environment
+.env
+.env.*
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OpenTofu state
+*.tfstate
+*.tfstate.*
+
+# OpenTofu plans
+*.tfplan
+
+# OpenTofu working directory
+.terraform/
+
+# Variable files
+*.tfvars
+!*.tfvars.example
