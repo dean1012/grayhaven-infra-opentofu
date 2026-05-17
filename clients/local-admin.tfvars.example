@@ -1,0 +1,3 @@
+ssh_key_fingerprints = [
+  "REPLACE_WITH_DIGITALOCEAN_SSH_KEY_FINGERPRINT"
+]
