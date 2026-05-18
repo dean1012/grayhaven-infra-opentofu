@@ -49,7 +49,7 @@ module "bastion_firewall" {
   source = "./modules/firewall"
 
   name        = "${local.client_name}-sec-${local.environment}-bastion-fw"
-  target_tags = ["scope-grayhaven-sec-prod-bastion"]
+  target_tags = [digitalocean_tag.bastion_scope.name]
 
   inbound_rules = [
     {
@@ -92,13 +92,13 @@ module "web_firewall" {
   source = "./modules/firewall"
 
   name        = "${local.client_name}-core-${local.environment}-web-fw"
-  target_tags = ["scope-grayhaven-core-prod-web"]
+  target_tags = [digitalocean_tag.web_scope.name]
 
   inbound_rules = [
     {
       protocol    = "tcp"
       port_range  = "22"
-      source_tags = ["scope-grayhaven-sec-prod-bastion"]
+      source_tags = [digitalocean_tag.bastion_scope.name]
     },
     {
       protocol         = "tcp"
