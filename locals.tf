@@ -1,6 +1,6 @@
 locals {
-  client_name  = "grayhaven"
-  project_name = "core"
+  client_name = "grayhaven"
+  environment = "prod"
 
   common_tags = [
     "client-grayhaven",
