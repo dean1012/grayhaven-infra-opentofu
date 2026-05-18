@@ -44,3 +44,94 @@ module "web_reserved_ip" {
   region     = var.default_region
   droplet_id = module.web.id
 }
+
+module "bastion_firewall" {
+  source = "./modules/firewall"
+
+  name        = "${local.client_name}-sec-${local.environment}-bastion-fw"
+  target_tags = ["scope-grayhaven-sec-prod-bastion"]
+
+  inbound_rules = [
+    {
+      protocol         = "tcp"
+      port_range       = "22"
+      source_addresses = ["0.0.0.0/0"]
+    }
+  ]
+
+  outbound_rules = [
+    {
+      protocol              = "tcp"
+      port_range            = "22"
+      destination_addresses = [module.vpc.vpc_cidr]
+    },
+    {
+      protocol              = "tcp"
+      port_range            = "80"
+      destination_addresses = ["0.0.0.0/0"]
+    },
+    {
+      protocol              = "tcp"
+      port_range            = "443"
+      destination_addresses = ["0.0.0.0/0"]
+    },
+    {
+      protocol              = "udp"
+      port_range            = "53"
+      destination_addresses = ["0.0.0.0/0"]
+    },
+    {
+      protocol              = "tcp"
+      port_range            = "53"
+      destination_addresses = ["0.0.0.0/0"]
+    }
+  ]
+}
+
+module "web_firewall" {
+  source = "./modules/firewall"
+
+  name        = "${local.client_name}-core-${local.environment}-web-fw"
+  target_tags = ["scope-grayhaven-core-prod-web"]
+
+  inbound_rules = [
+    {
+      protocol    = "tcp"
+      port_range  = "22"
+      source_tags = ["scope-grayhaven-sec-prod-bastion"]
+    },
+    {
+      protocol         = "tcp"
+      port_range       = "80"
+      source_addresses = ["0.0.0.0/0"]
+    },
+    {
+      protocol         = "tcp"
+      port_range       = "443"
+      source_addresses = ["0.0.0.0/0"]
+    }
+  ]
+
+  outbound_rules = [
+    {
+      protocol              = "tcp"
+      port_range            = "80"
+      destination_addresses = ["0.0.0.0/0"]
+    },
+    {
+      protocol              = "tcp"
+      port_range            = "443"
+      destination_addresses = ["0.0.0.0/0"]
+    },
+    {
+      protocol              = "udp"
+      port_range            = "53"
+      destination_addresses = ["0.0.0.0/0"]
+    },
+    {
+      protocol              = "tcp"
+      port_range            = "53"
+      destination_addresses = ["0.0.0.0/0"]
+    }
+  ]
+}
