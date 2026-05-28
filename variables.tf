@@ -10,11 +10,6 @@ variable "do_token" {
   sensitive   = true
 }
 
-variable "ssh_key_fingerprints" {
-  description = "SSH key fingerprints authorized for droplet access"
-  type        = list(string)
-}
-
 variable "default_region" {
   description = "DigitalOcean region"
   type        = string
