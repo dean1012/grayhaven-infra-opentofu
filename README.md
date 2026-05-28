@@ -52,7 +52,6 @@ Initial planned infrastructure includes:
 ## Repository Structure
 
 ```text
-clients/     Local deployment configuration templates
 docs/        Project and operational documentation
 modules/     Reusable OpenTofu modules
 ```
