@@ -38,7 +38,7 @@ Initial planned infrastructure includes:
 - Bastion host
 - DigitalOcean VPC networking
 - Tag-driven firewall management
-- Reserved public IP assignments
+- FQDN-based droplet naming with forward-confirmed reverse DNS (FCrDNS)
 - Reusable infrastructure modules
 - CI validation workflows
 

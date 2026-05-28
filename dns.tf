@@ -10,7 +10,7 @@ resource "digitalocean_domain" "grayhaven_systems" {
   name = "grayhavensystems.com"
 }
 
-# A record for grayhavensystems.com pointing to the web server's reserved IP
+# A record for grayhavensystems.com pointing to the web server's public IP
 resource "digitalocean_record" "grayhaven_root_a" {
   domain = digitalocean_domain.grayhaven_systems.name
   type   = "A"
@@ -39,7 +39,7 @@ resource "digitalocean_record" "grayhaven_droplet_a" {
   ttl    = local.dns_ttl
 }
 
-# A record for bastion.grayhavensystems.com pointing to the bastion host's reserved IP
+# A record for bastion.grayhavensystems.com pointing to the bastion host's public IP
 resource "digitalocean_record" "grayhaven_bastion_a" {
   domain = digitalocean_domain.grayhaven_systems.name
   type   = "A"
@@ -136,7 +136,7 @@ resource "digitalocean_domain" "jerry_smith" {
   name = "jerry-smith.net"
 }
 
-# A record for jerry-smith.net pointing to the web server's reserved IP
+# A record for jerry-smith.net pointing to the web server's public IP
 resource "digitalocean_record" "jerry_root_a" {
   domain = digitalocean_domain.jerry_smith.name
   type   = "A"
