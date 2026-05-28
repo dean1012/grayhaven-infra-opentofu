@@ -2,6 +2,10 @@ locals {
   client_name = "grayhaven"
   environment = "prod"
 
+  ssh_key_fingerprints = [
+    "2e:7c:fa:e9:85:22:4d:1a:ca:e4:b0:6d:01:c5:36:ed"
+  ]
+
   common_tags = [
     "client-${local.client_name}",
     "env-${local.environment}",
