@@ -13,7 +13,7 @@ module "bastion" {
   name                 = "${local.client_name}-sec-${local.environment}-bastion-01"
   region               = var.default_region
   vpc_id               = module.vpc.id
-  ssh_key_fingerprints = var.ssh_key_fingerprints
+  ssh_key_fingerprints = local.ssh_key_fingerprints
   size                 = "s-1vcpu-512mb-10gb"
   image                = var.default_os_image
   tags                 = local.bastion_tags
@@ -32,7 +32,7 @@ module "web" {
   name                 = "${local.client_name}-core-${local.environment}-web-01"
   region               = var.default_region
   vpc_id               = module.vpc.id
-  ssh_key_fingerprints = var.ssh_key_fingerprints
+  ssh_key_fingerprints = local.ssh_key_fingerprints
   size                 = var.default_droplet_size
   image                = var.default_os_image
   tags                 = local.web_tags
