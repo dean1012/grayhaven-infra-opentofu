@@ -19,13 +19,6 @@ module "bastion" {
   tags                 = local.bastion_tags
 }
 
-module "bastion_reserved_ip" {
-  source = "./modules/reserved-ip"
-
-  region     = var.default_region
-  droplet_id = module.bastion.id
-}
-
 module "web" {
   source = "./modules/droplet"
 
@@ -36,13 +29,6 @@ module "web" {
   size                 = var.default_droplet_size
   image                = var.default_os_image
   tags                 = local.web_tags
-}
-
-module "web_reserved_ip" {
-  source = "./modules/reserved-ip"
-
-  region     = var.default_region
-  droplet_id = module.web.id
 }
 
 module "bastion_firewall" {

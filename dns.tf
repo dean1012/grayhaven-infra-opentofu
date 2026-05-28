@@ -15,7 +15,7 @@ resource "digitalocean_record" "grayhaven_root_a" {
   domain = digitalocean_domain.grayhaven_systems.name
   type   = "A"
   name   = "@"
-  value  = module.web_reserved_ip.ip_address
+  value  = module.web.ipv4_address
   ttl    = local.dns_ttl
 }
 
@@ -33,7 +33,7 @@ resource "digitalocean_record" "grayhaven_bastion_a" {
   domain = digitalocean_domain.grayhaven_systems.name
   type   = "A"
   name   = "bastion"
-  value  = module.bastion_reserved_ip.ip_address
+  value  = module.bastion.ipv4_address
   ttl    = local.dns_ttl
 }
 
@@ -130,7 +130,7 @@ resource "digitalocean_record" "jerry_root_a" {
   domain = digitalocean_domain.jerry_smith.name
   type   = "A"
   name   = "@"
-  value  = module.web_reserved_ip.ip_address
+  value  = module.web.ipv4_address
   ttl    = local.dns_ttl
 }
 

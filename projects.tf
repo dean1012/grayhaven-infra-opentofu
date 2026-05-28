@@ -11,8 +11,6 @@ resource "digitalocean_project_resources" "grayhaven" {
 
   resources = [
     module.bastion.urn,
-    module.bastion_reserved_ip.urn,
     module.web.urn,
-    module.web_reserved_ip.urn,
   ]
 }
