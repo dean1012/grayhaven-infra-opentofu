@@ -10,7 +10,7 @@ module "vpc" {
 module "bastion" {
   source = "./modules/droplet"
 
-  name                 = "${local.client_name}-sec-${local.environment}-bastion-01"
+  name                 = "${local.client_name}-sec-${local.environment}-bastion-01.${local.client_domain}"
   region               = var.default_region
   vpc_id               = module.vpc.id
   ssh_key_fingerprints = local.ssh_key_fingerprints
@@ -22,7 +22,7 @@ module "bastion" {
 module "web" {
   source = "./modules/droplet"
 
-  name                 = "${local.client_name}-core-${local.environment}-web-01"
+  name                 = "${local.client_name}-core-${local.environment}-web-01.${local.client_domain}"
   region               = var.default_region
   vpc_id               = module.vpc.id
   ssh_key_fingerprints = local.ssh_key_fingerprints

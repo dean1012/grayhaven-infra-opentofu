@@ -1,6 +1,7 @@
 locals {
-  client_name = "grayhaven"
-  environment = "prod"
+  client_name   = "grayhaven"
+  client_domain = "grayhavensystems.com"
+  environment   = "prod"
 
   ssh_key_fingerprints = [
     "2e:7c:fa:e9:85:22:4d:1a:ca:e4:b0:6d:01:c5:36:ed"
@@ -23,4 +24,16 @@ locals {
     "role-web",
     "scope-grayhaven-core-prod-web"
   ])
+
+  droplet_dns_records = {
+    bastion = {
+      name  = trimsuffix(module.bastion.name, ".${local.client_domain}")
+      value = module.bastion.ipv4_address
+    }
+
+    web = {
+      name  = trimsuffix(module.web.name, ".${local.client_domain}")
+      value = module.web.ipv4_address
+    }
+  }
 }

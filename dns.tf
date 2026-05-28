@@ -28,6 +28,17 @@ resource "digitalocean_record" "grayhaven_www_cname" {
   ttl    = local.dns_ttl
 }
 
+# Create A records for each droplet's FQDN using the local.droplet_dns_records map
+resource "digitalocean_record" "grayhaven_droplet_a" {
+  for_each = local.droplet_dns_records
+
+  domain = digitalocean_domain.grayhaven_systems.name
+  type   = "A"
+  name   = each.value.name
+  value  = each.value.value
+  ttl    = local.dns_ttl
+}
+
 # A record for bastion.grayhavensystems.com pointing to the bastion host's reserved IP
 resource "digitalocean_record" "grayhaven_bastion_a" {
   domain = digitalocean_domain.grayhaven_systems.name
