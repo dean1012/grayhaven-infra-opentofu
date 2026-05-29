@@ -10,25 +10,27 @@ module "vpc" {
 module "bastion" {
   source = "./modules/droplet"
 
-  name                 = "${local.client_name}-sec-${local.environment}-bastion-01.${local.client_domain}"
+  name                 = local.bastion_hostname
   region               = var.default_region
   vpc_id               = module.vpc.id
   ssh_key_fingerprints = local.ssh_key_fingerprints
   size                 = "s-1vcpu-512mb-10gb"
   image                = var.default_os_image
   tags                 = local.bastion_tags
+  user_data            = local.bastion_user_data
 }
 
 module "web" {
   source = "./modules/droplet"
 
-  name                 = "${local.client_name}-core-${local.environment}-web-01.${local.client_domain}"
+  name                 = local.web_hostname
   region               = var.default_region
   vpc_id               = module.vpc.id
   ssh_key_fingerprints = local.ssh_key_fingerprints
   size                 = var.default_droplet_size
   image                = var.default_os_image
   tags                 = local.web_tags
+  user_data            = local.web_user_data
 }
 
 module "bastion_firewall" {
