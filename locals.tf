@@ -10,7 +10,8 @@ locals {
   common_tags = [
     "client-${local.client_name}",
     "env-${local.environment}",
-    "managed-by-opentofu"
+    "managed-by-opentofu",
+    "configured-by-ansible"
   ]
 
   bastion_tags = concat(local.common_tags, [
