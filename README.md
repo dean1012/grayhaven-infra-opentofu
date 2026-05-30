@@ -54,6 +54,7 @@ Initial planned infrastructure includes:
 ```text
 docs/        Project and operational documentation
 modules/     Reusable OpenTofu modules
+templates/   OpenTofu-rendered templates for generated config files
 ```
 
 ## Status

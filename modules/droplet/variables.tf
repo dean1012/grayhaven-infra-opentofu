@@ -32,3 +32,10 @@ variable "tags" {
   description = "DigitalOcean droplet tags"
   type        = list(string)
 }
+
+variable "user_data" {
+  description = "Cloud-init user-data rendered for the droplet."
+  type        = string
+  default     = null
+  sensitive   = true
+}

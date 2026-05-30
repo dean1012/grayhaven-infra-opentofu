@@ -1,0 +1,14 @@
+#cloud-config
+
+write_files:
+  - path: /etc/grayhaven/bootstrap/bootstrap-vars.yml
+    owner: root:root
+    permissions: '0600'
+    content: |
+      ${indent(6, bootstrap_vars_yaml)}
+
+packages:
+  - ansible-core
+
+runcmd:
+  - ansible-pull --url https://github.com/dean1012/grayhaven-config-ansible.git --inventory localhost, --connection local --extra-vars @/etc/grayhaven/bootstrap/bootstrap-vars.yml playbooks/bootstrap.yml
