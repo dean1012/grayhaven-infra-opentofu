@@ -17,3 +17,8 @@ output "ipv4_address" {
   description = "DigitalOcean droplet public IPv4 address"
   value       = digitalocean_droplet.this.ipv4_address
 }
+
+output "private_ipv4_address" {
+  description = "DigitalOcean droplet private IPv4 address"
+  value       = digitalocean_droplet.this.ipv4_address_private
+}
