@@ -33,12 +33,12 @@ locals {
   droplet_dns_records = {
     bastion = {
       name  = trimsuffix(module.bastion.name, ".${local.client_domain}")
-      value = module.bastion.ipv4_address
+      value = module.bastion.public_ipv4_address
     }
 
     web = {
       name  = trimsuffix(module.web.name, ".${local.client_domain}")
-      value = module.web.ipv4_address
+      value = module.web.public_ipv4_address
     }
   }
 
