@@ -13,7 +13,7 @@ output "name" {
   value       = digitalocean_droplet.this.name
 }
 
-output "ipv4_address" {
+output "public_ipv4_address" {
   description = "DigitalOcean droplet public IPv4 address"
   value       = digitalocean_droplet.this.ipv4_address
 }
