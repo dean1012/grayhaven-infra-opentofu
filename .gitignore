@@ -20,4 +20,3 @@
 
 # Variable files
 *.tfvars
-!*.tfvars.example
