@@ -45,15 +45,19 @@ locals {
   bastion_bootstrap_vars = {
     grayhaven_hostname                         = local.bastion_hostname
     grayhaven_role                             = "bastion"
+    grayhaven_config_repo_ref                  = var.grayhaven_config_repo_ref
     grayhaven_root_password_hash               = var.grayhaven_root_password_hash
     grayhaven_ansible_control_private_key      = var.grayhaven_ansible_control_private_key
     grayhaven_discord_webhook_url              = var.grayhaven_discord_webhook_url
     grayhaven_digitalocean_inventory_api_token = var.grayhaven_digitalocean_inventory_api_token
+    grayhaven_jsmith_password_hash             = var.grayhaven_jsmith_password_hash
+    grayhaven_jsmith_public_key                = var.grayhaven_jsmith_public_key
   }
 
   web_bootstrap_vars = {
     grayhaven_hostname                     = local.web_hostname
     grayhaven_role                         = "web"
+    grayhaven_config_repo_ref              = var.grayhaven_config_repo_ref
     grayhaven_root_password_hash           = var.grayhaven_root_password_hash
     grayhaven_ansible_control_public_key   = var.grayhaven_ansible_control_public_key
     grayhaven_dev_basic_auth_htpasswd_line = var.grayhaven_dev_basic_auth_htpasswd_line
@@ -62,9 +66,11 @@ locals {
 
   bastion_user_data = templatefile("${path.module}/templates/cloud-init/bootstrap-vars.yml.tftpl", {
     bootstrap_vars_yaml = yamlencode(local.bastion_bootstrap_vars)
+    config_repo_ref     = var.grayhaven_config_repo_ref
   })
 
   web_user_data = templatefile("${path.module}/templates/cloud-init/bootstrap-vars.yml.tftpl", {
     bootstrap_vars_yaml = yamlencode(local.web_bootstrap_vars)
+    config_repo_ref     = var.grayhaven_config_repo_ref
   })
 }

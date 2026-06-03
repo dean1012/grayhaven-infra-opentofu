@@ -40,6 +40,12 @@ variable "grayhaven_root_password_hash" {
   sensitive   = true
 }
 
+variable "grayhaven_config_repo_ref" {
+  description = "Git ref used by cloud-init and the bastion runner when checking out grayhaven-config-ansible."
+  type        = string
+  default     = "main"
+}
+
 variable "grayhaven_ansible_control_public_key" {
   description = "Public key for the Ansible automation user."
   type        = string
@@ -72,6 +78,18 @@ variable "grayhaven_digitalocean_dns_api_token" {
 
 variable "grayhaven_digitalocean_inventory_api_token" {
   description = "DigitalOcean API token used by bastion hosts for Ansible dynamic inventory."
+  type        = string
+  sensitive   = true
+}
+
+variable "grayhaven_jsmith_password_hash" {
+  description = "Password hash for the jsmith administrative account managed by the full Ansible playbook."
+  type        = string
+  sensitive   = true
+}
+
+variable "grayhaven_jsmith_public_key" {
+  description = "Public SSH key for the jsmith administrative account managed by the full Ansible playbook."
   type        = string
   sensitive   = true
 }
