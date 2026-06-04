@@ -28,6 +28,34 @@ resource "digitalocean_record" "grayhaven_www_cname" {
   ttl    = local.dns_ttl
 }
 
+resource "digitalocean_record" "grayhaven_dev_cname" {
+  domain = digitalocean_domain.grayhaven_systems.name
+  type   = "CNAME"
+  name   = "dev"
+  value  = "@"
+  ttl    = local.dns_ttl
+}
+
+resource "digitalocean_record" "grayhaven_caa_letsencrypt" {
+  domain = digitalocean_domain.grayhaven_systems.name
+  type   = "CAA"
+  name   = "@"
+  flags  = 0
+  tag    = "issue"
+  value  = "letsencrypt.org."
+  ttl    = local.dns_ttl
+}
+
+resource "digitalocean_record" "grayhaven_caa_no_wildcards" {
+  domain = digitalocean_domain.grayhaven_systems.name
+  type   = "CAA"
+  name   = "@"
+  flags  = 0
+  tag    = "issuewild"
+  value  = ";"
+  ttl    = local.dns_ttl
+}
+
 # Create A records for each droplet's FQDN using the local.droplet_dns_records map
 resource "digitalocean_record" "grayhaven_droplet_a" {
   for_each = local.droplet_dns_records
@@ -151,6 +179,34 @@ resource "digitalocean_record" "jerry_www_cname" {
   type   = "CNAME"
   name   = "www"
   value  = "@"
+  ttl    = local.dns_ttl
+}
+
+resource "digitalocean_record" "jerry_dev_cname" {
+  domain = digitalocean_domain.jerry_smith.name
+  type   = "CNAME"
+  name   = "dev"
+  value  = "@"
+  ttl    = local.dns_ttl
+}
+
+resource "digitalocean_record" "jerry_caa_letsencrypt" {
+  domain = digitalocean_domain.jerry_smith.name
+  type   = "CAA"
+  name   = "@"
+  flags  = 0
+  tag    = "issue"
+  value  = "letsencrypt.org."
+  ttl    = local.dns_ttl
+}
+
+resource "digitalocean_record" "jerry_caa_no_wildcards" {
+  domain = digitalocean_domain.jerry_smith.name
+  type   = "CAA"
+  name   = "@"
+  flags  = 0
+  tag    = "issuewild"
+  value  = ";"
   ttl    = local.dns_ttl
 }
 
