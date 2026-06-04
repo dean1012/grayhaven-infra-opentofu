@@ -14,7 +14,7 @@ module "bastion" {
   region               = var.default_region
   vpc_id               = module.vpc.id
   ssh_key_fingerprints = local.ssh_key_fingerprints
-  size                 = "s-1vcpu-512mb-10gb"
+  size                 = var.default_droplet_size
   image                = var.default_os_image
   tags                 = local.bastion_tags
   user_data            = local.bastion_user_data
