@@ -72,6 +72,11 @@ module "bastion_firewall" {
       protocol              = "tcp"
       port_range            = "53"
       destination_addresses = ["0.0.0.0/0"]
+    },
+    {
+      protocol              = "udp"
+      port_range            = "123"
+      destination_addresses = ["0.0.0.0/0"]
     }
   ]
 }
@@ -119,6 +124,11 @@ module "web_firewall" {
     {
       protocol              = "tcp"
       port_range            = "53"
+      destination_addresses = ["0.0.0.0/0"]
+    },
+    {
+      protocol              = "udp"
+      port_range            = "123"
       destination_addresses = ["0.0.0.0/0"]
     }
   ]
