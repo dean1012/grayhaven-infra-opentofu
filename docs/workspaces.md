@@ -12,6 +12,7 @@ resources from environment-specific runtime infrastructure.
 - [Staging Workflow](#staging-workflow)
 - [Production Workflow](#production-workflow)
 - [Certificate Mode Override](#certificate-mode-override)
+- [Config Repository Ref Override](#config-repository-ref-override)
 - [State Safety](#state-safety)
 
 ## Supported Workspaces
@@ -68,6 +69,13 @@ Staging website records use the `staging.<domain>` DNS namespace. Ansible uses
 the `env-staging` droplet tag to scope dynamic inventory and uses Let's Encrypt
 staging certificates for web hosts.
 
+Staging defaults to the `main` branch of `grayhaven-config-ansible`, but it can
+test a specific config branch when needed:
+
+```bash
+tofu apply -var 'grayhaven_config_repo_ref=<branch-name>'
+```
+
 [Back to top](#workspace-operations)
 
 ## Production Workflow
@@ -85,6 +93,8 @@ managed domain. Ansible uses the `env-prod` droplet tag to scope dynamic
 inventory and uses trusted Let's Encrypt certificates for web hosts unless a
 certificate mode override is supplied.
 
+Production always uses the `main` branch of `grayhaven-config-ansible`.
+
 [Back to top](#workspace-operations)
 
 ## Certificate Mode Override
@@ -99,6 +109,21 @@ tofu apply -var 'grayhaven_certbot_environment=staging'
 
 Valid override values are `staging` and `production`. Omit the variable to use
 the environment default.
+
+[Back to top](#workspace-operations)
+
+## Config Repository Ref Override
+
+The `grayhaven_config_repo_ref` variable is intended for staging validation of
+Ansible feature branches. Staging defaults to `main`, but a branch can be
+selected explicitly:
+
+```bash
+tofu workspace select staging
+tofu apply -var 'grayhaven_config_repo_ref=<branch-name>'
+```
+
+Production ignores this override and always bootstraps from `main`.
 
 [Back to top](#workspace-operations)
 

@@ -7,6 +7,7 @@ locals {
   is_baseline          = local.environment == "baseline"
   is_environment       = contains(["staging", "prod"], local.environment)
   is_prod              = local.environment == "prod"
+  config_repo_ref      = local.is_prod ? "main" : var.grayhaven_config_repo_ref
 
   environment_vpc_cidrs = {
     staging = "10.20.0.0/16"
@@ -78,7 +79,7 @@ locals {
     grayhaven_hostname                         = local.bastion_hostname
     grayhaven_environment                      = local.environment
     grayhaven_role                             = "bastion"
-    grayhaven_config_repo_ref                  = var.grayhaven_config_repo_ref
+    grayhaven_config_repo_ref                  = local.config_repo_ref
     grayhaven_root_password_hash               = var.grayhaven_root_password_hash
     grayhaven_ansible_control_private_key      = var.grayhaven_ansible_control_private_key
     grayhaven_discord_webhook_url              = var.grayhaven_discord_webhook_url
@@ -93,7 +94,7 @@ locals {
     grayhaven_hostname                     = local.web_hostname
     grayhaven_environment                  = local.environment
     grayhaven_role                         = "web"
-    grayhaven_config_repo_ref              = var.grayhaven_config_repo_ref
+    grayhaven_config_repo_ref              = local.config_repo_ref
     grayhaven_root_password_hash           = var.grayhaven_root_password_hash
     grayhaven_ansible_control_public_key   = var.grayhaven_ansible_control_public_key
     grayhaven_dev_basic_auth_htpasswd_line = var.grayhaven_dev_basic_auth_htpasswd_line
@@ -104,11 +105,11 @@ locals {
 
   bastion_user_data = templatefile("${path.module}/templates/cloud-init/bootstrap-vars.yml.tftpl", {
     bootstrap_vars_yaml = yamlencode(local.bastion_bootstrap_vars)
-    config_repo_ref     = var.grayhaven_config_repo_ref
+    config_repo_ref     = local.config_repo_ref
   })
 
   web_user_data = templatefile("${path.module}/templates/cloud-init/bootstrap-vars.yml.tftpl", {
     bootstrap_vars_yaml = yamlencode(local.web_bootstrap_vars)
-    config_repo_ref     = var.grayhaven_config_repo_ref
+    config_repo_ref     = local.config_repo_ref
   })
 }

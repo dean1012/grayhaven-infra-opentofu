@@ -50,6 +50,39 @@ Initial planned infrastructure includes:
 - DigitalOcean API token
 - SSH public keys uploaded to DigitalOcean
 
+## Deployment Quick Reference
+
+Apply the shared baseline before deploying an environment:
+
+```bash
+tofu workspace select baseline
+tofu apply
+```
+
+Deploy staging:
+
+```bash
+tofu workspace select staging
+tofu apply
+```
+
+Deploy production with live Let's Encrypt certificates:
+
+```bash
+tofu workspace select prod
+tofu apply
+```
+
+Deploy production while forcing Let's Encrypt staging certificates:
+
+```bash
+tofu workspace select prod
+tofu apply -var 'grayhaven_certbot_environment=staging'
+```
+
+Staging can test a specific `grayhaven-config-ansible` branch with
+`grayhaven_config_repo_ref`. Production always uses `main`.
+
 ## Repository Structure
 
 ```text
