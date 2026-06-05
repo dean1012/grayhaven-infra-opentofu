@@ -26,9 +26,12 @@ The `baseline` workspace manages shared resources that staging and production
 depend on, including the DigitalOcean project, DNS zones, mail DNS records, CAA
 records, and the default VPC.
 
-The default VPC is managed as a dedicated baseline resource instead of using the
-environment VPC module. This allows baseline destroy protection to guard the
-default VPC without changing staging or production VPC lifecycle behavior.
+The default VPC is named `grayhaven-core-baseline-vpc` and is managed as a
+dedicated baseline resource instead of using the environment VPC module. This
+allows baseline destroy protection to guard the default VPC without changing
+staging or production VPC lifecycle behavior. Environment VPCs use
+environment-specific names such as `grayhaven-core-staging-vpc` and
+`grayhaven-core-prod-vpc`.
 
 The `staging` and `prod` workspaces manage environment-specific VPCs, droplets,
 firewalls, web DNS records, and droplet DNS records.

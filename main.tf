@@ -18,7 +18,7 @@ data "digitalocean_project" "grayhaven" {
 resource "digitalocean_vpc" "baseline" {
   count = local.is_baseline ? 1 : 0
 
-  name        = "${local.client_name}-core-prod-vpc"
+  name        = "${local.client_name}-core-baseline-vpc"
   region      = var.default_region
   ip_range    = var.baseline_vpc_cidr
   description = "Baseline default VPC for Grayhaven Systems LLC"
