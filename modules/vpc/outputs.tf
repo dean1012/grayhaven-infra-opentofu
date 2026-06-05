@@ -12,3 +12,8 @@ output "vpc_cidr" {
   description = "DigitalOcean VPC CIDR range"
   value       = digitalocean_vpc.this.ip_range
 }
+
+output "urn" {
+  description = "DigitalOcean VPC URN"
+  value       = digitalocean_vpc.this.urn
+}

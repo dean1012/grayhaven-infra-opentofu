@@ -11,6 +11,8 @@
 # OpenTofu state
 *.tfstate
 *.tfstate.*
+terraform.tfstate.d/
+.state-backups/
 
 # OpenTofu plans
 *.tfplan

@@ -1,7 +1,37 @@
 locals {
-  client_name   = "grayhaven"
-  client_domain = "grayhavensystems.com"
-  environment   = "prod"
+  client_name          = "grayhaven"
+  client_domain        = "grayhavensystems.com"
+  personal_domain      = "jerry-smith.net"
+  supported_workspaces = ["baseline", "staging", "prod"]
+  environment          = terraform.workspace
+  is_baseline          = local.environment == "baseline"
+  is_environment       = contains(["staging", "prod"], local.environment)
+  is_prod              = local.environment == "prod"
+
+  environment_vpc_cidrs = {
+    staging = "10.20.0.0/16"
+    prod    = "10.30.0.0/16"
+  }
+
+  environment_dns = {
+    grayhaven = {
+      domain       = local.client_domain
+      site_name    = local.is_prod ? local.client_domain : "staging.${local.client_domain}"
+      www_name     = local.is_prod ? "www" : "www.staging"
+      dev_name     = local.is_prod ? "dev" : "dev.staging"
+      env_root     = local.is_prod ? "@" : "staging"
+      cname_target = local.is_prod ? "@" : "staging.${local.client_domain}."
+    }
+
+    personal = {
+      domain       = local.personal_domain
+      site_name    = local.is_prod ? local.personal_domain : "staging.${local.personal_domain}"
+      www_name     = local.is_prod ? "www" : "www.staging"
+      dev_name     = local.is_prod ? "dev" : "dev.staging"
+      env_root     = local.is_prod ? "@" : "staging"
+      cname_target = local.is_prod ? "@" : "staging.${local.personal_domain}."
+    }
+  }
 
   ssh_key_fingerprints = [
     "2e:7c:fa:e9:85:22:4d:1a:ca:e4:b0:6d:01:c5:36:ed"
@@ -14,36 +44,39 @@ locals {
     "configured-by-ansible"
   ]
 
-  bastion_hostname = "${local.client_name}-sec-${local.environment}-bastion-01.${local.client_domain}"
+  bastion_hostname = local.is_prod ? "${local.client_name}-sec-${local.environment}-bastion-01.${local.client_domain}" : "${local.client_name}-sec-${local.environment}-bastion-01.staging.${local.client_domain}"
 
   bastion_tags = concat(local.common_tags, [
     "project-sec",
     "role-bastion",
-    "scope-grayhaven-sec-prod-bastion"
+    "scope-${local.client_name}-sec-${local.environment}-bastion"
   ])
 
-  web_hostname = "${local.client_name}-core-${local.environment}-web-01.${local.client_domain}"
+  web_hostname = local.is_prod ? "${local.client_name}-core-${local.environment}-web-01.${local.client_domain}" : "${local.client_name}-core-${local.environment}-web-01.staging.${local.client_domain}"
 
   web_tags = concat(local.common_tags, [
     "project-core",
     "role-web",
-    "scope-grayhaven-core-prod-web"
+    "scope-${local.client_name}-core-${local.environment}-web"
   ])
 
-  droplet_dns_records = {
+  droplet_dns_records = local.is_environment ? {
     bastion = {
-      name  = trimsuffix(module.bastion.name, ".${local.client_domain}")
-      value = module.bastion.public_ipv4_address
+      domain = local.client_domain
+      name   = trimsuffix(module.bastion[0].name, ".${local.client_domain}")
+      value  = module.bastion[0].public_ipv4_address
     }
 
     web = {
-      name  = trimsuffix(module.web.name, ".${local.client_domain}")
-      value = module.web.public_ipv4_address
+      domain = local.client_domain
+      name   = trimsuffix(module.web[0].name, ".${local.client_domain}")
+      value  = module.web[0].public_ipv4_address
     }
-  }
+  } : {}
 
   bastion_bootstrap_vars = {
     grayhaven_hostname                         = local.bastion_hostname
+    grayhaven_environment                      = local.environment
     grayhaven_role                             = "bastion"
     grayhaven_config_repo_ref                  = var.grayhaven_config_repo_ref
     grayhaven_root_password_hash               = var.grayhaven_root_password_hash
@@ -56,6 +89,7 @@ locals {
 
   web_bootstrap_vars = {
     grayhaven_hostname                     = local.web_hostname
+    grayhaven_environment                  = local.environment
     grayhaven_role                         = "web"
     grayhaven_config_repo_ref              = var.grayhaven_config_repo_ref
     grayhaven_root_password_hash           = var.grayhaven_root_password_hash

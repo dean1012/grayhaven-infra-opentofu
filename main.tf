@@ -1,18 +1,47 @@
+resource "terraform_data" "workspace_guard" {
+  input = terraform.workspace
+
+  lifecycle {
+    precondition {
+      condition     = contains(local.supported_workspaces, terraform.workspace)
+      error_message = "Supported workspaces are baseline, staging, and prod."
+    }
+  }
+}
+
+data "digitalocean_project" "grayhaven" {
+  count = local.is_environment ? 1 : 0
+
+  name = local.client_name
+}
+
+module "baseline_vpc" {
+  count  = local.is_baseline ? 1 : 0
+  source = "./modules/vpc"
+
+  name        = "${local.client_name}-core-prod-vpc"
+  region      = var.default_region
+  vpc_cidr    = var.baseline_vpc_cidr
+  description = "Production VPC for Grayhaven Systems LLC"
+}
+
 module "vpc" {
+  count  = local.is_environment ? 1 : 0
   source = "./modules/vpc"
 
   name        = "${local.client_name}-core-${local.environment}-vpc"
   region      = var.default_region
-  vpc_cidr    = var.default_vpc_cidr
-  description = "Production VPC for Grayhaven Systems LLC"
+  vpc_cidr    = lookup(local.environment_vpc_cidrs, local.environment, var.baseline_vpc_cidr)
+  description = "${title(local.environment)} VPC for Grayhaven Systems LLC"
 }
 
 module "bastion" {
+  count  = local.is_environment ? 1 : 0
   source = "./modules/droplet"
 
   name                 = local.bastion_hostname
   region               = var.default_region
-  vpc_id               = module.vpc.id
+  vpc_id               = module.vpc[0].id
   ssh_key_fingerprints = local.ssh_key_fingerprints
   size                 = var.default_droplet_size
   image                = var.default_os_image
@@ -21,11 +50,12 @@ module "bastion" {
 }
 
 module "web" {
+  count  = local.is_environment ? 1 : 0
   source = "./modules/droplet"
 
   name                 = local.web_hostname
   region               = var.default_region
-  vpc_id               = module.vpc.id
+  vpc_id               = module.vpc[0].id
   ssh_key_fingerprints = local.ssh_key_fingerprints
   size                 = var.default_droplet_size
   image                = var.default_os_image
@@ -34,10 +64,11 @@ module "web" {
 }
 
 module "bastion_firewall" {
+  count  = local.is_environment ? 1 : 0
   source = "./modules/firewall"
 
   name        = "${local.client_name}-sec-${local.environment}-bastion-fw"
-  target_tags = [digitalocean_tag.bastion_scope.name]
+  target_tags = [digitalocean_tag.bastion_scope[0].name]
 
   inbound_rules = [
     {
@@ -51,7 +82,7 @@ module "bastion_firewall" {
     {
       protocol              = "tcp"
       port_range            = "22"
-      destination_addresses = [module.vpc.vpc_cidr]
+      destination_addresses = [module.vpc[0].vpc_cidr]
     },
     {
       protocol              = "tcp"
@@ -82,16 +113,17 @@ module "bastion_firewall" {
 }
 
 module "web_firewall" {
+  count  = local.is_environment ? 1 : 0
   source = "./modules/firewall"
 
   name        = "${local.client_name}-core-${local.environment}-web-fw"
-  target_tags = [digitalocean_tag.web_scope.name]
+  target_tags = [digitalocean_tag.web_scope[0].name]
 
   inbound_rules = [
     {
       protocol    = "tcp"
       port_range  = "22"
-      source_tags = [digitalocean_tag.bastion_scope.name]
+      source_tags = [digitalocean_tag.bastion_scope[0].name]
     },
     {
       protocol         = "tcp"

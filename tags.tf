@@ -1,7 +1,11 @@
 resource "digitalocean_tag" "bastion_scope" {
-  name = "scope-grayhaven-sec-prod-bastion"
+  count = local.is_environment ? 1 : 0
+
+  name = "scope-${local.client_name}-sec-${local.environment}-bastion"
 }
 
 resource "digitalocean_tag" "web_scope" {
-  name = "scope-grayhaven-core-prod-web"
+  count = local.is_environment ? 1 : 0
+
+  name = "scope-${local.client_name}-core-${local.environment}-web"
 }
