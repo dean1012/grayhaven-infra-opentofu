@@ -41,7 +41,7 @@ variable "grayhaven_root_password_hash" {
 }
 
 variable "grayhaven_config_repo_ref" {
-  description = "Git ref used by cloud-init and the bastion runner when checking out grayhaven-config-ansible."
+  description = "Git ref used by staging cloud-init and the bastion runner when checking out grayhaven-config-ansible. Production always uses main."
   type        = string
   default     = "main"
 }
