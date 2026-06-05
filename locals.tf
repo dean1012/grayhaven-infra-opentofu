@@ -74,7 +74,7 @@ locals {
     }
   } : {}
 
-  bastion_bootstrap_vars = {
+  bastion_bootstrap_vars = merge({
     grayhaven_hostname                         = local.bastion_hostname
     grayhaven_environment                      = local.environment
     grayhaven_role                             = "bastion"
@@ -85,9 +85,11 @@ locals {
     grayhaven_digitalocean_inventory_api_token = var.grayhaven_digitalocean_inventory_api_token
     grayhaven_jsmith_password_hash             = var.grayhaven_jsmith_password_hash
     grayhaven_jsmith_public_key                = var.grayhaven_jsmith_public_key
-  }
+    }, var.grayhaven_certbot_environment == null ? {} : {
+    grayhaven_certbot_environment = var.grayhaven_certbot_environment
+  })
 
-  web_bootstrap_vars = {
+  web_bootstrap_vars = merge({
     grayhaven_hostname                     = local.web_hostname
     grayhaven_environment                  = local.environment
     grayhaven_role                         = "web"
@@ -96,7 +98,9 @@ locals {
     grayhaven_ansible_control_public_key   = var.grayhaven_ansible_control_public_key
     grayhaven_dev_basic_auth_htpasswd_line = var.grayhaven_dev_basic_auth_htpasswd_line
     grayhaven_digitalocean_dns_api_token   = var.grayhaven_digitalocean_dns_api_token
-  }
+    }, var.grayhaven_certbot_environment == null ? {} : {
+    grayhaven_certbot_environment = var.grayhaven_certbot_environment
+  })
 
   bastion_user_data = templatefile("${path.module}/templates/cloud-init/bootstrap-vars.yml.tftpl", {
     bootstrap_vars_yaml = yamlencode(local.bastion_bootstrap_vars)

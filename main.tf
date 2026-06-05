@@ -15,14 +15,17 @@ data "digitalocean_project" "grayhaven" {
   name = local.client_name
 }
 
-module "baseline_vpc" {
-  count  = local.is_baseline ? 1 : 0
-  source = "./modules/vpc"
+resource "digitalocean_vpc" "baseline" {
+  count = local.is_baseline ? 1 : 0
 
   name        = "${local.client_name}-core-prod-vpc"
   region      = var.default_region
-  vpc_cidr    = var.baseline_vpc_cidr
-  description = "Production VPC for Grayhaven Systems LLC"
+  ip_range    = var.baseline_vpc_cidr
+  description = "Baseline default VPC for Grayhaven Systems LLC"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 module "vpc" {

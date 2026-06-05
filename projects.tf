@@ -6,6 +6,10 @@ resource "digitalocean_project" "grayhaven" {
   purpose     = "Web Application"
   environment = "Production"
   is_default  = true
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_project_resources" "environment" {

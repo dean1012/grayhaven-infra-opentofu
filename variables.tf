@@ -46,6 +46,17 @@ variable "grayhaven_config_repo_ref" {
   default     = "main"
 }
 
+variable "grayhaven_certbot_environment" {
+  description = "Optional Certbot environment override. Use staging for Let's Encrypt staging certificates or production for live certificates."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.grayhaven_certbot_environment == null || contains(["staging", "production"], var.grayhaven_certbot_environment)
+    error_message = "grayhaven_certbot_environment must be null, staging, or production."
+  }
+}
+
 variable "grayhaven_ansible_control_public_key" {
   description = "Public key for the Ansible automation user."
   type        = string
