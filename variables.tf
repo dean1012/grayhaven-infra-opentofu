@@ -28,8 +28,8 @@ variable "default_droplet_size" {
   default     = "s-1vcpu-1gb"
 }
 
-variable "default_vpc_cidr" {
-  description = "CIDR range for the project VPC"
+variable "baseline_vpc_cidr" {
+  description = "CIDR range for the baseline default VPC"
   type        = string
   default     = "10.10.0.0/16"
 }

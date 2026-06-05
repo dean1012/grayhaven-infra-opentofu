@@ -15,6 +15,7 @@ Current infrastructure goals include:
 - Bastion-based administrative access model
 - Tag-driven firewall management
 - Encrypted local OpenTofu state
+- Workspace-separated baseline, staging, and production infrastructure
 - GitHub Actions validation workflows
 - Enterprise-oriented naming and tagging standards
 
@@ -33,8 +34,8 @@ not stored in this repository.
 
 Initial planned infrastructure includes:
 
-- Shared web infrastructure in a production environment with a future goal
-  towards adding development and staging environments
+- Shared baseline resources plus separate staging and production runtime
+  infrastructure
 - Bastion host
 - DigitalOcean VPC networking
 - Tag-driven firewall management
@@ -56,6 +57,10 @@ docs/        Project and operational documentation
 modules/     Reusable OpenTofu modules
 templates/   OpenTofu-rendered templates for generated config files
 ```
+
+## Documentation
+
+- [Workspace Operations](docs/workspaces.md)
 
 ## Status
 

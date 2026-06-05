@@ -2,42 +2,38 @@ locals {
   dns_ttl = 300
 }
 
+data "digitalocean_domain" "grayhaven_systems" {
+  count = local.is_environment ? 1 : 0
+
+  name = local.client_domain
+}
+
+data "digitalocean_domain" "jerry_smith" {
+  count = local.is_environment ? 1 : 0
+
+  name = local.personal_domain
+}
+
 ###############################################################################
-# grayhavensystems.com domain and DNS records
+# Baseline DNS zones and shared records
 ###############################################################################
 
 resource "digitalocean_domain" "grayhaven_systems" {
-  name = "grayhavensystems.com"
+  count = local.is_baseline ? 1 : 0
+
+  name = local.client_domain
 }
 
-# A record for grayhavensystems.com pointing to the web server's public IP
-resource "digitalocean_record" "grayhaven_root_a" {
-  domain = digitalocean_domain.grayhaven_systems.name
-  type   = "A"
-  name   = "@"
-  value  = module.web.public_ipv4_address
-  ttl    = local.dns_ttl
-}
+resource "digitalocean_domain" "jerry_smith" {
+  count = local.is_baseline ? 1 : 0
 
-# CNAME record for www.grayhavensystems.com pointing to grayhavensystems.com
-resource "digitalocean_record" "grayhaven_www_cname" {
-  domain = digitalocean_domain.grayhaven_systems.name
-  type   = "CNAME"
-  name   = "www"
-  value  = "@"
-  ttl    = local.dns_ttl
-}
-
-resource "digitalocean_record" "grayhaven_dev_cname" {
-  domain = digitalocean_domain.grayhaven_systems.name
-  type   = "CNAME"
-  name   = "dev"
-  value  = "@"
-  ttl    = local.dns_ttl
+  name = local.personal_domain
 }
 
 resource "digitalocean_record" "grayhaven_caa_letsencrypt" {
-  domain = digitalocean_domain.grayhaven_systems.name
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.grayhaven_systems[0].name
   type   = "CAA"
   name   = "@"
   flags  = 0
@@ -47,151 +43,21 @@ resource "digitalocean_record" "grayhaven_caa_letsencrypt" {
 }
 
 resource "digitalocean_record" "grayhaven_caa_no_wildcards" {
-  domain = digitalocean_domain.grayhaven_systems.name
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.grayhaven_systems[0].name
   type   = "CAA"
   name   = "@"
   flags  = 0
   tag    = "issuewild"
-  value  = ";"
-  ttl    = local.dns_ttl
-}
-
-# Create A records for each droplet's FQDN using the local.droplet_dns_records map
-resource "digitalocean_record" "grayhaven_droplet_a" {
-  for_each = local.droplet_dns_records
-
-  domain = digitalocean_domain.grayhaven_systems.name
-  type   = "A"
-  name   = each.value.name
-  value  = each.value.value
-  ttl    = local.dns_ttl
-}
-
-# A record for bastion.grayhavensystems.com pointing to the bastion host's public IP
-resource "digitalocean_record" "grayhaven_bastion_a" {
-  domain = digitalocean_domain.grayhaven_systems.name
-  type   = "A"
-  name   = "bastion"
-  value  = module.bastion.public_ipv4_address
-  ttl    = local.dns_ttl
-}
-
-# A record for mail.grayhavensystems.com pointing to the mail server's public IP address.
-# Note: this points to an external server not managed by us.
-resource "digitalocean_record" "grayhaven_mail_a" {
-  domain = digitalocean_domain.grayhaven_systems.name
-  type   = "A"
-  name   = "mail"
-  value  = "199.188.205.246"
-  ttl    = local.dns_ttl
-}
-
-# MX record for grayhavensystems.com pointing to mail.grayhavensystems.com
-resource "digitalocean_record" "grayhaven_mx" {
-  domain   = digitalocean_domain.grayhaven_systems.name
-  type     = "MX"
-  name     = "@"
-  value    = "mail.grayhavensystems.com."
-  priority = 10
-  ttl      = local.dns_ttl
-}
-
-# SPF record for grayhavensystems.com specifying authorized mail servers
-resource "digitalocean_record" "grayhaven_spf_txt" {
-  domain = digitalocean_domain.grayhaven_systems.name
-  type   = "TXT"
-  name   = "@"
-  value  = "v=spf1 +a +mx ip4:199.188.205.241 +ip4:199.188.205.246 ~all"
-  ttl    = local.dns_ttl
-}
-
-# DMARC record for grayhavensystems.com specifying email handling policy
-# quarantine means suspicious emails will be marked as spam but still delivered
-resource "digitalocean_record" "grayhaven_dmarc_txt" {
-  domain = digitalocean_domain.grayhaven_systems.name
-  type   = "TXT"
-  name   = "_dmarc"
-  value  = "v=DMARC1; p=quarantine; pct=100;"
-  ttl    = local.dns_ttl
-}
-
-# DKIM record for grayhavensystems.com specifying the public key for email signing
-resource "digitalocean_record" "grayhaven_dkim_txt" {
-  domain = digitalocean_domain.grayhaven_systems.name
-  type   = "TXT"
-  name   = "default._domainkey"
-  value  = "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyTZ8ypaQ83IACu7K1g00Pe65ogpBPSWO+MrAFuP49cd5f0wpviEYsq5jGT1AHGrZzWLvY2dolo0mWvq4NzKAbThwLb3KwMjsnAr3cRvh1IgyexmW3Kx/iaag/E2SYHUfQj6I2qNYK21sgcw5atxPpOWbC8uU33rlCZ6c6v4H2wVZtR12QSRYgxfEL0E1o88MAr2FRaYEhm+hfeoA88ky96Q5MaIc8Bb7JBxIpTkrEqlsXlq4IEgXbzQhZsXpOSGYVsjYIznB8cYNcqfpj7Yay+56eTcMjU4rfic4pGaltiz0Bfr8Tfw7vKTONEoo5mVXD/S9p2BYrw32okCCzdpMAwIDAQAB;"
-  ttl    = local.dns_ttl
-}
-
-# CNAME record for autodiscover.grayhavensystems.com pointing to mail.grayhavensystems.com
-# Automatically provides email client configuration settings
-resource "digitalocean_record" "grayhaven_autodiscover_cname" {
-  domain = digitalocean_domain.grayhaven_systems.name
-  type   = "CNAME"
-  name   = "autodiscover"
-  value  = "mail.grayhavensystems.com."
-  ttl    = local.dns_ttl
-}
-
-# CNAME record for autoconfig.grayhavensystems.com pointing to mail.grayhavensystems.com
-# Automatically provides email client configuration settings
-resource "digitalocean_record" "grayhaven_autoconfig_cname" {
-  domain = digitalocean_domain.grayhaven_systems.name
-  type   = "CNAME"
-  name   = "autoconfig"
-  value  = "mail.grayhavensystems.com."
-  ttl    = local.dns_ttl
-}
-
-# SRV record for autodiscover.grayhavensystems.com pointing to cpanel's email discovery service
-resource "digitalocean_record" "grayhaven_autodiscover_srv" {
-  domain   = digitalocean_domain.grayhaven_systems.name
-  type     = "SRV"
-  name     = "_autodiscover._tcp"
-  value    = "cpanelemaildiscovery.cpanel.net."
-  port     = 443
-  priority = 0
-  weight   = 0
-  ttl      = local.dns_ttl
-}
-
-###############################################################################
-# jerry-smith.net domain and DNS records
-###############################################################################
-
-resource "digitalocean_domain" "jerry_smith" {
-  name = "jerry-smith.net"
-}
-
-# A record for jerry-smith.net pointing to the web server's public IP
-resource "digitalocean_record" "jerry_root_a" {
-  domain = digitalocean_domain.jerry_smith.name
-  type   = "A"
-  name   = "@"
-  value  = module.web.public_ipv4_address
-  ttl    = local.dns_ttl
-}
-
-# CNAME record for www.jerry-smith.net pointing to jerry-smith.net
-resource "digitalocean_record" "jerry_www_cname" {
-  domain = digitalocean_domain.jerry_smith.name
-  type   = "CNAME"
-  name   = "www"
-  value  = "@"
-  ttl    = local.dns_ttl
-}
-
-resource "digitalocean_record" "jerry_dev_cname" {
-  domain = digitalocean_domain.jerry_smith.name
-  type   = "CNAME"
-  name   = "dev"
-  value  = "@"
+  value  = ";."
   ttl    = local.dns_ttl
 }
 
 resource "digitalocean_record" "jerry_caa_letsencrypt" {
-  domain = digitalocean_domain.jerry_smith.name
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.jerry_smith[0].name
   type   = "CAA"
   name   = "@"
   flags  = 0
@@ -201,86 +67,92 @@ resource "digitalocean_record" "jerry_caa_letsencrypt" {
 }
 
 resource "digitalocean_record" "jerry_caa_no_wildcards" {
-  domain = digitalocean_domain.jerry_smith.name
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.jerry_smith[0].name
   type   = "CAA"
   name   = "@"
   flags  = 0
   tag    = "issuewild"
-  value  = ";"
+  value  = ";."
   ttl    = local.dns_ttl
 }
 
-# A record for mail.jerry-smith.net pointing to the mail server's public IP address.
-# Note: this points to an external server not managed by us.
-resource "digitalocean_record" "jerry_mail_a" {
-  domain = digitalocean_domain.jerry_smith.name
+resource "digitalocean_record" "grayhaven_mail_a" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.grayhaven_systems[0].name
   type   = "A"
   name   = "mail"
   value  = "199.188.205.246"
   ttl    = local.dns_ttl
 }
 
-# MX record for jerry-smith.net pointing to mail.jerry-smith.net
-resource "digitalocean_record" "jerry_mx" {
-  domain   = digitalocean_domain.jerry_smith.name
+resource "digitalocean_record" "grayhaven_mx" {
+  count = local.is_baseline ? 1 : 0
+
+  domain   = digitalocean_domain.grayhaven_systems[0].name
   type     = "MX"
   name     = "@"
-  value    = "mail.jerry-smith.net."
+  value    = "mail.grayhavensystems.com."
   priority = 10
   ttl      = local.dns_ttl
 }
 
-# SPF record for jerry-smith.net specifying authorized mail servers
-resource "digitalocean_record" "jerry_spf_txt" {
-  domain = digitalocean_domain.jerry_smith.name
+resource "digitalocean_record" "grayhaven_spf_txt" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.grayhaven_systems[0].name
   type   = "TXT"
   name   = "@"
   value  = "v=spf1 +a +mx ip4:199.188.205.241 +ip4:199.188.205.246 ~all"
   ttl    = local.dns_ttl
 }
 
-# DMARC record for jerry-smith.net specifying email handling policy
-# quarantine means suspicious emails will be marked as spam but still delivered
-resource "digitalocean_record" "jerry_dmarc_txt" {
-  domain = digitalocean_domain.jerry_smith.name
+resource "digitalocean_record" "grayhaven_dmarc_txt" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.grayhaven_systems[0].name
   type   = "TXT"
   name   = "_dmarc"
   value  = "v=DMARC1; p=quarantine; pct=100;"
   ttl    = local.dns_ttl
 }
 
-# DKIM record for jerry-smith.net specifying the public key for email signing
-resource "digitalocean_record" "jerry_dkim_txt" {
-  domain = digitalocean_domain.jerry_smith.name
+resource "digitalocean_record" "grayhaven_dkim_txt" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.grayhaven_systems[0].name
   type   = "TXT"
   name   = "default._domainkey"
   value  = "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyTZ8ypaQ83IACu7K1g00Pe65ogpBPSWO+MrAFuP49cd5f0wpviEYsq5jGT1AHGrZzWLvY2dolo0mWvq4NzKAbThwLb3KwMjsnAr3cRvh1IgyexmW3Kx/iaag/E2SYHUfQj6I2qNYK21sgcw5atxPpOWbC8uU33rlCZ6c6v4H2wVZtR12QSRYgxfEL0E1o88MAr2FRaYEhm+hfeoA88ky96Q5MaIc8Bb7JBxIpTkrEqlsXlq4IEgXbzQhZsXpOSGYVsjYIznB8cYNcqfpj7Yay+56eTcMjU4rfic4pGaltiz0Bfr8Tfw7vKTONEoo5mVXD/S9p2BYrw32okCCzdpMAwIDAQAB;"
   ttl    = local.dns_ttl
 }
 
-# CNAME record for autodiscover.jerry-smith.net pointing to mail.jerry-smith.net
-# Automatically provides email client configuration settings
-resource "digitalocean_record" "jerry_autodiscover_cname" {
-  domain = digitalocean_domain.jerry_smith.name
+resource "digitalocean_record" "grayhaven_autodiscover_cname" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.grayhaven_systems[0].name
   type   = "CNAME"
   name   = "autodiscover"
-  value  = "mail.jerry-smith.net."
+  value  = "mail.grayhavensystems.com."
   ttl    = local.dns_ttl
 }
 
-# CNAME record for autoconfig.jerry-smith.net pointing to mail.jerry-smith.net
-# Automatically provides email client configuration settings
-resource "digitalocean_record" "jerry_autoconfig_cname" {
-  domain = digitalocean_domain.jerry_smith.name
+resource "digitalocean_record" "grayhaven_autoconfig_cname" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.grayhaven_systems[0].name
   type   = "CNAME"
   name   = "autoconfig"
-  value  = "mail.jerry-smith.net."
+  value  = "mail.grayhavensystems.com."
   ttl    = local.dns_ttl
 }
 
-# SRV record for autodiscover.jerry-smith.net pointing to cpanel's email discovery service
-resource "digitalocean_record" "jerry_autodiscover_srv" {
-  domain   = digitalocean_domain.jerry_smith.name
+resource "digitalocean_record" "grayhaven_autodiscover_srv" {
+  count = local.is_baseline ? 1 : 0
+
+  domain   = digitalocean_domain.grayhaven_systems[0].name
   type     = "SRV"
   name     = "_autodiscover._tcp"
   value    = "cpanelemaildiscovery.cpanel.net."
@@ -288,4 +160,161 @@ resource "digitalocean_record" "jerry_autodiscover_srv" {
   priority = 0
   weight   = 0
   ttl      = local.dns_ttl
+}
+
+resource "digitalocean_record" "jerry_mail_a" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.jerry_smith[0].name
+  type   = "A"
+  name   = "mail"
+  value  = "199.188.205.246"
+  ttl    = local.dns_ttl
+}
+
+resource "digitalocean_record" "jerry_mx" {
+  count = local.is_baseline ? 1 : 0
+
+  domain   = digitalocean_domain.jerry_smith[0].name
+  type     = "MX"
+  name     = "@"
+  value    = "mail.jerry-smith.net."
+  priority = 10
+  ttl      = local.dns_ttl
+}
+
+resource "digitalocean_record" "jerry_spf_txt" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.jerry_smith[0].name
+  type   = "TXT"
+  name   = "@"
+  value  = "v=spf1 +a +mx ip4:199.188.205.241 +ip4:199.188.205.246 ~all"
+  ttl    = local.dns_ttl
+}
+
+resource "digitalocean_record" "jerry_dmarc_txt" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.jerry_smith[0].name
+  type   = "TXT"
+  name   = "_dmarc"
+  value  = "v=DMARC1; p=quarantine; pct=100;"
+  ttl    = local.dns_ttl
+}
+
+resource "digitalocean_record" "jerry_dkim_txt" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.jerry_smith[0].name
+  type   = "TXT"
+  name   = "default._domainkey"
+  value  = "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyTZ8ypaQ83IACu7K1g00Pe65ogpBPSWO+MrAFuP49cd5f0wpviEYsq5jGT1AHGrZzWLvY2dolo0mWvq4NzKAbThwLb3KwMjsnAr3cRvh1IgyexmW3Kx/iaag/E2SYHUfQj6I2qNYK21sgcw5atxPpOWbC8uU33rlCZ6c6v4H2wVZtR12QSRYgxfEL0E1o88MAr2FRaYEhm+hfeoA88ky96Q5MaIc8Bb7JBxIpTkrEqlsXlq4IEgXbzQhZsXpOSGYVsjYIznB8cYNcqfpj7Yay+56eTcMjU4rfic4pGaltiz0Bfr8Tfw7vKTONEoo5mVXD/S9p2BYrw32okCCzdpMAwIDAQAB;"
+  ttl    = local.dns_ttl
+}
+
+resource "digitalocean_record" "jerry_autodiscover_cname" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.jerry_smith[0].name
+  type   = "CNAME"
+  name   = "autodiscover"
+  value  = "mail.jerry-smith.net."
+  ttl    = local.dns_ttl
+}
+
+resource "digitalocean_record" "jerry_autoconfig_cname" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.jerry_smith[0].name
+  type   = "CNAME"
+  name   = "autoconfig"
+  value  = "mail.jerry-smith.net."
+  ttl    = local.dns_ttl
+}
+
+resource "digitalocean_record" "jerry_autodiscover_srv" {
+  count = local.is_baseline ? 1 : 0
+
+  domain   = digitalocean_domain.jerry_smith[0].name
+  type     = "SRV"
+  name     = "_autodiscover._tcp"
+  value    = "cpanelemaildiscovery.cpanel.net."
+  port     = 443
+  priority = 0
+  weight   = 0
+  ttl      = local.dns_ttl
+}
+
+###############################################################################
+# Environment DNS records
+###############################################################################
+
+resource "digitalocean_record" "web_root_a" {
+  for_each = local.is_environment ? local.environment_dns : {}
+
+  domain = each.value.domain
+  type   = "A"
+  name   = each.value.env_root
+  value  = module.web[0].public_ipv4_address
+  ttl    = local.dns_ttl
+
+  depends_on = [
+    data.digitalocean_domain.grayhaven_systems,
+    data.digitalocean_domain.jerry_smith,
+  ]
+}
+
+resource "digitalocean_record" "web_www_cname" {
+  for_each = local.is_environment ? local.environment_dns : {}
+
+  domain = each.value.domain
+  type   = "CNAME"
+  name   = each.value.www_name
+  value  = each.value.cname_target
+  ttl    = local.dns_ttl
+
+  depends_on = [
+    data.digitalocean_domain.grayhaven_systems,
+    data.digitalocean_domain.jerry_smith,
+  ]
+}
+
+resource "digitalocean_record" "web_dev_cname" {
+  for_each = local.is_environment ? local.environment_dns : {}
+
+  domain = each.value.domain
+  type   = "CNAME"
+  name   = each.value.dev_name
+  value  = each.value.cname_target
+  ttl    = local.dns_ttl
+
+  depends_on = [
+    data.digitalocean_domain.grayhaven_systems,
+    data.digitalocean_domain.jerry_smith,
+  ]
+}
+
+resource "digitalocean_record" "grayhaven_droplet_a" {
+  for_each = local.droplet_dns_records
+
+  domain = each.value.domain
+  type   = "A"
+  name   = each.value.name
+  value  = each.value.value
+  ttl    = local.dns_ttl
+
+  depends_on = [data.digitalocean_domain.grayhaven_systems]
+}
+
+resource "digitalocean_record" "grayhaven_bastion_a" {
+  count = local.is_environment ? 1 : 0
+
+  domain = local.client_domain
+  type   = "A"
+  name   = local.is_prod ? "bastion" : "bastion.staging"
+  value  = module.bastion[0].public_ipv4_address
+  ttl    = local.dns_ttl
+
+  depends_on = [data.digitalocean_domain.grayhaven_systems]
 }
