@@ -22,12 +22,20 @@ resource "digitalocean_domain" "grayhaven_systems" {
   count = local.is_baseline ? 1 : 0
 
   name = local.client_domain
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_domain" "jerry_smith" {
   count = local.is_baseline ? 1 : 0
 
   name = local.personal_domain
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "grayhaven_caa_letsencrypt" {
@@ -40,6 +48,10 @@ resource "digitalocean_record" "grayhaven_caa_letsencrypt" {
   tag    = "issue"
   value  = "letsencrypt.org."
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "grayhaven_caa_no_wildcards" {
@@ -52,6 +64,10 @@ resource "digitalocean_record" "grayhaven_caa_no_wildcards" {
   tag    = "issuewild"
   value  = ";."
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "jerry_caa_letsencrypt" {
@@ -64,6 +80,10 @@ resource "digitalocean_record" "jerry_caa_letsencrypt" {
   tag    = "issue"
   value  = "letsencrypt.org."
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "jerry_caa_no_wildcards" {
@@ -76,6 +96,10 @@ resource "digitalocean_record" "jerry_caa_no_wildcards" {
   tag    = "issuewild"
   value  = ";."
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "grayhaven_mail_a" {
@@ -86,6 +110,10 @@ resource "digitalocean_record" "grayhaven_mail_a" {
   name   = "mail"
   value  = "199.188.205.246"
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "grayhaven_mx" {
@@ -97,6 +125,10 @@ resource "digitalocean_record" "grayhaven_mx" {
   value    = "mail.grayhavensystems.com."
   priority = 10
   ttl      = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "grayhaven_spf_txt" {
@@ -107,6 +139,10 @@ resource "digitalocean_record" "grayhaven_spf_txt" {
   name   = "@"
   value  = "v=spf1 +a +mx ip4:199.188.205.241 +ip4:199.188.205.246 ~all"
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "grayhaven_dmarc_txt" {
@@ -117,6 +153,10 @@ resource "digitalocean_record" "grayhaven_dmarc_txt" {
   name   = "_dmarc"
   value  = "v=DMARC1; p=quarantine; pct=100;"
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "grayhaven_dkim_txt" {
@@ -127,6 +167,10 @@ resource "digitalocean_record" "grayhaven_dkim_txt" {
   name   = "default._domainkey"
   value  = "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyTZ8ypaQ83IACu7K1g00Pe65ogpBPSWO+MrAFuP49cd5f0wpviEYsq5jGT1AHGrZzWLvY2dolo0mWvq4NzKAbThwLb3KwMjsnAr3cRvh1IgyexmW3Kx/iaag/E2SYHUfQj6I2qNYK21sgcw5atxPpOWbC8uU33rlCZ6c6v4H2wVZtR12QSRYgxfEL0E1o88MAr2FRaYEhm+hfeoA88ky96Q5MaIc8Bb7JBxIpTkrEqlsXlq4IEgXbzQhZsXpOSGYVsjYIznB8cYNcqfpj7Yay+56eTcMjU4rfic4pGaltiz0Bfr8Tfw7vKTONEoo5mVXD/S9p2BYrw32okCCzdpMAwIDAQAB;"
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "grayhaven_autodiscover_cname" {
@@ -137,6 +181,10 @@ resource "digitalocean_record" "grayhaven_autodiscover_cname" {
   name   = "autodiscover"
   value  = "mail.grayhavensystems.com."
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "grayhaven_autoconfig_cname" {
@@ -147,6 +195,10 @@ resource "digitalocean_record" "grayhaven_autoconfig_cname" {
   name   = "autoconfig"
   value  = "mail.grayhavensystems.com."
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "grayhaven_autodiscover_srv" {
@@ -160,6 +212,10 @@ resource "digitalocean_record" "grayhaven_autodiscover_srv" {
   priority = 0
   weight   = 0
   ttl      = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "jerry_mail_a" {
@@ -170,6 +226,10 @@ resource "digitalocean_record" "jerry_mail_a" {
   name   = "mail"
   value  = "199.188.205.246"
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "jerry_mx" {
@@ -181,6 +241,10 @@ resource "digitalocean_record" "jerry_mx" {
   value    = "mail.jerry-smith.net."
   priority = 10
   ttl      = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "jerry_spf_txt" {
@@ -191,6 +255,10 @@ resource "digitalocean_record" "jerry_spf_txt" {
   name   = "@"
   value  = "v=spf1 +a +mx ip4:199.188.205.241 +ip4:199.188.205.246 ~all"
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "jerry_dmarc_txt" {
@@ -201,6 +269,10 @@ resource "digitalocean_record" "jerry_dmarc_txt" {
   name   = "_dmarc"
   value  = "v=DMARC1; p=quarantine; pct=100;"
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "jerry_dkim_txt" {
@@ -211,6 +283,10 @@ resource "digitalocean_record" "jerry_dkim_txt" {
   name   = "default._domainkey"
   value  = "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyTZ8ypaQ83IACu7K1g00Pe65ogpBPSWO+MrAFuP49cd5f0wpviEYsq5jGT1AHGrZzWLvY2dolo0mWvq4NzKAbThwLb3KwMjsnAr3cRvh1IgyexmW3Kx/iaag/E2SYHUfQj6I2qNYK21sgcw5atxPpOWbC8uU33rlCZ6c6v4H2wVZtR12QSRYgxfEL0E1o88MAr2FRaYEhm+hfeoA88ky96Q5MaIc8Bb7JBxIpTkrEqlsXlq4IEgXbzQhZsXpOSGYVsjYIznB8cYNcqfpj7Yay+56eTcMjU4rfic4pGaltiz0Bfr8Tfw7vKTONEoo5mVXD/S9p2BYrw32okCCzdpMAwIDAQAB;"
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "jerry_autodiscover_cname" {
@@ -221,6 +297,10 @@ resource "digitalocean_record" "jerry_autodiscover_cname" {
   name   = "autodiscover"
   value  = "mail.jerry-smith.net."
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "jerry_autoconfig_cname" {
@@ -231,6 +311,10 @@ resource "digitalocean_record" "jerry_autoconfig_cname" {
   name   = "autoconfig"
   value  = "mail.jerry-smith.net."
   ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "digitalocean_record" "jerry_autodiscover_srv" {
@@ -244,6 +328,10 @@ resource "digitalocean_record" "jerry_autodiscover_srv" {
   priority = 0
   weight   = 0
   ttl      = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 ###############################################################################
