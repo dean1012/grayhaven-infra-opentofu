@@ -102,28 +102,29 @@ resource "digitalocean_record" "jerry_caa_no_wildcards" {
   }
 }
 
-resource "digitalocean_record" "grayhaven_mail_a" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.grayhaven_systems[0].name
-  type   = "A"
-  name   = "mail"
-  value  = "199.188.205.246"
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
 resource "digitalocean_record" "grayhaven_mx" {
   count = local.is_baseline ? 1 : 0
 
   domain   = digitalocean_domain.grayhaven_systems[0].name
   type     = "MX"
   name     = "@"
-  value    = "mail.grayhavensystems.com."
+  value    = "mail.protonmail.ch."
   priority = 10
+  ttl      = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_record" "grayhaven_mx_secondary" {
+  count = local.is_baseline ? 1 : 0
+
+  domain   = digitalocean_domain.grayhaven_systems[0].name
+  type     = "MX"
+  name     = "@"
+  value    = "mailsec.protonmail.ch."
+  priority = 20
   ttl      = local.dns_ttl
 
   lifecycle {
@@ -137,7 +138,21 @@ resource "digitalocean_record" "grayhaven_spf_txt" {
   domain = digitalocean_domain.grayhaven_systems[0].name
   type   = "TXT"
   name   = "@"
-  value  = "v=spf1 +a +mx ip4:199.188.205.241 +ip4:199.188.205.246 ~all"
+  value  = "v=spf1 include:_spf.protonmail.ch ~all"
+  ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_record" "grayhaven_protonmail_verification_txt" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.grayhaven_systems[0].name
+  type   = "TXT"
+  name   = "@"
+  value  = "protonmail-verification=37192d42ca1137baa2a213f8969d2722de1bedb5"
   ttl    = local.dns_ttl
 
   lifecycle {
@@ -151,7 +166,7 @@ resource "digitalocean_record" "grayhaven_dmarc_txt" {
   domain = digitalocean_domain.grayhaven_systems[0].name
   type   = "TXT"
   name   = "_dmarc"
-  value  = "v=DMARC1; p=quarantine; pct=100;"
+  value  = "v=DMARC1; p=quarantine"
   ttl    = local.dns_ttl
 
   lifecycle {
@@ -159,27 +174,13 @@ resource "digitalocean_record" "grayhaven_dmarc_txt" {
   }
 }
 
-resource "digitalocean_record" "grayhaven_dkim_txt" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.grayhaven_systems[0].name
-  type   = "TXT"
-  name   = "default._domainkey"
-  value  = "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyTZ8ypaQ83IACu7K1g00Pe65ogpBPSWO+MrAFuP49cd5f0wpviEYsq5jGT1AHGrZzWLvY2dolo0mWvq4NzKAbThwLb3KwMjsnAr3cRvh1IgyexmW3Kx/iaag/E2SYHUfQj6I2qNYK21sgcw5atxPpOWbC8uU33rlCZ6c6v4H2wVZtR12QSRYgxfEL0E1o88MAr2FRaYEhm+hfeoA88ky96Q5MaIc8Bb7JBxIpTkrEqlsXlq4IEgXbzQhZsXpOSGYVsjYIznB8cYNcqfpj7Yay+56eTcMjU4rfic4pGaltiz0Bfr8Tfw7vKTONEoo5mVXD/S9p2BYrw32okCCzdpMAwIDAQAB;"
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "grayhaven_autodiscover_cname" {
+resource "digitalocean_record" "grayhaven_protonmail_dkim_cname" {
   count = local.is_baseline ? 1 : 0
 
   domain = digitalocean_domain.grayhaven_systems[0].name
   type   = "CNAME"
-  name   = "autodiscover"
-  value  = "mail.grayhavensystems.com."
+  name   = "protonmail._domainkey"
+  value  = "protonmail.domainkey.dj7hsgypqb4rzqit4jcxqi4illhiguvk4332qwdy7peaxv4f7gcsq.domains.proton.ch."
   ttl    = local.dns_ttl
 
   lifecycle {
@@ -187,13 +188,13 @@ resource "digitalocean_record" "grayhaven_autodiscover_cname" {
   }
 }
 
-resource "digitalocean_record" "grayhaven_autoconfig_cname" {
+resource "digitalocean_record" "grayhaven_protonmail_dkim2_cname" {
   count = local.is_baseline ? 1 : 0
 
   domain = digitalocean_domain.grayhaven_systems[0].name
   type   = "CNAME"
-  name   = "autoconfig"
-  value  = "mail.grayhavensystems.com."
+  name   = "protonmail2._domainkey"
+  value  = "protonmail2.domainkey.dj7hsgypqb4rzqit4jcxqi4illhiguvk4332qwdy7peaxv4f7gcsq.domains.proton.ch."
   ttl    = local.dns_ttl
 
   lifecycle {
@@ -201,30 +202,13 @@ resource "digitalocean_record" "grayhaven_autoconfig_cname" {
   }
 }
 
-resource "digitalocean_record" "grayhaven_autodiscover_srv" {
+resource "digitalocean_record" "grayhaven_protonmail_dkim3_cname" {
   count = local.is_baseline ? 1 : 0
 
-  domain   = digitalocean_domain.grayhaven_systems[0].name
-  type     = "SRV"
-  name     = "_autodiscover._tcp"
-  value    = "cpanelemaildiscovery.cpanel.net."
-  port     = 443
-  priority = 0
-  weight   = 0
-  ttl      = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "jerry_mail_a" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.jerry_smith[0].name
-  type   = "A"
-  name   = "mail"
-  value  = "199.188.205.246"
+  domain = digitalocean_domain.grayhaven_systems[0].name
+  type   = "CNAME"
+  name   = "protonmail3._domainkey"
+  value  = "protonmail3.domainkey.dj7hsgypqb4rzqit4jcxqi4illhiguvk4332qwdy7peaxv4f7gcsq.domains.proton.ch."
   ttl    = local.dns_ttl
 
   lifecycle {
@@ -238,8 +222,23 @@ resource "digitalocean_record" "jerry_mx" {
   domain   = digitalocean_domain.jerry_smith[0].name
   type     = "MX"
   name     = "@"
-  value    = "mail.jerry-smith.net."
+  value    = "mail.protonmail.ch."
   priority = 10
+  ttl      = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_record" "jerry_mx_secondary" {
+  count = local.is_baseline ? 1 : 0
+
+  domain   = digitalocean_domain.jerry_smith[0].name
+  type     = "MX"
+  name     = "@"
+  value    = "mailsec.protonmail.ch."
+  priority = 20
   ttl      = local.dns_ttl
 
   lifecycle {
@@ -253,7 +252,21 @@ resource "digitalocean_record" "jerry_spf_txt" {
   domain = digitalocean_domain.jerry_smith[0].name
   type   = "TXT"
   name   = "@"
-  value  = "v=spf1 +a +mx ip4:199.188.205.241 +ip4:199.188.205.246 ~all"
+  value  = "v=spf1 include:_spf.protonmail.ch ~all"
+  ttl    = local.dns_ttl
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_record" "jerry_protonmail_verification_txt" {
+  count = local.is_baseline ? 1 : 0
+
+  domain = digitalocean_domain.jerry_smith[0].name
+  type   = "TXT"
+  name   = "@"
+  value  = "protonmail-verification=455409ec796cac0c93dbb4ec2e894e5e0c2766a6"
   ttl    = local.dns_ttl
 
   lifecycle {
@@ -267,7 +280,7 @@ resource "digitalocean_record" "jerry_dmarc_txt" {
   domain = digitalocean_domain.jerry_smith[0].name
   type   = "TXT"
   name   = "_dmarc"
-  value  = "v=DMARC1; p=quarantine; pct=100;"
+  value  = "v=DMARC1; p=quarantine"
   ttl    = local.dns_ttl
 
   lifecycle {
@@ -275,27 +288,13 @@ resource "digitalocean_record" "jerry_dmarc_txt" {
   }
 }
 
-resource "digitalocean_record" "jerry_dkim_txt" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.jerry_smith[0].name
-  type   = "TXT"
-  name   = "default._domainkey"
-  value  = "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyTZ8ypaQ83IACu7K1g00Pe65ogpBPSWO+MrAFuP49cd5f0wpviEYsq5jGT1AHGrZzWLvY2dolo0mWvq4NzKAbThwLb3KwMjsnAr3cRvh1IgyexmW3Kx/iaag/E2SYHUfQj6I2qNYK21sgcw5atxPpOWbC8uU33rlCZ6c6v4H2wVZtR12QSRYgxfEL0E1o88MAr2FRaYEhm+hfeoA88ky96Q5MaIc8Bb7JBxIpTkrEqlsXlq4IEgXbzQhZsXpOSGYVsjYIznB8cYNcqfpj7Yay+56eTcMjU4rfic4pGaltiz0Bfr8Tfw7vKTONEoo5mVXD/S9p2BYrw32okCCzdpMAwIDAQAB;"
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "jerry_autodiscover_cname" {
+resource "digitalocean_record" "jerry_protonmail_dkim_cname" {
   count = local.is_baseline ? 1 : 0
 
   domain = digitalocean_domain.jerry_smith[0].name
   type   = "CNAME"
-  name   = "autodiscover"
-  value  = "mail.jerry-smith.net."
+  name   = "protonmail._domainkey"
+  value  = "protonmail.domainkey.dinou7fyzaz4gip3wxjftcttpe5zmfia4brvi46vremdv3unkowha.domains.proton.ch."
   ttl    = local.dns_ttl
 
   lifecycle {
@@ -303,13 +302,13 @@ resource "digitalocean_record" "jerry_autodiscover_cname" {
   }
 }
 
-resource "digitalocean_record" "jerry_autoconfig_cname" {
+resource "digitalocean_record" "jerry_protonmail_dkim2_cname" {
   count = local.is_baseline ? 1 : 0
 
   domain = digitalocean_domain.jerry_smith[0].name
   type   = "CNAME"
-  name   = "autoconfig"
-  value  = "mail.jerry-smith.net."
+  name   = "protonmail2._domainkey"
+  value  = "protonmail2.domainkey.dinou7fyzaz4gip3wxjftcttpe5zmfia4brvi46vremdv3unkowha.domains.proton.ch."
   ttl    = local.dns_ttl
 
   lifecycle {
@@ -317,17 +316,14 @@ resource "digitalocean_record" "jerry_autoconfig_cname" {
   }
 }
 
-resource "digitalocean_record" "jerry_autodiscover_srv" {
+resource "digitalocean_record" "jerry_protonmail_dkim3_cname" {
   count = local.is_baseline ? 1 : 0
 
-  domain   = digitalocean_domain.jerry_smith[0].name
-  type     = "SRV"
-  name     = "_autodiscover._tcp"
-  value    = "cpanelemaildiscovery.cpanel.net."
-  port     = 443
-  priority = 0
-  weight   = 0
-  ttl      = local.dns_ttl
+  domain = digitalocean_domain.jerry_smith[0].name
+  type   = "CNAME"
+  name   = "protonmail3._domainkey"
+  value  = "protonmail3.domainkey.dinou7fyzaz4gip3wxjftcttpe5zmfia4brvi46vremdv3unkowha.domains.proton.ch."
+  ttl    = local.dns_ttl
 
   lifecycle {
     prevent_destroy = true
