@@ -1,0 +1,16 @@
+---
+certificate_environment: staging
+discord_webhook: testing
+
+backup:
+  repositories:
+    local:
+      repository_path: /var/backups/restic
+      homedir_archive_path: /var/backups/deleted-homedir-archives
+  schedule: daily
+  retention:
+    keep_daily: 7
+  include:
+    - /home
+    - /var/log
+  exclude: []

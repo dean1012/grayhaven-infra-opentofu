@@ -1,21 +1,34 @@
-output "bastion_public_ipv4_address" {
-  description = "Public IPv4 address of the bastion host"
-  value       = local.is_environment ? module.bastion[0].public_ipv4_address : null
+output "bastion_public_ipv4_addresses" {
+  description = "Public IPv4 addresses of bastion hosts by policy key"
+  value       = local.is_environment ? { for key, droplet in module.bastion : key => droplet.public_ipv4_address } : {}
 }
 
-output "bastion_private_ipv4_address" {
-  description = "Private IPv4 address of the bastion host"
-  value       = local.is_environment ? module.bastion[0].private_ipv4_address : null
+output "bastion_private_ipv4_addresses" {
+  description = "Private IPv4 addresses of bastion hosts by policy key"
+  value       = local.is_environment ? { for key, droplet in module.bastion : key => droplet.private_ipv4_address } : {}
 }
 
-output "web_public_ipv4_address" {
-  description = "Public IPv4 address of the web host"
-  value       = local.is_environment ? module.web[0].public_ipv4_address : null
+output "control_bastion" {
+  description = "Policy key and public IPv4 address for the active control bastion"
+  value = local.is_environment ? {
+    key                 = local.control_bastion_key
+    public_ipv4_address = module.bastion[local.control_bastion_key].public_ipv4_address
+  } : null
 }
 
-output "web_private_ipv4_address" {
-  description = "Private IPv4 address of the web host"
-  value       = local.is_environment ? module.web[0].private_ipv4_address : null
+output "web_public_ipv4_addresses" {
+  description = "Public IPv4 addresses of web hosts by policy key"
+  value       = local.is_environment ? { for key, droplet in module.web : key => droplet.public_ipv4_address } : {}
+}
+
+output "web_private_ipv4_addresses" {
+  description = "Private IPv4 addresses of web hosts by policy key"
+  value       = local.is_environment ? { for key, droplet in module.web : key => droplet.private_ipv4_address } : {}
+}
+
+output "web_tls_mode" {
+  description = "Effective web TLS mode for the active workspace"
+  value       = local.is_environment ? local.effective_tls_mode : null
 }
 
 output "workspace" {

@@ -9,6 +9,47 @@ resource "terraform_data" "workspace_guard" {
   }
 }
 
+resource "terraform_data" "environment_policy_guard" {
+  count = local.is_environment ? 1 : 0
+
+  input = {
+    control_bastion_key = local.control_bastion_key
+    tls_mode            = local.web_tls_setting
+  }
+
+  lifecycle {
+    precondition {
+      condition     = local.is_environment ? contains(keys(local.bastion_instances), local.control_bastion_key) : true
+      error_message = "The compute policy bastions.control_node value must match a bastion instance key."
+    }
+
+    precondition {
+      condition     = local.is_environment ? contains(["auto", "load_balancer"], local.web_tls_setting) : true
+      error_message = "The compute policy web.tls_mode value must be auto or load_balancer."
+    }
+
+    precondition {
+      condition     = local.is_environment ? contains(["staging", "production"], local.certificate_environment) : true
+      error_message = "certificate_environment must be staging or production."
+    }
+
+    precondition {
+      condition     = length(local.web_instances) > 0 && length(local.bastion_instances) > 0
+      error_message = "The compute policy must define at least one bastion and one web host."
+    }
+
+    precondition {
+      condition     = local.vault_checkout_path != null && trimspace(local.vault_checkout_path) != ""
+      error_message = "grayhaven_vault_checkout_path is required for staging and prod workspaces."
+    }
+
+    precondition {
+      condition     = local.vault_password != null && local.vault_password != ""
+      error_message = "A vault password is required for staging and prod workspaces."
+    }
+  }
+}
+
 data "digitalocean_project" "grayhaven" {
   count = local.is_environment ? 1 : 0
 
@@ -39,31 +80,31 @@ module "vpc" {
 }
 
 module "bastion" {
-  count  = local.is_environment ? 1 : 0
-  source = "./modules/droplet"
+  for_each = local.bastion_hosts
+  source   = "./modules/droplet"
 
-  name                 = local.bastion_hostname
+  name                 = each.value.hostname
   region               = var.default_region
   vpc_id               = module.vpc[0].id
   ssh_key_fingerprints = local.ssh_key_fingerprints
-  size                 = var.default_droplet_size
-  image                = var.default_os_image
-  tags                 = local.bastion_tags
-  user_data            = local.bastion_user_data
+  size                 = each.value.size
+  image                = each.value.image
+  tags                 = each.value.tags
+  user_data            = local.bastion_user_data[each.key]
 }
 
 module "web" {
-  count  = local.is_environment ? 1 : 0
-  source = "./modules/droplet"
+  for_each = local.web_hosts
+  source   = "./modules/droplet"
 
-  name                 = local.web_hostname
+  name                 = each.value.hostname
   region               = var.default_region
   vpc_id               = module.vpc[0].id
   ssh_key_fingerprints = local.ssh_key_fingerprints
-  size                 = var.default_droplet_size
-  image                = var.default_os_image
-  tags                 = local.web_tags
-  user_data            = local.web_user_data
+  size                 = each.value.size
+  image                = each.value.image
+  tags                 = each.value.tags
+  user_data            = local.web_user_data[each.key]
 }
 
 module "bastion_firewall" {
@@ -73,46 +114,8 @@ module "bastion_firewall" {
   name        = "${local.client_name}-sec-${local.environment}-bastion-fw"
   target_tags = [digitalocean_tag.bastion_scope[0].name]
 
-  inbound_rules = [
-    {
-      protocol         = "tcp"
-      port_range       = "22"
-      source_addresses = ["0.0.0.0/0"]
-    }
-  ]
-
-  outbound_rules = [
-    {
-      protocol              = "tcp"
-      port_range            = "22"
-      destination_addresses = [module.vpc[0].vpc_cidr]
-    },
-    {
-      protocol              = "tcp"
-      port_range            = "80"
-      destination_addresses = ["0.0.0.0/0"]
-    },
-    {
-      protocol              = "tcp"
-      port_range            = "443"
-      destination_addresses = ["0.0.0.0/0"]
-    },
-    {
-      protocol              = "udp"
-      port_range            = "53"
-      destination_addresses = ["0.0.0.0/0"]
-    },
-    {
-      protocol              = "tcp"
-      port_range            = "53"
-      destination_addresses = ["0.0.0.0/0"]
-    },
-    {
-      protocol              = "udp"
-      port_range            = "123"
-      destination_addresses = ["0.0.0.0/0"]
-    }
-  ]
+  inbound_rules  = lookup(local.firewall_rules, "bastion", { inbound = [], outbound = [] }).inbound
+  outbound_rules = lookup(local.firewall_rules, "bastion", { inbound = [], outbound = [] }).outbound
 }
 
 module "web_firewall" {
@@ -122,49 +125,6 @@ module "web_firewall" {
   name        = "${local.client_name}-core-${local.environment}-web-fw"
   target_tags = [digitalocean_tag.web_scope[0].name]
 
-  inbound_rules = [
-    {
-      protocol    = "tcp"
-      port_range  = "22"
-      source_tags = [digitalocean_tag.bastion_scope[0].name]
-    },
-    {
-      protocol         = "tcp"
-      port_range       = "80"
-      source_addresses = ["0.0.0.0/0"]
-    },
-    {
-      protocol         = "tcp"
-      port_range       = "443"
-      source_addresses = ["0.0.0.0/0"]
-    }
-  ]
-
-  outbound_rules = [
-    {
-      protocol              = "tcp"
-      port_range            = "80"
-      destination_addresses = ["0.0.0.0/0"]
-    },
-    {
-      protocol              = "tcp"
-      port_range            = "443"
-      destination_addresses = ["0.0.0.0/0"]
-    },
-    {
-      protocol              = "udp"
-      port_range            = "53"
-      destination_addresses = ["0.0.0.0/0"]
-    },
-    {
-      protocol              = "tcp"
-      port_range            = "53"
-      destination_addresses = ["0.0.0.0/0"]
-    },
-    {
-      protocol              = "udp"
-      port_range            = "123"
-      destination_addresses = ["0.0.0.0/0"]
-    }
-  ]
+  inbound_rules  = lookup(local.firewall_rules, "web", { inbound = [], outbound = [] }).inbound
+  outbound_rules = lookup(local.firewall_rules, "web", { inbound = [], outbound = [] }).outbound
 }

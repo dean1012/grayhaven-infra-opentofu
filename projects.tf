@@ -17,8 +17,9 @@ resource "digitalocean_project_resources" "environment" {
 
   project = data.digitalocean_project.grayhaven[0].id
 
-  resources = [
-    module.bastion[0].urn,
-    module.web[0].urn,
-  ]
+  resources = concat(
+    [for droplet in module.bastion : droplet.urn],
+    [for droplet in module.web : droplet.urn],
+    local.use_load_balancer ? [digitalocean_loadbalancer.web[0].urn] : []
+  )
 }

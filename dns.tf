@@ -340,7 +340,7 @@ resource "digitalocean_record" "web_root_a" {
   domain = each.value.domain
   type   = "A"
   name   = each.value.env_root
-  value  = module.web[0].public_ipv4_address
+  value  = local.use_load_balancer ? digitalocean_loadbalancer.web[0].ip : try(module.web[local.primary_web_key].public_ipv4_address, "")
   ttl    = local.dns_ttl
 
   depends_on = [
@@ -397,7 +397,7 @@ resource "digitalocean_record" "grayhaven_bastion_a" {
   domain = local.client_domain
   type   = "A"
   name   = local.is_prod ? "bastion" : "bastion.staging"
-  value  = module.bastion[0].public_ipv4_address
+  value  = try(module.bastion[local.control_bastion_key].public_ipv4_address, "")
   ttl    = local.dns_ttl
 
   depends_on = [data.digitalocean_domain.grayhaven_systems]

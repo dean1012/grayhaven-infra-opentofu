@@ -7,4 +7,8 @@ resource "digitalocean_droplet" "this" {
   image     = var.image
   tags      = var.tags
   user_data = var.user_data
+
+  lifecycle {
+    ignore_changes = [user_data]
+  }
 }

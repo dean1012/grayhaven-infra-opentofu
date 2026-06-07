@@ -1,0 +1,75 @@
+---
+firewalls:
+  bastion:
+    inbound:
+      - protocol: tcp
+        port_range: "22"
+        source_addresses:
+          - 0.0.0.0/0
+    outbound:
+      - protocol: tcp
+        port_range: "22"
+        destination_tags:
+          - bastion
+          - web
+      # Bastions clone private GitHub repositories with SSH deploy keys.
+      - protocol: tcp
+        port_range: "22"
+        destination_addresses:
+          - 0.0.0.0/0
+      - protocol: tcp
+        port_range: "80"
+        destination_addresses:
+          - 0.0.0.0/0
+      - protocol: tcp
+        port_range: "443"
+        destination_addresses:
+          - 0.0.0.0/0
+      - protocol: udp
+        port_range: "53"
+        destination_addresses:
+          - 0.0.0.0/0
+      - protocol: tcp
+        port_range: "53"
+        destination_addresses:
+          - 0.0.0.0/0
+      - protocol: udp
+        port_range: "123"
+        destination_addresses:
+          - 0.0.0.0/0
+
+  web:
+    inbound:
+      - protocol: tcp
+        port_range: "22"
+        source_tags:
+          - bastion
+      - protocol: tcp
+        port_range: "80"
+        source_addresses:
+          - 0.0.0.0/0
+      - protocol: tcp
+        port_range: "443"
+        source_addresses:
+          - 0.0.0.0/0
+    outbound:
+      - protocol: tcp
+        port_range: "80"
+        destination_addresses:
+          - 0.0.0.0/0
+      - protocol: tcp
+        port_range: "443"
+        destination_addresses:
+          - 0.0.0.0/0
+      - protocol: udp
+        port_range: "53"
+        destination_addresses:
+          - 0.0.0.0/0
+      - protocol: tcp
+        port_range: "53"
+        destination_addresses:
+          - 0.0.0.0/0
+      - protocol: udp
+        port_range: "123"
+        destination_addresses:
+          - 0.0.0.0/0
