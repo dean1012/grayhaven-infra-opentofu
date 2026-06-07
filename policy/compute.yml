@@ -1,0 +1,12 @@
+---
+bastions:
+  control_node: bastion-01
+  instances:
+    bastion-01:
+      index: 1
+
+web:
+  tls_mode: auto
+  instances:
+    web-01:
+      index: 1

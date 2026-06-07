@@ -34,73 +34,74 @@ variable "baseline_vpc_cidr" {
   default     = "10.10.0.0/16"
 }
 
-variable "grayhaven_root_password_hash" {
-  description = "Password hash for the root account used during bootstrap."
-  type        = string
-  sensitive   = true
-}
-
 variable "grayhaven_config_repo_ref" {
   description = "Git ref used by staging cloud-init and the bastion runner when checking out grayhaven-config-ansible. Production always uses main."
   type        = string
   default     = "main"
 }
 
-variable "grayhaven_certbot_environment" {
-  description = "Optional Certbot environment override. Use staging for Let's Encrypt staging certificates or production for live certificates."
+variable "grayhaven_infra_policy_repo_ref" {
+  description = "Git ref used by Ansible when downloading infrastructure policy files. Intended for staging validation."
+  type        = string
+  default     = "main"
+}
+
+variable "grayhaven_vault_repo_url" {
+  description = "SSH URL for the private grayhaven-vault repository used by bastion hosts."
+  type        = string
+  default     = "git@github.com:dean1012/grayhaven-vault.git"
+}
+
+variable "grayhaven_vault_checkout_path" {
+  description = "Local checkout path for grayhaven-vault. OpenTofu reads config.yml from this checkout."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
+variable "grayhaven_vault_password" {
+  description = "Optional shared Ansible Vault password used by bastion hosts to decrypt grayhaven-vault files."
+  type        = string
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "grayhaven_vault_password_staging" {
+  description = "Ansible Vault password used by staging bastion hosts to decrypt grayhaven-vault files."
+  type        = string
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "grayhaven_vault_password_prod" {
+  description = "Ansible Vault password used by production bastion hosts to decrypt grayhaven-vault files."
+  type        = string
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "grayhaven_certificate_environment" {
+  description = "Fresh-deployment certificate environment override. Use staging for Let's Encrypt staging/self-signed test certificates or production for live certificates."
   type        = string
   default     = null
 
   validation {
-    condition     = var.grayhaven_certbot_environment == null || contains(["staging", "production"], var.grayhaven_certbot_environment)
-    error_message = "grayhaven_certbot_environment must be null, staging, or production."
+    condition     = var.grayhaven_certificate_environment == null || contains(["staging", "production"], var.grayhaven_certificate_environment)
+    error_message = "grayhaven_certificate_environment must be null, staging, or production."
   }
 }
 
-variable "grayhaven_ansible_control_public_key" {
-  description = "Public key for the Ansible automation user."
+variable "grayhaven_ansible_deploy_public_key" {
+  description = "Public half of the dual-purpose Ansible control and GitHub deploy key."
   type        = string
   sensitive   = true
 }
 
-variable "grayhaven_ansible_control_private_key" {
-  description = "Private key for the Ansible automation user, installed only on bastion hosts."
-  type        = string
-  sensitive   = true
-}
-
-variable "grayhaven_discord_webhook_url" {
-  description = "Discord webhook URL used by bastion hosts for notifications."
-  type        = string
-  sensitive   = true
-}
-
-variable "grayhaven_dev_basic_auth_htpasswd_line" {
-  description = "htpasswd line used by web hosts for development HTTP basic authentication."
-  type        = string
-  sensitive   = true
-}
-
-variable "grayhaven_digitalocean_dns_api_token" {
-  description = "DigitalOcean API token used by web hosts for DNS-01 certificate automation."
-  type        = string
-  sensitive   = true
-}
-
-variable "grayhaven_digitalocean_inventory_api_token" {
-  description = "DigitalOcean API token used by bastion hosts for Ansible dynamic inventory."
-  type        = string
-  sensitive   = true
-}
-
-variable "grayhaven_jsmith_password_hash" {
-  description = "Password hash for the jsmith administrative account managed by the full Ansible playbook."
-  type        = string
-  sensitive   = true
-}
-
-variable "grayhaven_jsmith_public_key" {
-  description = "Public SSH key for the jsmith administrative account managed by the full Ansible playbook."
+variable "grayhaven_ansible_deploy_private_key" {
+  description = "Private half of the dual-purpose Ansible control and GitHub deploy key, installed only on bastion hosts."
   type        = string
   sensitive   = true
 }
