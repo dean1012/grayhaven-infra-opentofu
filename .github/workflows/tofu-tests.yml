@@ -1,0 +1,41 @@
+name: OpenTofu Plan Tests
+
+"on":
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plan-tests:
+    name: Offline Plan Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up OpenTofu
+        uses: opentofu/setup-opentofu@847eaa4afeb791b06daa46e8eafa8b1b68d7cfb4  # v2.0.1
+
+      - name: Initialize OpenTofu
+        run: tofu init -backend=false
+
+      - name: Run offline OpenTofu plan tests
+        env:
+          TF_VAR_state_encryption_passphrase: offline-test-state-passphrase
+        run: |
+          tofu workspace new baseline
+          tofu test -filter=tests/baseline.tftest.hcl -no-color
+
+          tofu workspace new staging
+          tofu test -filter=tests/staging.tftest.hcl -no-color
+
+          tofu workspace new prod
+          tofu test -filter=tests/prod.tftest.hcl -no-color

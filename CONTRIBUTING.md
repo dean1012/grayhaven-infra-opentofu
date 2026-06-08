@@ -96,8 +96,9 @@ requires signed commits before merging:
 git commit -S -m "<message> (Refs #<issue-number>)"
 ```
 
-CI runs on pushes, pull requests, and manual workflow dispatches. Pull requests
-are squash merged after CI passes and review conversations are resolved.
+CI and OpenTofu plan tests run on pushes, pull requests, and manual workflow
+dispatches. Pull requests are squash merged after the `Validate` and `Offline
+Plan Tests` checks pass and review conversations are resolved.
 
 [Back to top](#contributing)
 

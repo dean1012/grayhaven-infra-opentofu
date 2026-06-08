@@ -1,6 +1,7 @@
 # Grayhaven Infrastructure (OpenTofu)
 
 [![CI](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/ci.yml/badge.svg)](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/ci.yml)
+[![OpenTofu Plan Tests](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/tofu-tests.yml/badge.svg)](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/tofu-tests.yml)
 
 Infrastructure-as-code repository for Grayhaven Systems LLC using OpenTofu and
 DigitalOcean.
