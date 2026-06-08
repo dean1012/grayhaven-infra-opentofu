@@ -127,9 +127,11 @@ the denied resource/action and update the token scope deliberately.
 
 ## Deployment Quick Reference
 
-Select the target workspace and run `tofu apply`. For staging and production,
-that single apply provisions DigitalOcean resources, renders cloud-init,
-bootstraps hosts into
+Select the target workspace, review a plan, and apply only after the proposed
+changes are understood. For staging and production, the approved apply is the
+single command that carries the environment from infrastructure provisioning
+through configuration convergence: it provisions DigitalOcean resources,
+renders cloud-init, bootstraps hosts into
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
 and starts full Ansible convergence from the active control bastion.
 
@@ -137,6 +139,7 @@ Apply the shared baseline before deploying an environment:
 
 ```bash
 tofu workspace select baseline
+tofu plan
 tofu apply
 ```
 
@@ -144,6 +147,7 @@ Deploy staging:
 
 ```bash
 tofu workspace select staging
+tofu plan
 tofu apply
 ```
 
@@ -151,6 +155,7 @@ Deploy production:
 
 ```bash
 tofu workspace select prod
+tofu plan
 tofu apply
 ```
 
