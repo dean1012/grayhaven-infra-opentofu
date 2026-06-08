@@ -105,7 +105,7 @@ mock_provider "external" {
   }
 }
 
-run "prod_committed_1x1_auto_plan" {
+run "prod_1x1_auto_host_plan" {
   command = plan
 
   plan_options {
@@ -117,6 +117,10 @@ run "prod_committed_1x1_auto_plan" {
     external     = external
   }
 
+  variables {
+    grayhaven_test_compute_policy_path = "tests/fixtures/compute-1x1-auto.yml"
+  }
+
   assert {
     condition     = output.workspace == "prod"
     error_message = "The production tests must run in the prod workspace."
@@ -124,17 +128,17 @@ run "prod_committed_1x1_auto_plan" {
 
   assert {
     condition     = output.web_tls_mode == "host"
-    error_message = "The committed 1/1 production policy must use host TLS."
+    error_message = "A 1/1 auto production policy must resolve to host TLS."
   }
 
   assert {
     condition     = length(output.bastion_public_ipv4_addresses) == 1 && length(output.web_public_ipv4_addresses) == 1
-    error_message = "The committed production policy must plan one bastion and one web host."
+    error_message = "The 1/1 production policy must plan one bastion and one web host."
   }
 
   assert {
     condition     = output.control_bastion.key == "bastion-01"
-    error_message = "The committed production policy must keep bastion-01 as the control node."
+    error_message = "The 1/1 production policy must keep bastion-01 as the control node."
   }
 }
 

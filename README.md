@@ -172,13 +172,14 @@ access, state files, or deployed resources.
 The tests cover:
 
 - baseline plan shape;
-- staging and production 1/1 bastion/web host TLS plans;
-- staging and production 2/2 auto load-balancer plans;
-- staging and production 3/3 explicit load-balancer plans.
+- static staging and production 1/1 bastion/web host TLS plans;
+- static staging and production 2/2 auto load-balancer plans;
+- static staging and production 3/3 explicit load-balancer plans.
 
 Offline tests do not replace real `tofu plan`, real staging deployment, drift
 checks, provider/API validation, or destroy safety validation. They are
-regression tests for the configurations this repository should be able to plan.
+regression tests for the deployment shapes this repository should be able to
+plan, regardless of the currently committed operational compute policy.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the safe local validation workflow.
 
