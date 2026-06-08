@@ -2,7 +2,13 @@ name: CI
 
 "on":
   push:
+    branches:
+      - main
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   validate:
@@ -10,10 +16,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+        with:
+          persist-credentials: false
 
       - name: Set up OpenTofu
-        uses: opentofu/setup-opentofu@v1
+        uses: opentofu/setup-opentofu@9d84900f3238fab8cd84ce47d658d25dd008be2f  # v1
+
+      - name: Run actionlint
+        uses: devops-actions/actionlint@5b8e487739690fe67cb3bd38471d2abfd34daff3  # v0.1.12
 
       - name: Check OpenTofu formatting
         run: tofu fmt -check -recursive
@@ -25,12 +36,7 @@ jobs:
         run: tofu validate
 
       - name: Run yamllint
-        uses: ibiqlik/action-yamllint@v3
+        uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c  # v3
 
       - name: Run markdownlint
-        run: |
-          mapfile -t markdown_files < <(git ls-files "*.md")
-
-          if (( ${#markdown_files[@]} > 0 )); then
-            npx --yes markdownlint-cli2 "${markdown_files[@]}" --config .markdownlint.yml
-          fi
+        uses: DavidAnson/markdownlint-cli2-action@ded1f9488f68a970bc66ea5619e13e9b52e601cd  # v23

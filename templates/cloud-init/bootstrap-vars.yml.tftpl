@@ -10,5 +10,8 @@ write_files:
 packages:
   - ansible-core
 
+# OpenTofu validates the checkout ref before rendering this cloud-init handoff.
+# Keep this command as the only bootstrap action; ongoing convergence is owned by
+# grayhaven-config-ansible after the bootstrap playbook installs the runner.
 runcmd:
   - ansible-pull --url https://github.com/dean1012/grayhaven-config-ansible.git --checkout ${config_repo_ref} --inventory localhost, --connection local --extra-vars @/etc/grayhaven/bootstrap/bootstrap-vars.yml playbooks/bootstrap.yml
