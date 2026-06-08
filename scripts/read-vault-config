@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+if [[ $# -ne 2 ]]; then
+  printf 'Usage: %s <vault-checkout-path> <vault-ref>\n' "$0" >&2
+  exit 1
+fi
+
+vault_checkout_path="$1"
+vault_ref="$2"
+
+if [[ ! -d "${vault_checkout_path}/.git" ]]; then
+  printf 'Vault checkout is not a Git repository: %s\n' "$vault_checkout_path" >&2
+  exit 1
+fi
+
+if [[ -z "$vault_ref" ]]; then
+  printf 'Vault ref must not be empty.\n' >&2
+  exit 1
+fi
+
+git -C "$vault_checkout_path" show "${vault_ref}:config.yml" | python3 -c '
+import json
+import sys
+
+print(json.dumps({"config_yml": sys.stdin.read()}))
+'

@@ -34,6 +34,7 @@ Run the same validation commands used by CI:
 ```bash
 tofu fmt -check -recursive
 tofu validate
+shellcheck scripts/read-vault-config
 git ls-files '*.yml' '*.yaml' | xargs -r yamllint
 git ls-files '*.md' | xargs -r markdownlint-cli2
 ```

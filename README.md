@@ -47,7 +47,8 @@ automation for another organization requires review and adaptation.
 - DigitalOcean account.
 - DigitalOcean API token scoped for this automation.
 - SSH public key uploaded to DigitalOcean.
-- Local checkout of the private `grayhaven-vault` repository.
+- Local checkout of the private `grayhaven-vault` repository with the required
+  environment refs fetched.
 - Ansible Vault password and deploy key material for bastion bootstrap.
 
 [Back to top](#grayhaven-infrastructure-opentofu)
@@ -80,6 +81,14 @@ export TF_VAR_grayhaven_vault_password_prod='<production Ansible Vault password>
 
 If `grayhaven_vault_checkout_path` is omitted, OpenTofu expects a sibling
 checkout at `../grayhaven-vault` relative to this repository.
+
+OpenTofu reads `config.yml` from the workspace-selected Git ref in the local
+vault checkout, not from the checkout's current branch. Fetch the expected refs
+before planning or applying:
+
+```bash
+git -C ../grayhaven-vault fetch origin main staging
+```
 
 The `grayhaven_config_repo_ref`, `grayhaven_infra_policy_repo_ref`, and
 `grayhaven_certificate_environment` variables are testing-related
@@ -145,6 +154,7 @@ tofu apply
 ```
 
 Production reads `main` from `grayhaven-vault`. Staging reads `staging`.
+The local vault checkout does not need to be switched to either branch.
 
 See [Workspace Operations](docs/workspaces.md) for safe planning, applying,
 destroying, control-node changes, and TLS-mode changes.
