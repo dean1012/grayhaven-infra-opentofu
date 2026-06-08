@@ -56,6 +56,16 @@ data "digitalocean_project" "grayhaven" {
   name = local.client_name
 }
 
+data "external" "vault_config" {
+  count = local.is_environment ? 1 : 0
+
+  program = [
+    "${path.module}/scripts/read-vault-config",
+    local.vault_checkout_path,
+    local.vault_repo_ref,
+  ]
+}
+
 resource "digitalocean_vpc" "baseline" {
   count = local.is_baseline ? 1 : 0
 

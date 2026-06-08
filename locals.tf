@@ -48,11 +48,9 @@ locals {
   }
   firewall_policy     = yamldecode(file("${path.module}/policy/firewall/${local.is_environment ? local.environment : "staging"}.yml"))
   vault_checkout_path = coalesce(var.grayhaven_vault_checkout_path, abspath("${path.module}/../grayhaven-vault"))
-  vault_config = yamldecode(file(
-    local.is_environment
-    ? "${local.vault_checkout_path}/config.yml"
-    : "${path.module}/policy/default-vault-config.yml"
-  ))
+  # Environment workspaces read config.yml from the intended vault Git ref, not
+  # from whichever branch is checked out in the local vault working tree.
+  vault_config = local.is_environment ? yamldecode(data.external.vault_config[0].result.config_yml) : yamldecode(file("${path.module}/policy/default-vault-config.yml"))
   vault_password = !local.is_environment ? null : (
     local.is_prod
     ? try(coalesce(var.grayhaven_vault_password, var.grayhaven_vault_password_prod), null)

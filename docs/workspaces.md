@@ -102,7 +102,9 @@ tofu apply
 ```
 
 Staging website records use the `staging.<domain>` DNS namespace. Staging reads
-the `staging` branch from `grayhaven-vault`.
+`config.yml` from the `staging` Git ref in the local `grayhaven-vault`
+checkout. The vault checkout does not need to have `staging` checked out, but
+the ref must be present locally.
 
 Staging defaults to the `main` branch of
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
@@ -136,7 +138,8 @@ tofu apply
 Production website records use the apex, `www`, and `dev` hostnames for each
 managed domain. Production reads `main` from both
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-and the private `grayhaven-vault` repository.
+and the private `grayhaven-vault` repository. For vault selectors, OpenTofu
+reads `config.yml` from the `main` Git ref in the local vault checkout.
 
 Review production plans carefully before applying. Production applies should be
 deliberate, and live certificate issuance should only happen when the vault
@@ -234,7 +237,18 @@ Ansible backend configuration converge.
 ## Certificate Selectors
 
 `grayhaven-vault/config.yml` contains the `certificate_environment` selector.
-OpenTofu reads that selector from the local vault checkout.
+OpenTofu reads that selector from the workspace-selected Git ref in the local
+vault checkout:
+
+- `staging`: `staging:config.yml`
+- `prod`: `main:config.yml`
+
+The checked-out vault branch does not affect selector loading. Fetch the
+expected refs before planning or applying:
+
+```bash
+git -C ../grayhaven-vault fetch origin main staging
+```
 
 In host TLS mode:
 
