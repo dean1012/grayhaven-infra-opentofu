@@ -63,6 +63,13 @@ variable "grayhaven_test_compute_policy_path" {
   nullable    = true
 }
 
+variable "grayhaven_test_dns_policy_path" {
+  description = "Optional DNS policy file path override for offline plan tests. Leave unset for operational deployments."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
 variable "grayhaven_vault_repo_url" {
   description = "SSH URL for the private grayhaven-vault repository used by bastion hosts."
   type        = string

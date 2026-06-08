@@ -75,6 +75,10 @@ providers, fake sensitive values, and refresh-disabled plans. It does not
 deploy resources, validate live DigitalOcean behavior, check drift, or prove
 destroy behavior.
 
+The DNS tests include a test-only DNS policy fixture through
+`grayhaven_test_dns_policy_path`. Leave that variable unset for operational
+deployments.
+
 Before committing changes, also check the current diff for whitespace errors:
 
 ```bash

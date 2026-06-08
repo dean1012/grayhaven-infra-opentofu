@@ -195,11 +195,14 @@ When changing firewall policy, validate both cloud and host-level behavior.
 
 ## DNS Management
 
-`policy/dns.yml` defines managed DNS zones, baseline-owned shared records, and
-which domains receive environment web records. The baseline workspace owns DNS
-zones and shared records such as MX, SPF, DKIM, DMARC, and CAA records. Those
+`policy/dns.yml` defines managed DNS zones, baseline-owned records, and which
+domains receive environment web records. The baseline workspace owns DNS zones
+and shared records such as MX, SPF, DKIM, DMARC, and CAA records.
+
+Use `protected_records` for records that must not be destroyed casually. Those
 resources use OpenTofu destroy protection and must not be moved into staging or
-production state.
+production state. Use `records` only for baseline-owned records that may be
+destroyed by a normal baseline plan when removed from policy.
 
 Staging and production own only environment web records for domains marked with
 `environment_web: true`:
@@ -212,12 +215,14 @@ To add a hosted domain:
 
 1. Add the domain to `policy/dns.yml`.
 2. Add required baseline shared records under `protected_records`.
-3. Set `environment_web: true` when staging and production web records should
+3. Add optional baseline records that do not need destroy protection under
+   `records`.
+4. Set `environment_web: true` when staging and production web records should
    be managed for the domain.
-4. Run `tofu plan` in `baseline` and review the shared DNS additions.
-5. Run `tofu plan` in `staging` or `prod` and review only environment web DNS
+5. Run `tofu plan` in `baseline` and review the shared DNS additions.
+6. Run `tofu plan` in `staging` or `prod` and review only environment web DNS
    additions.
-6. Update the `hosted_domains` contract documented in
+7. Update the `hosted_domains` contract documented in
    [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
    so [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
    can converge the matching vhosts.

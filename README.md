@@ -179,6 +179,7 @@ The tests cover:
 
 - baseline plan shape;
 - baseline-owned protected shared DNS records;
+- baseline-owned unprotected DNS records through a test-only policy fixture;
 - environment-owned web DNS records without mail record ownership;
 - static staging and production 1/1 bastion/web host TLS plans;
 - static staging and production 2/2 auto load-balancer plans;
@@ -199,8 +200,8 @@ Policy files are committed under `policy/`:
 
 - `policy/compute.yml`: bastion/web instance definitions, active control
   bastion, and web TLS mode.
-- `policy/dns.yml`: managed DNS zones, baseline-owned shared DNS records, and
-  domains that should receive environment web records.
+- `policy/dns.yml`: managed DNS zones, baseline-owned DNS records, and domains
+  that should receive environment web records.
 - `policy/firewall/staging.yml`: staging hardware firewall policy.
 - `policy/firewall/prod.yml`: production hardware firewall policy.
 
@@ -209,9 +210,12 @@ Policy files are committed under `policy/`:
 record and is the only bastion expected to run the scheduled Ansible runner.
 
 The DNS policy separates baseline and environment ownership. DNS zones and
-shared records such as MX, SPF, DKIM, DMARC, and CAA records are baseline
-resources with OpenTofu destroy protection. Staging and production own only
-environment web records for domains marked with `environment_web: true`.
+shared records such as MX, SPF, DKIM, DMARC, and CAA records belong under
+`protected_records` and are baseline resources with OpenTofu destroy
+protection. Less critical baseline records can be placed under `records`; they
+are managed by the baseline workspace but are not protected from destroy.
+Staging and production own only environment web records for domains marked with
+`environment_web: true`.
 
 When adding a new hosted domain, update `policy/dns.yml` here and then update
 the `hosted_domains` data documented in

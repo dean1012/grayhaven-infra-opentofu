@@ -68,6 +68,11 @@ run "baseline_plan" {
   }
 
   assert {
+    condition     = length(digitalocean_record.baseline) == 0
+    error_message = "The operational DNS policy should not plan unprotected baseline records until they are explicitly added."
+  }
+
+  assert {
     condition     = digitalocean_record.baseline_protected["grayhaven_systems.mx_primary"].type == "MX" && digitalocean_record.baseline_protected["jerry_smith.mx_primary"].type == "MX"
     error_message = "The baseline plan must retain mail DNS records under baseline ownership."
   }
@@ -75,5 +80,44 @@ run "baseline_plan" {
   assert {
     condition     = digitalocean_vpc.baseline[0].name == "grayhaven-core-baseline-vpc"
     error_message = "The baseline plan must include the protected baseline VPC."
+  }
+}
+
+run "baseline_unprotected_dns_record_plan" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+  }
+
+  variables {
+    state_encryption_passphrase          = "offline-test-state-passphrase"
+    do_token                             = "offline-test-token"
+    grayhaven_ansible_deploy_public_key  = "ssh-ed25519 AAAAoffline offline@example"
+    grayhaven_ansible_deploy_private_key = <<-EOT
+      -----BEGIN OPENSSH PRIVATE KEY-----
+      offline-test-private-key
+      -----END OPENSSH PRIVATE KEY-----
+    EOT
+    grayhaven_test_dns_policy_path       = "tests/fixtures/dns-with-unprotected-records.yml"
+  }
+
+  assert {
+    condition     = length(digitalocean_record.baseline) == 1
+    error_message = "The baseline test fixture must plan unprotected DNS records."
+  }
+
+  assert {
+    condition     = digitalocean_record.baseline["grayhaven_systems.infrastructure_notice_txt"].type == "TXT"
+    error_message = "The unprotected DNS record collection must preserve record attributes."
+  }
+
+  assert {
+    condition     = length(digitalocean_record.baseline_protected) == 2
+    error_message = "The baseline test fixture must still plan protected DNS records separately."
   }
 }
