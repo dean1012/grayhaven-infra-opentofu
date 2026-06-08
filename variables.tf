@@ -38,12 +38,22 @@ variable "grayhaven_config_repo_ref" {
   description = "Git ref used by staging cloud-init and the bastion runner when checking out grayhaven-config-ansible. Production always uses main."
   type        = string
   default     = "main"
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9._/-]+$", var.grayhaven_config_repo_ref)) && !strcontains(var.grayhaven_config_repo_ref, "..")
+    error_message = "grayhaven_config_repo_ref must be a simple Git ref containing only letters, numbers, dots, underscores, hyphens, and slashes."
+  }
 }
 
 variable "grayhaven_infra_policy_repo_ref" {
   description = "Git ref used by Ansible when downloading infrastructure policy files. Intended for staging validation."
   type        = string
   default     = "main"
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9._/-]+$", var.grayhaven_infra_policy_repo_ref)) && !strcontains(var.grayhaven_infra_policy_repo_ref, "..")
+    error_message = "grayhaven_infra_policy_repo_ref must be a simple Git ref containing only letters, numbers, dots, underscores, hyphens, and slashes."
+  }
 }
 
 variable "grayhaven_vault_repo_url" {

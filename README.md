@@ -1,5 +1,7 @@
 # Grayhaven Infrastructure (OpenTofu)
 
+[![CI](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/ci.yml/badge.svg)](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/ci.yml)
+
 Infrastructure-as-code repository for Grayhaven Systems LLC using OpenTofu and
 DigitalOcean.
 
@@ -7,6 +9,18 @@ This repository is public for transparency and operational demonstration. It
 shows how Grayhaven Systems LLC manages its own infrastructure, but it does not
 store client infrastructure, client credentials, private deployment data,
 private SSH keys, secrets, generated state, or other private operational data.
+
+## Table of Contents
+
+- [Scope](#scope)
+- [Requirements](#requirements)
+- [Required Environment Variables](#required-environment-variables)
+- [DigitalOcean Token Scope](#digitalocean-token-scope)
+- [Deployment Quick Reference](#deployment-quick-reference)
+- [Policy Files](#policy-files)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Scope
 
@@ -25,6 +39,8 @@ private SSH keys, secrets, generated state, or other private operational data.
 This repository is not a general-purpose deployment template. Deploying similar
 automation for another organization requires review and adaptation.
 
+[Back to top](#grayhaven-infrastructure-opentofu)
+
 ## Requirements
 
 - OpenTofu.
@@ -33,6 +49,8 @@ automation for another organization requires review and adaptation.
 - SSH public key uploaded to DigitalOcean.
 - Local checkout of the private `grayhaven-vault` repository.
 - Ansible Vault password and deploy key material for bastion bootstrap.
+
+[Back to top](#grayhaven-infrastructure-opentofu)
 
 ## Required Environment Variables
 
@@ -68,6 +86,8 @@ The `grayhaven_config_repo_ref`, `grayhaven_infra_policy_repo_ref`, and
 fresh-deployment controls. Changing them on an existing environment is
 undefined operational behavior and is not recommended.
 
+[Back to top](#grayhaven-infrastructure-opentofu)
+
 ## DigitalOcean Token Scope
 
 The `TF_VAR_do_token` token should be tightly scoped.
@@ -93,7 +113,15 @@ The `TF_VAR_do_token` token should be tightly scoped.
 If DigitalOcean rejects an operation during validation or deployment, inspect
 the denied resource/action and update the token scope deliberately.
 
+[Back to top](#grayhaven-infrastructure-opentofu)
+
 ## Deployment Quick Reference
+
+Select the target workspace and run `tofu apply`. For staging and production,
+that single apply provisions DigitalOcean resources, renders cloud-init,
+bootstraps hosts into
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
+and starts full Ansible convergence from the active control bastion.
 
 Apply the shared baseline before deploying an environment:
 
@@ -118,6 +146,11 @@ tofu apply
 
 Production reads `main` from `grayhaven-vault`. Staging reads `staging`.
 
+See [Workspace Operations](docs/workspaces.md) for safe planning, applying,
+destroying, control-node changes, and TLS-mode changes.
+
+[Back to top](#grayhaven-infrastructure-opentofu)
+
 ## Policy Files
 
 Policy files are committed under `policy/`:
@@ -140,6 +173,23 @@ Web TLS behavior is selected by `web.tls_mode`:
 Load balancer TLS uses HTTP-01 validation. The relevant web DNS records must
 point at the load balancer during live certificate issuance.
 
+[Back to top](#grayhaven-infrastructure-opentofu)
+
 ## Documentation
 
 - [Workspace Operations](docs/workspaces.md)
+
+[Back to top](#grayhaven-infrastructure-opentofu)
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for validation commands and contribution
+guidelines.
+
+[Back to top](#grayhaven-infrastructure-opentofu)
+
+## License
+
+MIT
+
+[Back to top](#grayhaven-infrastructure-opentofu)

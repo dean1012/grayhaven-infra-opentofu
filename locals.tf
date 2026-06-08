@@ -1,4 +1,8 @@
 locals {
+  #############################################################################
+  # Repository and workspace identity
+  #############################################################################
+
   client_name          = "grayhaven"
   client_domain        = "grayhavensystems.com"
   personal_domain      = "jerry-smith.net"
@@ -15,6 +19,10 @@ locals {
     staging = "10.20.0.0/16"
     prod    = "10.30.0.0/16"
   }
+
+  #############################################################################
+  # Shared selectors and committed policy
+  #############################################################################
 
   ssh_key_fingerprints = [
     "2e:7c:fa:e9:85:22:4d:1a:ca:e4:b0:6d:01:c5:36:ed"
@@ -61,6 +69,9 @@ locals {
   bastion_instances = local.is_environment ? local.compute_policy.bastions.instances : {}
   web_instances     = local.is_environment ? local.compute_policy.web.instances : {}
   web_tls_setting   = local.is_environment ? try(local.compute_policy.web.tls_mode, "auto") : "auto"
+  # In auto mode, a single web host terminates TLS locally; multiple web hosts
+  # use a DigitalOcean load balancer so certificate and backend behavior stay
+  # consistent during scale-out.
   use_load_balancer = local.is_environment ? local.web_tls_setting == "load_balancer" || (local.web_tls_setting == "auto" && length(local.web_instances) > 1) : false
   effective_tls_mode = local.is_environment ? (
     local.use_load_balancer ? "load_balancer" : "host"
@@ -87,6 +98,10 @@ locals {
       cname_target = local.is_prod ? "@" : "staging.${local.personal_domain}."
     }
   }
+
+  #############################################################################
+  # Host inventory and cloud-init handoff
+  #############################################################################
 
   web_domain_names = local.is_environment ? flatten([
     for site in local.environment_dns : [
@@ -179,6 +194,10 @@ locals {
       config_repo_ref     = local.config_repo_ref
     })
   }
+
+  #############################################################################
+  # DNS and firewall policy expansion
+  #############################################################################
 
   droplet_dns_records = local.is_environment ? merge(
     {

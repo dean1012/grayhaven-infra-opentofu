@@ -1,6 +1,6 @@
 # Workspace Operations
 
-[Back to README](../README.md)
+[Return to README](../README.md)
 
 Grayhaven infrastructure uses OpenTofu workspaces to separate shared baseline
 resources from environment-specific runtime infrastructure.
@@ -8,10 +8,14 @@ resources from environment-specific runtime infrastructure.
 ## Table of Contents
 
 - [Supported Workspaces](#supported-workspaces)
-- [Baseline Workflow](#baseline-workflow)
-- [Staging Workflow](#staging-workflow)
-- [Production Workflow](#production-workflow)
+- [Routine Workflow](#routine-workflow)
+- [Baseline Operations](#baseline-operations)
+- [Staging Operations](#staging-operations)
+- [Production Operations](#production-operations)
+- [Destroy Operations](#destroy-operations)
 - [Policy Management](#policy-management)
+- [Active Control Bastion Changes](#active-control-bastion-changes)
+- [TLS Mode Changes](#tls-mode-changes)
 - [Certificate Selectors](#certificate-selectors)
 - [State Safety](#state-safety)
 
@@ -38,7 +42,36 @@ compute policy requires them.
 
 [Back to top](#workspace-operations)
 
-## Baseline Workflow
+## Routine Workflow
+
+Routine deployment is intentionally one command after the workspace has been
+selected:
+
+```bash
+tofu workspace select staging
+tofu apply
+```
+
+For staging and production, `tofu apply` provisions DigitalOcean resources,
+renders cloud-init for each droplet, bootstraps hosts into
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
+and starts full Ansible convergence from the active control bastion.
+
+Use `tofu plan` before `tofu apply` when reviewing changes, changing policy, or
+testing a feature branch:
+
+```bash
+tofu workspace select staging
+tofu plan
+tofu apply
+```
+
+Keep terminal output private when plans may contain sensitive values. Do not
+commit generated state, plan files, or local environment files.
+
+[Back to top](#workspace-operations)
+
+## Baseline Operations
 
 Select the baseline workspace before managing shared resources:
 
@@ -58,7 +91,7 @@ outages for mail and HTTPS services.
 
 [Back to top](#workspace-operations)
 
-## Staging Workflow
+## Staging Operations
 
 Select the staging workspace before deploying test infrastructure:
 
@@ -71,8 +104,9 @@ tofu apply
 Staging website records use the `staging.<domain>` DNS namespace. Staging reads
 the `staging` branch from `grayhaven-vault`.
 
-Staging defaults to the `main` branch of `grayhaven-config-ansible`, but it can
-test a specific config branch on a fresh deployment:
+Staging defaults to the `main` branch of
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
+but it can test a specific config branch on a fresh deployment:
 
 ```bash
 tofu apply -var 'grayhaven_config_repo_ref=<branch-name>'
@@ -84,9 +118,12 @@ Staging can also test infrastructure policy files from an infra feature branch:
 tofu apply -var 'grayhaven_infra_policy_repo_ref=<branch-name>'
 ```
 
+Branch/ref overrides are fresh-deployment controls. Avoid changing them on an
+existing environment unless the purpose is to test that exact transition.
+
 [Back to top](#workspace-operations)
 
-## Production Workflow
+## Production Operations
 
 Select the production workspace before managing production infrastructure:
 
@@ -97,8 +134,32 @@ tofu apply
 ```
 
 Production website records use the apex, `www`, and `dev` hostnames for each
-managed domain. Production reads `main` from both the public config repository
-and the private vault repository.
+managed domain. Production reads `main` from both
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+and the private `grayhaven-vault` repository.
+
+Review production plans carefully before applying. Production applies should be
+deliberate, and live certificate issuance should only happen when the vault
+selector and TLS mode are intentionally set for that behavior.
+
+[Back to top](#workspace-operations)
+
+## Destroy Operations
+
+Destroy environment workspaces only after selecting the intended workspace:
+
+```bash
+tofu workspace select staging
+tofu plan -destroy
+tofu destroy
+```
+
+Use destroy for staging cleanup after validation. Do not use destroy against
+`baseline`. Baseline resources have OpenTofu destroy protection, but operators
+should still treat baseline destruction as out of bounds.
+
+After destroying staging, select `baseline` or another expected workspace so a
+future command does not accidentally run in a stale environment context.
 
 [Back to top](#workspace-operations)
 
@@ -113,12 +174,55 @@ Committed policy files define environment behavior:
 The compute policy declares bastion instances, web instances, the active
 control bastion, and web TLS mode. Changing the active control bastion changes
 the `bastion.*` DNS record and the tags used by Ansible to identify the runner
-host. Manual failover is required when the active control bastion is changed.
+host.
+
+The firewall policy files drive DigitalOcean hardware firewalls in this
+repository and local firewalld policy in
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible).
+When changing firewall policy, validate both cloud and host-level behavior.
+
+[Back to top](#workspace-operations)
+
+## Active Control Bastion Changes
+
+The active control bastion is selected with `bastions.control_node` in
+`policy/compute.yml`. Only that bastion receives the `control-node` tag and
+runs the scheduled Ansible runner and poller.
+
+To switch the active control bastion:
+
+1. Ensure the target bastion exists in `policy/compute.yml`.
+2. Change `bastions.control_node` to the target bastion key.
+3. Select the target workspace and run `tofu plan`.
+4. Confirm the plan only changes the expected DNS/tag relationships.
+5. Run `tofu apply`.
+6. SSH to the new `bastion.*` target and start a manual config run:
+
+```bash
+sudo systemctl start grayhaven-ansible-runner.service
+```
+
+After convergence, verify the runner and poller timers are enabled only on the
+new control bastion. Existing non-control bastions remain SSH jump points.
+
+[Back to top](#workspace-operations)
+
+## TLS Mode Changes
+
+Web TLS behavior is selected by `web.tls_mode` in `policy/compute.yml`:
+
+- `auto`: one web host uses host TLS; two or more web hosts use load balancer
+  TLS.
+- `load_balancer`: always use load balancer TLS.
 
 When web hosts scale from one node to two or more nodes in `auto` TLS mode,
 OpenTofu creates a DigitalOcean load balancer and points web DNS at it. A
 manual Ansible run from the active control bastion is recommended immediately
 after web scaling operations so backend nginx configuration converges quickly.
+
+Moving from load-balancer TLS back to host TLS removes the load balancer and
+returns DNS to the primary web host. Confirm the certificate selector is still
+appropriate before applying that change.
 
 Adding or removing nodes from an existing load-balanced layout does not require
 host certificate issuance. Moving between host TLS and load-balancer TLS can
@@ -163,5 +267,15 @@ baseline destroy attempts fail before removing shared resources.
 
 State is encrypted locally through the configured OpenTofu state encryption
 passphrase. Keep state backups private and do not commit them.
+
+Recommended state handling:
+
+- Keep `TF_VAR_state_encryption_passphrase` out of shell history and committed
+  files.
+- Keep `terraform.tfstate*`, `terraform.tfstate.d/`, `.state-backups/`, and
+  plan files private.
+- Back up local state before large refactors or provider upgrades.
+- Review plans before applying policy, DNS, load balancer, or certificate
+  changes.
 
 [Back to top](#workspace-operations)
