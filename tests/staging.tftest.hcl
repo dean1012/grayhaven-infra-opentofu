@@ -105,7 +105,7 @@ mock_provider "external" {
   }
 }
 
-run "staging_committed_1x1_auto_plan" {
+run "staging_1x1_auto_host_plan" {
   command = plan
 
   plan_options {
@@ -117,6 +117,10 @@ run "staging_committed_1x1_auto_plan" {
     external     = external
   }
 
+  variables {
+    grayhaven_test_compute_policy_path = "tests/fixtures/compute-1x1-auto.yml"
+  }
+
   assert {
     condition     = output.workspace == "staging"
     error_message = "The staging tests must run in the staging workspace."
@@ -124,17 +128,17 @@ run "staging_committed_1x1_auto_plan" {
 
   assert {
     condition     = output.web_tls_mode == "host"
-    error_message = "The committed 1/1 staging policy must use host TLS."
+    error_message = "A 1/1 auto staging policy must resolve to host TLS."
   }
 
   assert {
     condition     = length(output.bastion_public_ipv4_addresses) == 1 && length(output.web_public_ipv4_addresses) == 1
-    error_message = "The committed staging policy must plan one bastion and one web host."
+    error_message = "The 1/1 staging policy must plan one bastion and one web host."
   }
 
   assert {
     condition     = output.control_bastion.key == "bastion-01"
-    error_message = "The committed staging policy must keep bastion-01 as the control node."
+    error_message = "The 1/1 staging policy must keep bastion-01 as the control node."
   }
 }
 
