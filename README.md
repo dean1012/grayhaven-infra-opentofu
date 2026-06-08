@@ -17,6 +17,7 @@ private SSH keys, secrets, generated state, or other private operational data.
 - [Required Environment Variables](#required-environment-variables)
 - [DigitalOcean Token Scope](#digitalocean-token-scope)
 - [Deployment Quick Reference](#deployment-quick-reference)
+- [Offline Plan Tests](#offline-plan-tests)
 - [Policy Files](#policy-files)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
@@ -161,6 +162,28 @@ destroying, control-node changes, and TLS-mode changes.
 
 [Back to top](#grayhaven-infrastructure-opentofu)
 
+## Offline Plan Tests
+
+CI runs offline `tofu test` coverage for the supported workspaces. These tests
+use `command = plan`, mocked providers, and refresh-disabled plans so they can
+validate deployment shape without DigitalOcean credentials, private vault
+access, state files, or deployed resources.
+
+The tests cover:
+
+- baseline plan shape;
+- staging and production 1/1 bastion/web host TLS plans;
+- staging and production 2/2 auto load-balancer plans;
+- staging and production 3/3 explicit load-balancer plans.
+
+Offline tests do not replace real `tofu plan`, real staging deployment, drift
+checks, provider/API validation, or destroy safety validation. They are
+regression tests for the configurations this repository should be able to plan.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the safe local validation workflow.
+
+[Back to top](#grayhaven-infrastructure-opentofu)
+
 ## Policy Files
 
 Policy files are committed under `policy/`:
@@ -182,6 +205,10 @@ Web TLS behavior is selected by `web.tls_mode`:
 
 Load balancer TLS uses HTTP-01 validation. The relevant web DNS records must
 point at the load balancer during live certificate issuance.
+
+The `grayhaven_test_compute_policy_path` variable exists only for offline plan
+tests and disposable validation checkouts. Leave it unset for operational
+deployment.
 
 [Back to top](#grayhaven-infrastructure-opentofu)
 

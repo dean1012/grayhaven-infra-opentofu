@@ -1,0 +1,20 @@
+---
+bastions:
+  control_node: bastion-03
+  instances:
+    bastion-01:
+      index: 1
+    bastion-02:
+      index: 2
+    bastion-03:
+      index: 3
+
+web:
+  tls_mode: load_balancer
+  instances:
+    web-01:
+      index: 1
+    web-02:
+      index: 2
+    web-03:
+      index: 3

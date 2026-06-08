@@ -19,25 +19,61 @@ python3 -m pip install yamllint
 npm install --global markdownlint-cli2
 ```
 
-Initialize providers without configuring a backend:
+Do not run `tofu init -backend=false` directly in the operational checkout
+before real plan/apply work. Backend-disabled initialization is safe in CI's
+ephemeral checkout, but local validation should use a temporary state-free copy
+so the real `.terraform/` directory and encrypted local state context are not
+disturbed.
 
-```bash
-tofu init -backend=false
-```
+The validation section includes a local temp-copy workflow.
 
 [Back to top](#contributing)
 
 ## Validation
 
-Run the same validation commands used by CI:
+Run static checks from the repository root:
 
 ```bash
 tofu fmt -check -recursive
-tofu validate
 shellcheck scripts/read-vault-config
 git ls-files '*.yml' '*.yaml' | xargs -r yamllint
 git ls-files '*.md' | xargs -r markdownlint-cli2
 ```
+
+Run OpenTofu validation and offline plan tests from a temporary state-free copy:
+
+```bash
+tmpdir="$(mktemp -d /tmp/grayhaven-infra-validate.XXXXXX)"
+trap 'rm -rf "$tmpdir"' EXIT
+
+rsync -a \
+  --exclude '.git' \
+  --exclude '.terraform' \
+  --exclude 'terraform.tfstate*' \
+  --exclude 'terraform.tfstate.d' \
+  --exclude '.state-backups' \
+  ./ "$tmpdir"/
+
+cd "$tmpdir"
+tofu init -backend=false
+tofu validate
+
+export TF_VAR_state_encryption_passphrase='offline-test-state-passphrase'
+
+tofu workspace new baseline
+tofu test -filter=tests/baseline.tftest.hcl -no-color
+
+tofu workspace new staging
+tofu test -filter=tests/staging.tftest.hcl -no-color
+
+tofu workspace new prod
+tofu test -filter=tests/prod.tftest.hcl -no-color
+```
+
+The `tofu test` suite is offline plan-shape validation. It uses mocked
+providers, fake sensitive values, and refresh-disabled plans. It does not
+deploy resources, validate live DigitalOcean behavior, check drift, or prove
+destroy behavior.
 
 Before committing changes, also check the current diff for whitespace errors:
 

@@ -41,6 +41,19 @@ jobs:
       - name: Validate OpenTofu configuration
         run: tofu validate
 
+      - name: Run offline OpenTofu plan tests
+        env:
+          TF_VAR_state_encryption_passphrase: offline-test-state-passphrase
+        run: |
+          tofu workspace new baseline
+          tofu test -filter=tests/baseline.tftest.hcl -no-color
+
+          tofu workspace new staging
+          tofu test -filter=tests/staging.tftest.hcl -no-color
+
+          tofu workspace new prod
+          tofu test -filter=tests/prod.tftest.hcl -no-color
+
       - name: Run yamllint
         uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c  # v3
 
