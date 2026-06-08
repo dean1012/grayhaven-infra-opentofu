@@ -282,6 +282,11 @@ baseline destroy attempts fail before removing shared resources.
 State is encrypted locally through the configured OpenTofu state encryption
 passphrase. Keep state backups private and do not commit them.
 
+Offline `tofu test` validation should run from a temporary state-free copy, not
+from the operational checkout used for real plan/apply work. The tests create
+temporary local workspaces with mocked providers and do not replace live
+workspace planning, drift review, staging deployment, or destroy procedures.
+
 Recommended state handling:
 
 - Keep `TF_VAR_state_encryption_passphrase` out of shell history and committed

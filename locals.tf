@@ -36,7 +36,8 @@ locals {
     "tls-mode-${replace(local.effective_tls_mode, "_", "-")}"
   ]
 
-  compute_policy = local.is_environment ? yamldecode(file("${path.module}/policy/compute.yml")) : {
+  compute_policy_path = coalesce(var.grayhaven_test_compute_policy_path, "${path.module}/policy/compute.yml")
+  compute_policy = local.is_environment ? yamldecode(file(local.compute_policy_path)) : {
     bastions = {
       control_node = ""
       instances    = {}
