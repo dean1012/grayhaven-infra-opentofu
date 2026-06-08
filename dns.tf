@@ -1,11 +1,30 @@
 locals {
-  dns_policy  = yamldecode(file("${path.module}/policy/dns.yml"))
-  dns_ttl     = try(local.dns_policy.ttl, 300)
-  dns_domains = local.dns_policy.domains
+  dns_policy_path = coalesce(var.grayhaven_test_dns_policy_path, "${path.module}/policy/dns.yml")
+  dns_policy      = yamldecode(file(local.dns_policy_path))
+  dns_ttl         = try(local.dns_policy.ttl, 300)
+  dns_domains = {
+    for domain_key, domain in local.dns_policy.domains : domain_key => {
+      name              = domain.name
+      environment_web   = try(domain.environment_web, false)
+      records           = try(domain.records, {})
+      protected_records = try(domain.protected_records, {})
+    }
+  }
 
   dns_protected_records = merge(flatten([
     for domain_key, domain in local.dns_domains : [
-      for record_key, record in try(domain.protected_records, {}) : {
+      for record_key, record in domain.protected_records : {
+        "${domain_key}.${record_key}" = {
+          domain_key = domain_key
+          record     = record
+        }
+      }
+    ]
+  ])...)
+
+  dns_records = merge(flatten([
+    for domain_key, domain in local.dns_domains : [
+      for record_key, record in domain.records : {
         "${domain_key}.${record_key}" = {
           domain_key = domain_key
           record     = record
@@ -22,7 +41,7 @@ locals {
       dev_name     = local.is_prod ? "dev" : "dev.staging"
       env_root     = local.is_prod ? "@" : "staging"
       cname_target = local.is_prod ? "@" : "staging.${domain.name}."
-    } if try(domain.environment_web, false)
+    } if domain.environment_web
   } : {}
 }
 
@@ -61,6 +80,19 @@ resource "digitalocean_record" "baseline_protected" {
   lifecycle {
     prevent_destroy = true
   }
+}
+
+resource "digitalocean_record" "baseline" {
+  for_each = local.is_baseline ? local.dns_records : {}
+
+  domain   = digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
 }
 
 ###############################################################################

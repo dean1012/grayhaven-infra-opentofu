@@ -147,6 +147,11 @@ run "prod_1x1_auto_host_plan" {
   }
 
   assert {
+    condition     = length(digitalocean_record.baseline) == 0
+    error_message = "Production must not own unprotected baseline DNS records."
+  }
+
+  assert {
     condition     = digitalocean_record.web_root_a["grayhaven_systems"].name == "@" && digitalocean_record.web_dev_cname["jerry_smith"].name == "dev"
     error_message = "Production must plan environment web DNS records from DNS policy."
   }
