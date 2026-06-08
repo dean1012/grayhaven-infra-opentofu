@@ -44,26 +44,29 @@ compute policy requires them.
 
 ## Routine Workflow
 
-Routine deployment is intentionally one command after the workspace has been
-selected:
-
-```bash
-tofu workspace select staging
-tofu apply
-```
-
-For staging and production, `tofu apply` provisions DigitalOcean resources,
-renders cloud-init for each droplet, bootstraps hosts into
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
-and starts full Ansible convergence from the active control bastion.
-
-Use `tofu plan` before `tofu apply` when reviewing changes, changing policy, or
-testing a feature branch:
+Routine deployment is intentionally plan-first. Select the workspace, review
+the plan, and apply only after the proposed changes are understood:
 
 ```bash
 tofu workspace select staging
 tofu plan
 tofu apply
+```
+
+For staging and production, the approved `tofu apply` is the single command
+that carries the environment from infrastructure provisioning through
+configuration convergence. It provisions DigitalOcean resources, renders
+cloud-init for each droplet, bootstraps hosts into
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
+and starts full Ansible convergence from the active control bastion.
+
+When testing a feature branch or policy override, include the same variables in
+both the plan and apply commands:
+
+```bash
+tofu workspace select staging
+tofu plan -var 'grayhaven_config_repo_ref=<branch-name>'
+tofu apply -var 'grayhaven_config_repo_ref=<branch-name>'
 ```
 
 Keep terminal output private when plans may contain sensitive values. Do not
@@ -111,12 +114,14 @@ Staging defaults to the `main` branch of
 but it can test a specific config branch on a fresh deployment:
 
 ```bash
+tofu plan -var 'grayhaven_config_repo_ref=<branch-name>'
 tofu apply -var 'grayhaven_config_repo_ref=<branch-name>'
 ```
 
 Staging can also test infrastructure policy files from an infra feature branch:
 
 ```bash
+tofu plan -var 'grayhaven_infra_policy_repo_ref=<branch-name>'
 tofu apply -var 'grayhaven_infra_policy_repo_ref=<branch-name>'
 ```
 
@@ -266,6 +271,7 @@ The `grayhaven_certificate_environment` OpenTofu variable can force a
 certificate environment during a fresh test deployment:
 
 ```bash
+tofu plan -var 'grayhaven_certificate_environment=staging'
 tofu apply -var 'grayhaven_certificate_environment=staging'
 ```
 
