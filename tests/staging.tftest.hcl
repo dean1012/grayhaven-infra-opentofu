@@ -140,6 +140,16 @@ run "staging_1x1_auto_host_plan" {
     condition     = output.control_bastion.key == "bastion-01"
     error_message = "The 1/1 staging policy must keep bastion-01 as the control node."
   }
+
+  assert {
+    condition     = length(digitalocean_record.baseline_protected) == 0
+    error_message = "Staging must not own baseline shared or mail DNS records."
+  }
+
+  assert {
+    condition     = digitalocean_record.web_root_a["grayhaven_systems"].name == "staging" && digitalocean_record.web_dev_cname["jerry_smith"].name == "dev.staging"
+    error_message = "Staging must plan environment web DNS records from DNS policy."
+  }
 }
 
 run "staging_2x2_auto_load_balancer_plan" {

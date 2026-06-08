@@ -78,26 +78,6 @@ locals {
   control_bastion_key = local.is_environment ? local.compute_policy.bastions.control_node : ""
   primary_web_key     = local.is_environment ? try(sort(keys(local.web_instances))[0], "") : ""
 
-  environment_dns = {
-    grayhaven = {
-      domain       = local.client_domain
-      site_name    = local.is_prod ? local.client_domain : "staging.${local.client_domain}"
-      www_name     = local.is_prod ? "www" : "www.staging"
-      dev_name     = local.is_prod ? "dev" : "dev.staging"
-      env_root     = local.is_prod ? "@" : "staging"
-      cname_target = local.is_prod ? "@" : "staging.${local.client_domain}."
-    }
-
-    personal = {
-      domain       = local.personal_domain
-      site_name    = local.is_prod ? local.personal_domain : "staging.${local.personal_domain}"
-      www_name     = local.is_prod ? "www" : "www.staging"
-      dev_name     = local.is_prod ? "dev" : "dev.staging"
-      env_root     = local.is_prod ? "@" : "staging"
-      cname_target = local.is_prod ? "@" : "staging.${local.personal_domain}."
-    }
-  }
-
   #############################################################################
   # Host inventory and cloud-init handoff
   #############################################################################

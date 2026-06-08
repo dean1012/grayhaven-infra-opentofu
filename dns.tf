@@ -1,329 +1,62 @@
 locals {
-  dns_ttl = 300
+  dns_policy  = yamldecode(file("${path.module}/policy/dns.yml"))
+  dns_ttl     = try(local.dns_policy.ttl, 300)
+  dns_domains = local.dns_policy.domains
+
+  dns_protected_records = merge(flatten([
+    for domain_key, domain in local.dns_domains : [
+      for record_key, record in try(domain.protected_records, {}) : {
+        "${domain_key}.${record_key}" = {
+          domain_key = domain_key
+          record     = record
+        }
+      }
+    ]
+  ])...)
+
+  environment_dns = local.is_environment ? {
+    for domain_key, domain in local.dns_domains : domain_key => {
+      domain       = domain.name
+      site_name    = local.is_prod ? domain.name : "staging.${domain.name}"
+      www_name     = local.is_prod ? "www" : "www.staging"
+      dev_name     = local.is_prod ? "dev" : "dev.staging"
+      env_root     = local.is_prod ? "@" : "staging"
+      cname_target = local.is_prod ? "@" : "staging.${domain.name}."
+    } if try(domain.environment_web, false)
+  } : {}
 }
 
-data "digitalocean_domain" "grayhaven_systems" {
-  count = local.is_environment ? 1 : 0
+data "digitalocean_domain" "managed" {
+  for_each = local.is_environment ? local.dns_domains : {}
 
-  name = local.client_domain
-}
-
-data "digitalocean_domain" "jerry_smith" {
-  count = local.is_environment ? 1 : 0
-
-  name = local.personal_domain
+  name = each.value.name
 }
 
 ###############################################################################
 # Baseline DNS zones and shared records
 ###############################################################################
 
-resource "digitalocean_domain" "grayhaven_systems" {
-  count = local.is_baseline ? 1 : 0
+resource "digitalocean_domain" "managed" {
+  for_each = local.is_baseline ? local.dns_domains : {}
 
-  name = local.client_domain
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_domain" "jerry_smith" {
-  count = local.is_baseline ? 1 : 0
-
-  name = local.personal_domain
+  name = each.value.name
 
   lifecycle {
     prevent_destroy = true
   }
 }
 
-resource "digitalocean_record" "grayhaven_caa_letsencrypt" {
-  count = local.is_baseline ? 1 : 0
+resource "digitalocean_record" "baseline_protected" {
+  for_each = local.is_baseline ? local.dns_protected_records : {}
 
-  domain = digitalocean_domain.grayhaven_systems[0].name
-  type   = "CAA"
-  name   = "@"
-  flags  = 0
-  tag    = "issue"
-  value  = "letsencrypt.org."
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "grayhaven_caa_no_wildcards" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.grayhaven_systems[0].name
-  type   = "CAA"
-  name   = "@"
-  flags  = 0
-  tag    = "issuewild"
-  value  = ";."
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "jerry_caa_letsencrypt" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.jerry_smith[0].name
-  type   = "CAA"
-  name   = "@"
-  flags  = 0
-  tag    = "issue"
-  value  = "letsencrypt.org."
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "jerry_caa_no_wildcards" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.jerry_smith[0].name
-  type   = "CAA"
-  name   = "@"
-  flags  = 0
-  tag    = "issuewild"
-  value  = ";."
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "grayhaven_mx" {
-  count = local.is_baseline ? 1 : 0
-
-  domain   = digitalocean_domain.grayhaven_systems[0].name
-  type     = "MX"
-  name     = "@"
-  value    = "mail.protonmail.ch."
-  priority = 10
-  ttl      = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "grayhaven_mx_secondary" {
-  count = local.is_baseline ? 1 : 0
-
-  domain   = digitalocean_domain.grayhaven_systems[0].name
-  type     = "MX"
-  name     = "@"
-  value    = "mailsec.protonmail.ch."
-  priority = 20
-  ttl      = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "grayhaven_spf_txt" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.grayhaven_systems[0].name
-  type   = "TXT"
-  name   = "@"
-  value  = "v=spf1 include:_spf.protonmail.ch ~all"
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "grayhaven_protonmail_verification_txt" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.grayhaven_systems[0].name
-  type   = "TXT"
-  name   = "@"
-  value  = "protonmail-verification=37192d42ca1137baa2a213f8969d2722de1bedb5"
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "grayhaven_dmarc_txt" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.grayhaven_systems[0].name
-  type   = "TXT"
-  name   = "_dmarc"
-  value  = "v=DMARC1; p=quarantine"
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "grayhaven_protonmail_dkim_cname" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.grayhaven_systems[0].name
-  type   = "CNAME"
-  name   = "protonmail._domainkey"
-  value  = "protonmail.domainkey.dj7hsgypqb4rzqit4jcxqi4illhiguvk4332qwdy7peaxv4f7gcsq.domains.proton.ch."
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "grayhaven_protonmail_dkim2_cname" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.grayhaven_systems[0].name
-  type   = "CNAME"
-  name   = "protonmail2._domainkey"
-  value  = "protonmail2.domainkey.dj7hsgypqb4rzqit4jcxqi4illhiguvk4332qwdy7peaxv4f7gcsq.domains.proton.ch."
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "grayhaven_protonmail_dkim3_cname" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.grayhaven_systems[0].name
-  type   = "CNAME"
-  name   = "protonmail3._domainkey"
-  value  = "protonmail3.domainkey.dj7hsgypqb4rzqit4jcxqi4illhiguvk4332qwdy7peaxv4f7gcsq.domains.proton.ch."
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "jerry_mx" {
-  count = local.is_baseline ? 1 : 0
-
-  domain   = digitalocean_domain.jerry_smith[0].name
-  type     = "MX"
-  name     = "@"
-  value    = "mail.protonmail.ch."
-  priority = 10
-  ttl      = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "jerry_mx_secondary" {
-  count = local.is_baseline ? 1 : 0
-
-  domain   = digitalocean_domain.jerry_smith[0].name
-  type     = "MX"
-  name     = "@"
-  value    = "mailsec.protonmail.ch."
-  priority = 20
-  ttl      = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "jerry_spf_txt" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.jerry_smith[0].name
-  type   = "TXT"
-  name   = "@"
-  value  = "v=spf1 include:_spf.protonmail.ch ~all"
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "jerry_protonmail_verification_txt" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.jerry_smith[0].name
-  type   = "TXT"
-  name   = "@"
-  value  = "protonmail-verification=455409ec796cac0c93dbb4ec2e894e5e0c2766a6"
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "jerry_dmarc_txt" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.jerry_smith[0].name
-  type   = "TXT"
-  name   = "_dmarc"
-  value  = "v=DMARC1; p=quarantine"
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "jerry_protonmail_dkim_cname" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.jerry_smith[0].name
-  type   = "CNAME"
-  name   = "protonmail._domainkey"
-  value  = "protonmail.domainkey.dinou7fyzaz4gip3wxjftcttpe5zmfia4brvi46vremdv3unkowha.domains.proton.ch."
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "jerry_protonmail_dkim2_cname" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.jerry_smith[0].name
-  type   = "CNAME"
-  name   = "protonmail2._domainkey"
-  value  = "protonmail2.domainkey.dinou7fyzaz4gip3wxjftcttpe5zmfia4brvi46vremdv3unkowha.domains.proton.ch."
-  ttl    = local.dns_ttl
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "jerry_protonmail_dkim3_cname" {
-  count = local.is_baseline ? 1 : 0
-
-  domain = digitalocean_domain.jerry_smith[0].name
-  type   = "CNAME"
-  name   = "protonmail3._domainkey"
-  value  = "protonmail3.domainkey.dinou7fyzaz4gip3wxjftcttpe5zmfia4brvi46vremdv3unkowha.domains.proton.ch."
-  ttl    = local.dns_ttl
+  domain   = digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
 
   lifecycle {
     prevent_destroy = true
@@ -343,10 +76,7 @@ resource "digitalocean_record" "web_root_a" {
   value  = local.use_load_balancer ? digitalocean_loadbalancer.web[0].ip : try(module.web[local.primary_web_key].public_ipv4_address, "")
   ttl    = local.dns_ttl
 
-  depends_on = [
-    data.digitalocean_domain.grayhaven_systems,
-    data.digitalocean_domain.jerry_smith,
-  ]
+  depends_on = [data.digitalocean_domain.managed]
 }
 
 resource "digitalocean_record" "web_www_cname" {
@@ -358,10 +88,7 @@ resource "digitalocean_record" "web_www_cname" {
   value  = each.value.cname_target
   ttl    = local.dns_ttl
 
-  depends_on = [
-    data.digitalocean_domain.grayhaven_systems,
-    data.digitalocean_domain.jerry_smith,
-  ]
+  depends_on = [data.digitalocean_domain.managed]
 }
 
 resource "digitalocean_record" "web_dev_cname" {
@@ -373,10 +100,7 @@ resource "digitalocean_record" "web_dev_cname" {
   value  = each.value.cname_target
   ttl    = local.dns_ttl
 
-  depends_on = [
-    data.digitalocean_domain.grayhaven_systems,
-    data.digitalocean_domain.jerry_smith,
-  ]
+  depends_on = [data.digitalocean_domain.managed]
 }
 
 resource "digitalocean_record" "grayhaven_droplet_a" {
@@ -388,7 +112,7 @@ resource "digitalocean_record" "grayhaven_droplet_a" {
   value  = each.value.value
   ttl    = local.dns_ttl
 
-  depends_on = [data.digitalocean_domain.grayhaven_systems]
+  depends_on = [data.digitalocean_domain.managed]
 }
 
 resource "digitalocean_record" "grayhaven_bastion_a" {
@@ -400,5 +124,5 @@ resource "digitalocean_record" "grayhaven_bastion_a" {
   value  = try(module.bastion[local.control_bastion_key].public_ipv4_address, "")
   ttl    = local.dns_ttl
 
-  depends_on = [data.digitalocean_domain.grayhaven_systems]
+  depends_on = [data.digitalocean_domain.managed]
 }

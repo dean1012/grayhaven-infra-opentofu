@@ -140,6 +140,16 @@ run "prod_1x1_auto_host_plan" {
     condition     = output.control_bastion.key == "bastion-01"
     error_message = "The 1/1 production policy must keep bastion-01 as the control node."
   }
+
+  assert {
+    condition     = length(digitalocean_record.baseline_protected) == 0
+    error_message = "Production must not own baseline shared or mail DNS records."
+  }
+
+  assert {
+    condition     = digitalocean_record.web_root_a["grayhaven_systems"].name == "@" && digitalocean_record.web_dev_cname["jerry_smith"].name == "dev"
+    error_message = "Production must plan environment web DNS records from DNS policy."
+  }
 }
 
 run "prod_2x2_auto_load_balancer_plan" {

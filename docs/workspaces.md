@@ -14,6 +14,7 @@ resources from environment-specific runtime infrastructure.
 - [Production Operations](#production-operations)
 - [Destroy Operations](#destroy-operations)
 - [Policy Management](#policy-management)
+- [DNS Management](#dns-management)
 - [Active Control Bastion Changes](#active-control-bastion-changes)
 - [TLS Mode Changes](#tls-mode-changes)
 - [Certificate Selectors](#certificate-selectors)
@@ -176,6 +177,7 @@ future command does not accidentally run in a stale environment context.
 Committed policy files define environment behavior:
 
 - `policy/compute.yml`
+- `policy/dns.yml`
 - `policy/firewall/staging.yml`
 - `policy/firewall/prod.yml`
 
@@ -188,6 +190,37 @@ The firewall policy files drive DigitalOcean hardware firewalls in this
 repository and local firewalld policy in
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible).
 When changing firewall policy, validate both cloud and host-level behavior.
+
+[Back to top](#workspace-operations)
+
+## DNS Management
+
+`policy/dns.yml` defines managed DNS zones, baseline-owned shared records, and
+which domains receive environment web records. The baseline workspace owns DNS
+zones and shared records such as MX, SPF, DKIM, DMARC, and CAA records. Those
+resources use OpenTofu destroy protection and must not be moved into staging or
+production state.
+
+Staging and production own only environment web records for domains marked with
+`environment_web: true`:
+
+- `staging`: `staging.<domain>`, `www.staging.<domain>`, and
+  `dev.staging.<domain>`.
+- `prod`: `<domain>`, `www.<domain>`, and `dev.<domain>`.
+
+To add a hosted domain:
+
+1. Add the domain to `policy/dns.yml`.
+2. Add required baseline shared records under `protected_records`.
+3. Set `environment_web: true` when staging and production web records should
+   be managed for the domain.
+4. Run `tofu plan` in `baseline` and review the shared DNS additions.
+5. Run `tofu plan` in `staging` or `prod` and review only environment web DNS
+   additions.
+6. Update the `hosted_domains` contract documented in
+   [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+   so [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+   can converge the matching vhosts.
 
 [Back to top](#workspace-operations)
 

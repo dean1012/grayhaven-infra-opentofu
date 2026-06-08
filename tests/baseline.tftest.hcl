@@ -58,8 +58,18 @@ run "baseline_plan" {
   }
 
   assert {
-    condition     = digitalocean_domain.grayhaven_systems[0].name == "grayhavensystems.com" && digitalocean_domain.jerry_smith[0].name == "jerry-smith.net"
+    condition     = digitalocean_domain.managed["grayhaven_systems"].name == "grayhavensystems.com" && digitalocean_domain.managed["jerry_smith"].name == "jerry-smith.net"
     error_message = "The baseline plan must include both managed DNS zones."
+  }
+
+  assert {
+    condition     = length(digitalocean_record.baseline_protected) == 20
+    error_message = "The baseline plan must include all protected shared DNS records."
+  }
+
+  assert {
+    condition     = digitalocean_record.baseline_protected["grayhaven_systems.mx_primary"].type == "MX" && digitalocean_record.baseline_protected["jerry_smith.mx_primary"].type == "MX"
+    error_message = "The baseline plan must retain mail DNS records under baseline ownership."
   }
 
   assert {
