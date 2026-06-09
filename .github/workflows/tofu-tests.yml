@@ -29,7 +29,9 @@ jobs:
 
       - name: Run offline OpenTofu plan tests
         env:
-          TF_VAR_state_encryption_passphrase: offline-test-state-passphrase
+          TF_VAR_state_encryption_passphrase_baseline: offline-test-baseline-state-passphrase
+          TF_VAR_state_encryption_passphrase_staging: offline-test-staging-state-passphrase
+          TF_VAR_state_encryption_passphrase_prod: offline-test-prod-state-passphrase
         run: |
           tofu workspace new baseline
           tofu test -filter=tests/baseline.tftest.hcl -no-color

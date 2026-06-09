@@ -15,6 +15,23 @@ locals {
   infra_policy_ref     = local.is_prod ? "main" : var.grayhaven_infra_policy_repo_ref
   vault_repo_ref       = local.is_prod ? "main" : "staging"
 
+  state_encryption_passphrase = (
+    local.environment == "baseline" ? var.state_encryption_passphrase_baseline :
+    local.environment == "staging" ? var.state_encryption_passphrase_staging :
+    local.environment == "prod" ? var.state_encryption_passphrase_prod :
+    coalesce(
+      var.state_encryption_passphrase_baseline,
+      var.state_encryption_passphrase_staging,
+      var.state_encryption_passphrase_prod,
+    )
+  )
+  state_encryption_previous_passphrase = coalesce(
+    local.environment == "baseline" ? var.state_encryption_previous_passphrase_baseline : null,
+    local.environment == "staging" ? var.state_encryption_previous_passphrase_staging : null,
+    local.environment == "prod" ? var.state_encryption_previous_passphrase_prod : null,
+    local.state_encryption_passphrase,
+  )
+
   environment_vpc_cidrs = {
     staging = "10.20.0.0/16"
     prod    = "10.30.0.0/16"
@@ -23,10 +40,6 @@ locals {
   #############################################################################
   # Shared selectors and committed policy
   #############################################################################
-
-  ssh_key_fingerprints = [
-    "2e:7c:fa:e9:85:22:4d:1a:ca:e4:b0:6d:01:c5:36:ed"
-  ]
 
   common_tags = [
     "client-${local.client_name}",

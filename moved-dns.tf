@@ -1,3 +1,7 @@
+# Temporary DNS state migration mappings from the pre-policy DNS resource
+# addresses to the policy-driven resource addresses. Remove this file only
+# after the baseline workspace has been applied once and no old DNS addresses
+# remain in state.
 moved {
   from = digitalocean_domain.grayhaven_systems[0]
   to   = digitalocean_domain.managed["grayhaven_systems"]
