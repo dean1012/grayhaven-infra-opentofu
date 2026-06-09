@@ -1,5 +1,5 @@
 variables {
-  state_encryption_passphrase          = "offline-test-state-passphrase"
+  state_encryption_passphrase_staging  = "offline-test-staging-state-passphrase"
   do_token                             = "offline-test-token"
   grayhaven_vault_checkout_path        = "/tmp/grayhaven-vault-offline-test"
   grayhaven_vault_password             = "offline-test-vault-password"
@@ -12,6 +12,14 @@ variables {
 }
 
 mock_provider "digitalocean" {
+  mock_data "digitalocean_ssh_key" {
+    defaults = {
+      fingerprint = "offline-admin-key-fingerprint"
+      id          = 1
+      public_key  = "ssh-ed25519 AAAAoffline-admin admin@example"
+    }
+  }
+
   mock_data "digitalocean_domain" {
     defaults = {
       id = "domain-id"
@@ -154,6 +162,11 @@ run "staging_1x1_auto_host_plan" {
   assert {
     condition     = digitalocean_record.web_root_a["grayhaven_systems"].name == "staging" && digitalocean_record.web_dev_cname["jerry_smith"].name == "dev.staging"
     error_message = "Staging must plan environment web DNS records from DNS policy."
+  }
+
+  assert {
+    condition     = length(output.admin_ssh_key_fingerprints) == 1 && output.admin_ssh_key_fingerprints[0] == "offline-admin-key-fingerprint"
+    error_message = "Staging droplets must receive admin SSH keys from policy lookup."
   }
 }
 

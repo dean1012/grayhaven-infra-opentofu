@@ -1,6 +1,48 @@
-variable "state_encryption_passphrase" {
-  description = "Passphrase used for local OpenTofu state encryption"
+variable "state_encryption_passphrase_baseline" {
+  description = "Passphrase used for local OpenTofu state encryption in the baseline workspace."
   type        = string
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "state_encryption_passphrase_staging" {
+  description = "Passphrase used for local OpenTofu state encryption in the staging workspace."
+  type        = string
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "state_encryption_passphrase_prod" {
+  description = "Passphrase used for local OpenTofu state encryption in the prod workspace."
+  type        = string
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "state_encryption_previous_passphrase_baseline" {
+  description = "Previous baseline workspace state encryption passphrase used only during OpenTofu state passphrase rotation."
+  type        = string
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "state_encryption_previous_passphrase_staging" {
+  description = "Previous staging workspace state encryption passphrase used only during OpenTofu state passphrase rotation."
+  type        = string
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "state_encryption_previous_passphrase_prod" {
+  description = "Previous prod workspace state encryption passphrase used only during OpenTofu state passphrase rotation."
+  type        = string
+  default     = null
+  nullable    = true
   sensitive   = true
 }
 
@@ -65,6 +107,13 @@ variable "grayhaven_test_compute_policy_path" {
 
 variable "grayhaven_test_dns_policy_path" {
   description = "Optional DNS policy file path override for offline plan tests. Leave unset for operational deployments."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
+variable "grayhaven_test_ssh_keys_policy_path" {
+  description = "Optional admin SSH keys policy file path override for offline plan tests. Leave unset for operational deployments."
   type        = string
   default     = null
   nullable    = true

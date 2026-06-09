@@ -96,7 +96,7 @@ module "bastion" {
   name                 = each.value.hostname
   region               = var.default_region
   vpc_id               = module.vpc[0].id
-  ssh_key_fingerprints = local.ssh_key_fingerprints
+  ssh_key_fingerprints = local.admin_ssh_key_fingerprints
   size                 = each.value.size
   image                = each.value.image
   tags                 = each.value.tags
@@ -110,7 +110,7 @@ module "web" {
   name                 = each.value.hostname
   region               = var.default_region
   vpc_id               = module.vpc[0].id
-  ssh_key_fingerprints = local.ssh_key_fingerprints
+  ssh_key_fingerprints = local.admin_ssh_key_fingerprints
   size                 = each.value.size
   image                = each.value.image
   tags                 = each.value.tags

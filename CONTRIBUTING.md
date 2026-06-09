@@ -58,7 +58,9 @@ cd "$tmpdir"
 tofu init -backend=false
 tofu validate
 
-export TF_VAR_state_encryption_passphrase='offline-test-state-passphrase'
+export TF_VAR_state_encryption_passphrase_baseline='offline-test-baseline-state-passphrase'
+export TF_VAR_state_encryption_passphrase_staging='offline-test-staging-state-passphrase'
+export TF_VAR_state_encryption_passphrase_prod='offline-test-prod-state-passphrase'
 
 tofu workspace new baseline
 tofu test -filter=tests/baseline.tftest.hcl -no-color

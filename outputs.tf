@@ -40,3 +40,8 @@ output "environment_vpc_cidr" {
   description = "CIDR range of the active environment VPC"
   value       = local.is_environment ? module.vpc[0].vpc_cidr : null
 }
+
+output "admin_ssh_key_fingerprints" {
+  description = "Admin SSH key fingerprints attached to environment droplets"
+  value       = local.admin_ssh_key_fingerprints
+}

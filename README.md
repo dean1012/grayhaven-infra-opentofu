@@ -16,6 +16,7 @@ private SSH keys, secrets, generated state, or other private operational data.
 - [Scope](#scope)
 - [Requirements](#requirements)
 - [Required Environment Variables](#required-environment-variables)
+- [Environment Setup](#environment-setup)
 - [DigitalOcean Token Scope](#digitalocean-token-scope)
 - [Deployment Quick Reference](#deployment-quick-reference)
 - [Offline Plan Tests](#offline-plan-tests)
@@ -48,7 +49,7 @@ automation for another organization requires review and adaptation.
 - OpenTofu.
 - DigitalOcean account.
 - DigitalOcean API token scoped for this automation.
-- SSH public key uploaded to DigitalOcean.
+- SSH admin public keys defined in `policy/ssh-keys.yml`.
 - Local checkout of the private `grayhaven-vault` repository with the required
   environment refs fetched.
 - Ansible Vault password and deploy key material for bastion bootstrap.
@@ -60,7 +61,9 @@ automation for another organization requires review and adaptation.
 OpenTofu variables are supplied with `TF_VAR_*` environment variables.
 
 ```bash
-export TF_VAR_state_encryption_passphrase='<state encryption passphrase>'
+export TF_VAR_state_encryption_passphrase_baseline='<baseline state encryption passphrase>'
+export TF_VAR_state_encryption_passphrase_staging='<staging state encryption passphrase>'
+export TF_VAR_state_encryption_passphrase_prod='<production state encryption passphrase>'
 export TF_VAR_do_token='<scoped DigitalOcean OpenTofu token>'
 export TF_VAR_grayhaven_vault_repo_url='git@github.com:dean1012/grayhaven-vault.git'
 export TF_VAR_grayhaven_vault_checkout_path='/path/to/grayhaven-vault'
@@ -96,6 +99,54 @@ The `grayhaven_config_repo_ref`, `grayhaven_infra_policy_repo_ref`, and
 `grayhaven_certificate_environment` variables are testing-related
 fresh-deployment controls. Changing them on an existing environment is
 undefined operational behavior and is not recommended.
+
+[Back to top](#grayhaven-infrastructure-opentofu)
+
+## Environment Setup
+
+Keep OpenTofu secrets out of the repository and shell history. A local shell
+fragment is a convenient way to load the required variables without committing
+them:
+
+```bash
+mkdir -p ~/.bashrc.d
+install -m 0600 /dev/null ~/.bashrc.d/grayhaven-infra.sh
+```
+
+Edit `~/.bashrc.d/grayhaven-infra.sh` and add exports for the required
+variables from [Required Environment Variables](#required-environment-variables).
+After editing, source the shell configuration:
+
+```bash
+source ~/.bashrc
+```
+
+Validate that required secrets are defined without printing their values:
+
+```bash
+for var in \
+  TF_VAR_state_encryption_passphrase_baseline \
+  TF_VAR_state_encryption_passphrase_staging \
+  TF_VAR_state_encryption_passphrase_prod \
+  TF_VAR_do_token \
+  TF_VAR_grayhaven_vault_repo_url \
+  TF_VAR_grayhaven_vault_checkout_path \
+  TF_VAR_grayhaven_ansible_deploy_public_key \
+  TF_VAR_grayhaven_ansible_deploy_private_key \
+  TF_VAR_grayhaven_vault_password_staging \
+  TF_VAR_grayhaven_vault_password_prod
+do
+  if [ -n "${!var}" ]; then
+    printf '%s=defined\n' "$var"
+  else
+    printf '%s=missing\n' "$var"
+  fi
+done
+```
+
+When an OpenTofu state passphrase rotation is active, also verify the matching
+`TF_VAR_state_encryption_previous_passphrase_<workspace>` variable is defined
+for the workspace being rotated.
 
 [Back to top](#grayhaven-infrastructure-opentofu)
 
@@ -202,6 +253,8 @@ Policy files are committed under `policy/`:
   bastion, and web TLS mode.
 - `policy/dns.yml`: managed DNS zones, baseline-owned DNS records, and domains
   that should receive environment web records.
+- `policy/ssh-keys.yml`: admin SSH public keys managed by the baseline
+  workspace and attached to all environment droplets.
 - `policy/firewall/staging.yml`: staging hardware firewall policy.
 - `policy/firewall/prod.yml`: production hardware firewall policy.
 
@@ -216,6 +269,13 @@ protection. Less critical baseline records can be placed under `records`; they
 are managed by the baseline workspace but are not protected from destroy.
 Staging and production own only environment web records for domains marked with
 `environment_web: true`.
+
+The admin SSH key policy uses stable internal keys under `admin_ssh_keys`.
+Each entry has a `title`, which is also the DigitalOcean SSH key name, and a
+`public_key`. Public SSH keys are not secret. Private SSH keys must never be
+committed. Add or remove admin keys by updating `policy/ssh-keys.yml`, applying
+the `baseline` workspace first, then reviewing staging or production plans so
+droplets receive the intended key set.
 
 When adding a new hosted domain, update `policy/dns.yml` here and then update
 the `hosted_domains` data documented in

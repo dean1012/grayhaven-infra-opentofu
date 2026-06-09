@@ -14,6 +14,10 @@ jobs:
   validate:
     name: Validate
     runs-on: ubuntu-latest
+    env:
+      TF_VAR_state_encryption_passphrase_baseline: offline-test-baseline-state-passphrase
+      TF_VAR_state_encryption_passphrase_staging: offline-test-staging-state-passphrase
+      TF_VAR_state_encryption_passphrase_prod: offline-test-prod-state-passphrase
 
     steps:
       - name: Checkout repository

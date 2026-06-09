@@ -15,9 +15,11 @@ resources from environment-specific runtime infrastructure.
 - [Destroy Operations](#destroy-operations)
 - [Policy Management](#policy-management)
 - [DNS Management](#dns-management)
+- [Admin SSH Key Management](#admin-ssh-key-management)
 - [Active Control Bastion Changes](#active-control-bastion-changes)
 - [TLS Mode Changes](#tls-mode-changes)
 - [Certificate Selectors](#certificate-selectors)
+- [Secret Rotation](#secret-rotation)
 - [State Safety](#state-safety)
 
 ## Supported Workspaces
@@ -29,8 +31,8 @@ The supported workspaces are:
 - `prod`
 
 The `baseline` workspace manages shared resources that staging and production
-depend on, including the DigitalOcean project, DNS zones, mail DNS records, CAA
-records, and the default VPC.
+depend on, including the DigitalOcean project, admin SSH keys, DNS zones, mail
+DNS records, CAA records, and the default VPC.
 
 The default VPC is named `grayhaven-core-baseline-vpc` and is managed as a
 dedicated baseline resource instead of using the environment VPC module. It is
@@ -178,6 +180,7 @@ Committed policy files define environment behavior:
 
 - `policy/compute.yml`
 - `policy/dns.yml`
+- `policy/ssh-keys.yml`
 - `policy/firewall/staging.yml`
 - `policy/firewall/prod.yml`
 
@@ -226,6 +229,35 @@ To add a hosted domain:
    [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
    so [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
    can converge the matching vhosts.
+
+[Back to top](#workspace-operations)
+
+## Admin SSH Key Management
+
+`policy/ssh-keys.yml` defines admin SSH public keys under `admin_ssh_keys`.
+Each entry uses a stable internal key and includes:
+
+- `title`: the human-readable label and DigitalOcean SSH key name.
+- `public_key`: the public SSH key material.
+
+The baseline workspace creates and manages the DigitalOcean SSH key resources.
+Staging and production look up those baseline-managed keys by `title` and
+attach every configured admin key to every bastion and web droplet.
+
+To add or remove an admin key:
+
+1. Update `policy/ssh-keys.yml`.
+2. Select `baseline`.
+3. Run `tofu plan` and confirm only the intended SSH key resources change.
+4. Run `tofu apply`.
+5. Select `staging` or `prod`.
+6. Run `tofu plan` and confirm droplets will receive the expected admin key
+   fingerprints.
+7. Apply the environment only when the droplet SSH key change is intended for
+   that environment.
+
+Public SSH keys are safe to commit. Private SSH keys and agent material must
+never be committed or printed in terminal output.
 
 [Back to top](#workspace-operations)
 
@@ -318,13 +350,87 @@ existing environments is undefined operational behavior and is not recommended.
 
 [Back to top](#workspace-operations)
 
+## Secret Rotation
+
+Rotate secrets deliberately, one workspace or secret class at a time. Before
+any rotation, confirm no other OpenTofu run or Ansible maintenance playbook is
+active, back up local encrypted state, and keep all terminal output private.
+
+### OpenTofu State Encryption Passphrases
+
+State encryption passphrases are workspace-specific:
+
+- `TF_VAR_state_encryption_passphrase_baseline`
+- `TF_VAR_state_encryption_passphrase_staging`
+- `TF_VAR_state_encryption_passphrase_prod`
+
+To rotate one workspace state passphrase:
+
+1. Back up the target workspace state and keep the backup private.
+2. Export the old passphrase as the matching previous-passphrase variable:
+   `TF_VAR_state_encryption_previous_passphrase_<workspace>`.
+3. Export the new passphrase as
+   `TF_VAR_state_encryption_passphrase_<workspace>`.
+4. Select the target workspace.
+5. Run `tofu plan` and confirm OpenTofu can read the existing state through
+   the fallback method.
+6. Run `tofu apply` so OpenTofu writes state with the new passphrase.
+7. Unset and remove the previous-passphrase variable from the local shell
+   configuration.
+8. Run `tofu plan` again with only the new passphrase defined.
+
+Do not remove or unset the previous passphrase until the apply has completed
+and a follow-up plan succeeds with only the new passphrase.
+
+### Ansible Vault Passphrases
+
+Fresh bastion bootstrap receives the Ansible Vault password from:
+
+- `TF_VAR_grayhaven_vault_password_staging`
+- `TF_VAR_grayhaven_vault_password_prod`
+
+When rotating an Ansible Vault passphrase, update the encrypted vault files
+with `ansible-vault rekey`, update the matching OpenTofu environment variable
+for future deployments, then rotate the persisted password on already deployed
+bastions with
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+`playbooks/rotate-vault-password.yml`. Verify a manual runner invocation can
+decrypt the vault after the rotation.
+
+### DigitalOcean API Token
+
+Create a replacement token with the documented scope, update
+`TF_VAR_do_token`, then run a read-only `tofu plan` in `baseline`, `staging`,
+and `prod` as applicable. Revoke the old token only after the new token can
+plan the required workspaces.
+
+### Deploy And Control Key Material
+
+The deploy/control key is supplied to fresh droplets through
+`TF_VAR_grayhaven_ansible_deploy_public_key` and
+`TF_VAR_grayhaven_ansible_deploy_private_key`. For deployed bastions, rotate
+the persisted key with
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+`playbooks/rotate-vault-deploy-key.yml`, then update the OpenTofu variables so
+future droplets receive the new key during bootstrap.
+
+### Admin SSH Keys
+
+Admin SSH private keys are outside this repository. To rotate admin access,
+add the new public key to `policy/ssh-keys.yml`, apply `baseline`, apply the
+target environment so droplets receive the new key, verify access, then remove
+the old public key from policy and repeat the baseline/environment plan-first
+workflow.
+
+[Back to top](#workspace-operations)
+
 ## State Safety
 
 Baseline resources are configured with OpenTofu destroy protection so accidental
 baseline destroy attempts fail before removing shared resources.
 
-State is encrypted locally through the configured OpenTofu state encryption
-passphrase. Keep state backups private and do not commit them.
+State is encrypted locally through the workspace-specific OpenTofu state
+encryption passphrase. Keep state backups private and do not commit them.
 
 Offline `tofu test` validation should run from a temporary state-free copy, not
 from the operational checkout used for real plan/apply work. The tests create
@@ -333,7 +439,9 @@ workspace planning, drift review, staging deployment, or destroy procedures.
 
 Recommended state handling:
 
-- Keep `TF_VAR_state_encryption_passphrase` out of shell history and committed
+- Keep `TF_VAR_state_encryption_passphrase_baseline`,
+  `TF_VAR_state_encryption_passphrase_staging`, and
+  `TF_VAR_state_encryption_passphrase_prod` out of shell history and committed
   files.
 - Keep `terraform.tfstate*`, `terraform.tfstate.d/`, `.state-backups/`, and
   plan files private.

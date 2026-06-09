@@ -37,7 +37,7 @@ run "baseline_plan" {
   }
 
   variables {
-    state_encryption_passphrase          = "offline-test-state-passphrase"
+    state_encryption_passphrase_baseline = "offline-test-baseline-state-passphrase"
     do_token                             = "offline-test-token"
     grayhaven_ansible_deploy_public_key  = "ssh-ed25519 AAAAoffline offline@example"
     grayhaven_ansible_deploy_private_key = <<-EOT
@@ -81,6 +81,11 @@ run "baseline_plan" {
     condition     = digitalocean_vpc.baseline[0].name == "grayhaven-core-baseline-vpc"
     error_message = "The baseline plan must include the protected baseline VPC."
   }
+
+  assert {
+    condition     = digitalocean_ssh_key.admin["jsmith"].name == "jsmith@grayhavensystems.com"
+    error_message = "The baseline plan must manage the configured admin SSH key."
+  }
 }
 
 run "baseline_unprotected_dns_record_plan" {
@@ -95,7 +100,7 @@ run "baseline_unprotected_dns_record_plan" {
   }
 
   variables {
-    state_encryption_passphrase          = "offline-test-state-passphrase"
+    state_encryption_passphrase_baseline = "offline-test-baseline-state-passphrase"
     do_token                             = "offline-test-token"
     grayhaven_ansible_deploy_public_key  = "ssh-ed25519 AAAAoffline offline@example"
     grayhaven_ansible_deploy_private_key = <<-EOT
