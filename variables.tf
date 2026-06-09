@@ -1,24 +1,18 @@
 variable "state_encryption_passphrase_baseline" {
   description = "Passphrase used for local OpenTofu state encryption in the baseline workspace."
   type        = string
-  default     = null
-  nullable    = true
   sensitive   = true
 }
 
 variable "state_encryption_passphrase_staging" {
   description = "Passphrase used for local OpenTofu state encryption in the staging workspace."
   type        = string
-  default     = null
-  nullable    = true
   sensitive   = true
 }
 
 variable "state_encryption_passphrase_prod" {
   description = "Passphrase used for local OpenTofu state encryption in the prod workspace."
   type        = string
-  default     = null
-  nullable    = true
   sensitive   = true
 }
 
