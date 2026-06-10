@@ -48,35 +48,31 @@ under `grayhavensystems.com`; staging hostnames live under
 
 ## DigitalOcean Tags
 
-DigitalOcean tags are part of the operational contract. They identify ownership,
-environment, role, firewall scope, TLS mode, and Ansible convergence state.
+DigitalOcean tags are part of the operational contract for taggable resources.
+They identify ownership, environment, role, firewall scope, TLS mode, and
+Ansible convergence state.
 
-Common tags on environment droplets include:
+All taggable resources contain one or more of the following common tags as
+appropriate:
 
-- `client-grayhaven`
-- `env-staging` or `env-prod`
+- `client-<client>`
+- `env-<environment>`
 - `managed-by-opentofu`
 - `configured-by-ansible`
-- `tls-mode-host` or `tls-mode-load-balancer`
+- `tls-mode-<mode>`
 
-Role and scope tags include:
+Resources may contain these additional tags as appropriate:
 
-- `project-core`
-- `project-sec`
-- `role-web`
-- `role-bastion`
-- `scope-grayhaven-core-<environment>-web`
-- `scope-grayhaven-sec-<environment>-bastion`
+- `project-<project>`
+- `role-<role>`
+- `scope-<scope>`
+- `<role>-NN`
+- `control-node`
+- `control-capable`
 
-Bastion instance tags also include:
-
-- `bastion-NN`
-- `control-node` on the active control bastion
-- `control-capable` on non-active bastions
-
-Web instance tags also include:
-
-- `web-NN`
+For example, web droplets use a scope tag such as
+`scope-grayhaven-core-prod-web` so firewall rules can target the current web
+pool without listing individual droplet IDs.
 
 [Back to top](#infrastructure-conventions)
 
@@ -92,7 +88,9 @@ Tags support several operational paths:
   Ansible convergence.
 - Environment tags make staging and production resources easy to distinguish in
   the DigitalOcean console.
-- TLS mode tags make the active web TLS architecture visible on droplets.
+- Ansible reads the OpenTofu-managed TLS mode tag while converging web hosts, so
+  TLS architecture changes should be made through OpenTofu rather than by
+  editing tags directly in the DigitalOcean console.
 
 When adding new resource types, keep names and tags aligned with these patterns
 unless there is a clear operational reason to do otherwise.
