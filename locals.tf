@@ -3,17 +3,19 @@ locals {
   # Repository and workspace identity
   #############################################################################
 
-  client_name          = "grayhaven"
-  client_domain        = "grayhavensystems.com"
-  personal_domain      = "jerry-smith.net"
-  supported_workspaces = ["baseline", "staging", "prod"]
-  environment          = terraform.workspace
-  is_baseline          = local.environment == "baseline"
-  is_environment       = contains(["staging", "prod"], local.environment)
-  is_prod              = local.environment == "prod"
-  config_repo_ref      = local.is_prod ? "main" : var.grayhaven_config_repo_ref
-  infra_policy_ref     = local.is_prod ? "main" : var.grayhaven_infra_policy_repo_ref
-  vault_repo_ref       = local.is_prod ? "main" : "staging"
+  client_name            = "grayhaven"
+  client_domain          = "grayhavensystems.com"
+  personal_domain        = "jerry-smith.net"
+  supported_workspaces   = ["baseline", "staging", "prod"]
+  environment_workspaces = ["staging", "prod"]
+  environment            = terraform.workspace
+  is_baseline            = local.environment == "baseline"
+  is_environment         = contains(local.environment_workspaces, local.environment)
+  is_prod                = local.environment == "prod"
+
+  config_repo_ref  = local.is_prod ? "main" : var.grayhaven_config_repo_ref
+  infra_policy_ref = local.is_prod ? "main" : var.grayhaven_infra_policy_repo_ref
+  vault_repo_ref   = local.is_prod ? "main" : "staging"
 
   state_encryption_passphrase = (
     local.environment == "baseline" ? var.state_encryption_passphrase_baseline :
@@ -50,21 +52,39 @@ locals {
   ]
 
   compute_policy_path = coalesce(var.grayhaven_test_compute_policy_path, "${path.module}/policy/compute.yml")
-  compute_policy = local.is_environment ? yamldecode(file(local.compute_policy_path)) : {
-    bastions = {
-      control_node = ""
-      instances    = {}
+
+  compute_policy = (
+    local.is_environment
+    ? yamldecode(file(local.compute_policy_path))
+    : {
+      bastions = {
+        control_node = ""
+        instances    = {}
+      }
+      web = {
+        tls_mode  = "auto"
+        instances = {}
+      }
     }
-    web = {
-      tls_mode  = "auto"
-      instances = {}
-    }
-  }
-  firewall_policy     = yamldecode(file("${path.module}/policy/firewall/${local.is_environment ? local.environment : "staging"}.yml"))
-  vault_checkout_path = coalesce(var.grayhaven_vault_checkout_path, abspath("${path.module}/../grayhaven-vault"))
+  )
+
+  firewall_policy_workspace = local.is_environment ? local.environment : "staging"
+  firewall_policy_path      = "${path.module}/policy/firewall/${local.firewall_policy_workspace}.yml"
+  firewall_policy           = yamldecode(file(local.firewall_policy_path))
+
+  vault_checkout_path = coalesce(
+    var.grayhaven_vault_checkout_path,
+    abspath("${path.module}/../grayhaven-vault"),
+  )
+
   # Environment workspaces read config.yml from the intended vault Git ref, not
   # from whichever branch is checked out in the local vault working tree.
-  vault_config = local.is_environment ? yamldecode(data.external.vault_config[0].result.config_yml) : yamldecode(file("${path.module}/policy/default-vault-config.yml"))
+  vault_config = (
+    local.is_environment
+    ? yamldecode(data.external.vault_config[0].result.config_yml)
+    : yamldecode(file("${path.module}/policy/default-vault-config.yml"))
+  )
+
   vault_password = !local.is_environment ? null : (
     local.is_prod
     ? try(coalesce(var.grayhaven_vault_password, var.grayhaven_vault_password_prod), null)
@@ -81,15 +101,26 @@ locals {
   bastion_instances = local.is_environment ? local.compute_policy.bastions.instances : {}
   web_instances     = local.is_environment ? local.compute_policy.web.instances : {}
   web_tls_setting   = local.is_environment ? try(local.compute_policy.web.tls_mode, "auto") : "auto"
+
   # In auto mode, a single web host terminates TLS locally; multiple web hosts
   # use a DigitalOcean load balancer so certificate and backend behavior stay
   # consistent during scale-out.
-  use_load_balancer = local.is_environment ? local.web_tls_setting == "load_balancer" || (local.web_tls_setting == "auto" && length(local.web_instances) > 1) : false
+  use_load_balancer = (
+    local.is_environment
+    ? local.web_tls_setting == "load_balancer" || (
+      local.web_tls_setting == "auto" && length(local.web_instances) > 1
+    )
+    : false
+  )
+
   effective_tls_mode = local.is_environment ? (
     local.use_load_balancer ? "load_balancer" : "host"
   ) : "host"
+
   control_bastion_key = local.is_environment ? local.compute_policy.bastions.control_node : ""
   primary_web_key     = local.is_environment ? try(sort(keys(local.web_instances))[0], "") : ""
+
+  environment_hostname_suffix = local.is_prod ? local.client_domain : "staging.${local.client_domain}"
 
   #############################################################################
   # Host inventory and cloud-init handoff
@@ -111,7 +142,7 @@ locals {
   bastion_hosts = {
     for key, instance in local.bastion_instances : key => {
       index           = instance.index
-      hostname        = local.is_prod ? "${local.client_name}-sec-${local.environment}-bastion-${format("%02d", instance.index)}.${local.client_domain}" : "${local.client_name}-sec-${local.environment}-bastion-${format("%02d", instance.index)}.staging.${local.client_domain}"
+      hostname        = format("%s-sec-%s-bastion-%02d.%s", local.client_name, local.environment, instance.index, local.environment_hostname_suffix)
       is_control_node = key == local.control_bastion_key
       size            = try(instance.size, var.default_droplet_size)
       image           = try(instance.image, var.default_os_image)
@@ -128,7 +159,7 @@ locals {
   web_hosts = {
     for key, instance in local.web_instances : key => {
       index    = instance.index
-      hostname = local.is_prod ? "${local.client_name}-core-${local.environment}-web-${format("%02d", instance.index)}.${local.client_domain}" : "${local.client_name}-core-${local.environment}-web-${format("%02d", instance.index)}.staging.${local.client_domain}"
+      hostname = format("%s-core-%s-web-%02d.%s", local.client_name, local.environment, instance.index, local.environment_hostname_suffix)
       size     = try(instance.size, var.default_droplet_size)
       image    = try(instance.image, var.default_os_image)
       tags = concat(local.common_tags, [
