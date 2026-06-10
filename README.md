@@ -258,6 +258,9 @@ Policy files are committed under `policy/`:
 - `policy/firewall/staging.yml`: staging hardware firewall policy.
 - `policy/firewall/prod.yml`: production hardware firewall policy.
 
+Names and DigitalOcean tags follow the conventions documented in
+[Infrastructure Conventions](docs/conventions.md).
+
 `policy/compute.yml` uses stable instance keys such as `bastion-01` and
 `web-01`. The declared bastion control node receives the easy `bastion.*` DNS
 record and is the only bastion expected to run the scheduled Ansible runner.
@@ -299,6 +302,7 @@ deployment.
 
 ## Documentation
 
+- [Infrastructure Conventions](docs/conventions.md)
 - [Workspace Operations](docs/workspaces.md)
 
 [Back to top](#grayhaven-infrastructure-opentofu)

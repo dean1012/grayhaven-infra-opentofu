@@ -62,11 +62,15 @@ resource "digitalocean_loadbalancer" "web" {
   }
 
   forwarding_rule {
-    entry_protocol   = "https"
-    entry_port       = 443
-    target_protocol  = "http"
-    target_port      = 80
-    certificate_name = local.certificate_environment == "production" ? digitalocean_certificate.web_lb_production[0].name : digitalocean_certificate.web_lb_staging[0].name
+    entry_protocol  = "https"
+    entry_port      = 443
+    target_protocol = "http"
+    target_port     = 80
+    certificate_name = (
+      local.certificate_environment == "production"
+      ? digitalocean_certificate.web_lb_production[0].name
+      : digitalocean_certificate.web_lb_staging[0].name
+    )
   }
 
   healthcheck {
