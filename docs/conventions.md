@@ -87,9 +87,10 @@ Tags support several operational paths:
   Ansible convergence.
 - Environment tags make staging and production resources easy to distinguish in
   the DigitalOcean console.
-- Ansible reads the OpenTofu-managed TLS mode tag while converging web hosts, so
-  TLS architecture changes should be made through OpenTofu rather than by
-  editing tags directly in the DigitalOcean console.
+- [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+  reads the OpenTofu-managed TLS mode tag while converging web hosts, so TLS
+  architecture changes should be made through OpenTofu rather than by editing
+  tags directly in the DigitalOcean console.
 
 When adding new resource types, keep names and tags aligned with these patterns
 unless there is a clear operational reason to do otherwise.
