@@ -59,14 +59,13 @@ appropriate:
 - `env-<environment>`
 - `managed-by-opentofu`
 - `configured-by-ansible`
-- `tls-mode-<mode>`
+- `tls-mode-host` or `tls-mode-load-balancer`
 
 Resources may contain these additional tags as appropriate:
 
 - `project-<project>`
 - `role-<role>`
 - `scope-<scope>`
-- `<role>-NN`
 - `control-node`
 - `control-capable`
 
