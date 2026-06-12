@@ -42,21 +42,8 @@ automation for another organization requires review and adaptation.
 
 ## Requirements
 
-Before planning or applying this repository, prepare OpenTofu, DigitalOcean
-access, the private vault repository, deployment key material, and the required
-environment variables. The full first-time setup sequence is documented in
-[Setup](docs/setup.md).
-
-At a high level, operators need:
-
-- OpenTofu.
-- DigitalOcean account and scoped API token.
-- Local checkout of the private `grayhaven-vault` repository with the required
-  environment refs fetched.
-- Workspace-specific OpenTofu state encryption passphrases.
-- Environment-specific Ansible Vault passphrases.
-- Ansible deploy/control key material for bastion bootstrap.
-- Admin public SSH keys defined in `policy/ssh-keys.yml`.
+This repository must be initialized and configured before use. This process is
+documented in [Setup](docs/setup.md).
 
 [Back to top](#grayhaven-infrastructure-opentofu)
 
