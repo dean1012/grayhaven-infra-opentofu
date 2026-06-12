@@ -8,10 +8,11 @@ locals {
 
   dns_domains = {
     for domain_key, domain in local.dns_policy.domains : domain_key => {
-      name              = domain.name
-      environment_web   = try(domain.environment_web, false)
-      records           = try(domain.records, {})
-      protected_records = try(domain.protected_records, {})
+      name                    = domain.name
+      environment_apex        = try(domain.environment.apex, false)
+      environment_web_aliases = try(domain.environment.web_aliases, false)
+      records                 = try(domain.records, {})
+      protected_records       = try(domain.protected_records, {})
     }
   }
 
@@ -61,15 +62,21 @@ locals {
     }
   }
 
-  environment_dns = local.is_environment ? {
+  environment_apex_dns = local.is_environment ? {
     for domain_key, domain in local.dns_domains : domain_key => {
       domain       = domain.name
       site_name    = local.is_prod ? domain.name : "staging.${domain.name}"
-      www_name     = local.is_prod ? "www" : "www.staging"
-      dev_name     = local.is_prod ? "dev" : "dev.staging"
       env_root     = local.is_prod ? "@" : "staging"
       cname_target = local.is_prod ? "@" : "staging.${domain.name}."
-    } if domain.environment_web
+    } if domain.environment_apex
+  } : {}
+
+  environment_web_alias_dns = local.is_environment ? {
+    for domain_key, site in local.environment_apex_dns : domain_key => merge(site, {
+      www_name = local.is_prod ? "www" : "www.staging"
+      dev_name = local.is_prod ? "dev" : "dev.staging"
+    })
+    if local.dns_domains[domain_key].environment_web_aliases
   } : {}
 }
 
@@ -86,6 +93,14 @@ resource "terraform_data" "dns_policy_guard" {
   }
 
   lifecycle {
+    precondition {
+      condition = alltrue([
+        for _, domain in local.dns_domains :
+        !domain.environment_web_aliases || domain.environment_apex
+      ])
+      error_message = "DNS environment.web_aliases requires environment.apex."
+    }
+
     precondition {
       condition     = length(setsubtract(local.dns_protected_record_types, local.dns_supported_protected_record_types)) == 0
       error_message = "DNS protected_records support only A, CNAME, MX, TXT, and CAA record types."
@@ -255,7 +270,7 @@ resource "digitalocean_record" "baseline_txt" {
 ###############################################################################
 
 resource "digitalocean_record" "web_root_a" {
-  for_each = local.is_environment ? local.environment_dns : {}
+  for_each = local.is_environment ? local.environment_apex_dns : {}
 
   domain = each.value.domain
   type   = "A"
@@ -267,7 +282,7 @@ resource "digitalocean_record" "web_root_a" {
 }
 
 resource "digitalocean_record" "web_www_cname" {
-  for_each = local.is_environment ? local.environment_dns : {}
+  for_each = local.is_environment ? local.environment_web_alias_dns : {}
 
   domain = each.value.domain
   type   = "CNAME"
@@ -283,7 +298,7 @@ resource "digitalocean_record" "web_www_cname" {
 }
 
 resource "digitalocean_record" "web_dev_cname" {
-  for_each = local.is_environment ? local.environment_dns : {}
+  for_each = local.is_environment ? local.environment_web_alias_dns : {}
 
   domain = each.value.domain
   type   = "CNAME"

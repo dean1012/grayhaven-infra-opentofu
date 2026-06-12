@@ -4,7 +4,9 @@ ttl: 300
 domains:
   grayhaven_systems:
     name: grayhavensystems.com
-    environment_web: true
+    environment:
+      apex: true
+      web_aliases: true
     records:
       unsupported_mx:
         type: MX

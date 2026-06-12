@@ -199,8 +199,8 @@ When changing firewall policy, validate both cloud and host-level behavior.
 ## DNS Management
 
 `policy/dns.yml` defines managed DNS zones, baseline-owned records, and which
-domains receive environment web records. The baseline workspace owns DNS zones
-and shared records such as MX, SPF, DKIM, DMARC, and CAA records.
+domains receive computed environment DNS records. The baseline workspace owns
+DNS zones and shared records such as MX, SPF, DKIM, DMARC, and CAA records.
 
 Use `protected_records` for records that must not be destroyed casually. Those
 resources use OpenTofu destroy protection and must not be moved into staging or
@@ -219,22 +219,27 @@ fixed number of supported DNS record types, so it reduces to O(n). The expected
 DNS policy dataset is small enough that this is an acceptable real-world
 tradeoff for clearer ordering and safer applies.
 
-Staging and production own only environment web records for domains marked with
-`environment_web: true`:
+Staging and production own only computed environment DNS records for domains
+marked under `environment`:
 
-- `staging`: `staging.<domain>`, `www.staging.<domain>`, and
-  `dev.staging.<domain>`.
-- `prod`: `<domain>`, `www.<domain>`, and `dev.<domain>`.
+- `environment.apex: true` creates `staging.<domain>` in `staging` and
+  `<domain>` in `prod`.
+- `environment.web_aliases: true` creates `www.staging.<domain>` and
+  `dev.staging.<domain>` in `staging`, or `www.<domain>` and `dev.<domain>`
+  in `prod`.
 
-If `environment_web` is false or omitted, staging and production create no
-computed web DNS records for that domain. The domain can still have
+Both fields default to false when omitted. `environment.web_aliases` requires
+`environment.apex`; valid combinations are true/true, true/false, and
+false/false. If both fields are false or omitted, staging and production create
+no computed environment DNS records for that domain. The domain can still have
 baseline-owned records from `protected_records` or `records`.
 
 For hosted web domains, keep
 [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
-`hosted_domains` data and `policy/dns.yml` aligned: each
-`hosted_domains[].domain` should have `environment_web: true`, and each domain
-with `environment_web: true` should have matching `hosted_domains` data so
+`hosted_domains` data and `policy/dns.yml` aligned: each hosted domain should
+set both `environment.apex: true` and `environment.web_aliases: true`, and each
+domain with both fields set to true should have matching `hosted_domains` data
+so
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
 can converge the corresponding vhosts.
 
@@ -244,13 +249,14 @@ To add a hosted domain:
 2. Add required baseline shared records under `protected_records`.
 3. Add optional baseline records that do not need destroy protection under
    `records`.
-4. Set `environment_web: true` when staging and production web records should
-   be managed for the domain. Leave it false or omit it when the domain should
-   have only baseline-owned DNS records.
-5. Run `tofu plan` in `baseline` and review the shared DNS additions.
-6. Run `tofu plan` in `staging` or `prod` and review only environment web DNS
+4. Set `environment.apex: true` when staging and production should manage the
+   environment apex record for the domain.
+5. Set `environment.web_aliases: true` only when the domain is a hosted web
+   domain that should also receive `www` and `dev` aliases.
+6. Run `tofu plan` in `baseline` and review the shared DNS additions.
+7. Run `tofu plan` in `staging` or `prod` and review only environment DNS
    additions.
-7. Update the `hosted_domains` contract documented in
+8. Update the `hosted_domains` contract documented in
    [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
    so [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
    can converge the matching vhosts.

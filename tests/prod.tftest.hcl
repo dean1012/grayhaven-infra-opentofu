@@ -171,7 +171,7 @@ run "prod_1x1_auto_host_plan" {
 
   assert {
     condition     = digitalocean_record.web_root_a["grayhaven_systems"].name == "@" && digitalocean_record.web_dev_cname["jerry_smith"].name == "dev"
-    error_message = "Production must plan environment web DNS records from DNS policy."
+    error_message = "Production must plan computed environment DNS records from DNS policy."
   }
 
   assert {
@@ -214,6 +214,34 @@ run "prod_2x2_auto_load_balancer_plan" {
   assert {
     condition     = length(digitalocean_loadbalancer.web) == 1 && length(digitalocean_certificate.web_lb_production) == 1
     error_message = "A 2/2 production load-balancer plan must include a load balancer and production certificate."
+  }
+}
+
+run "prod_apex_only_dns_plan" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path = "tests/fixtures/compute-1x1-auto.yml"
+    grayhaven_test_dns_policy_path     = "tests/fixtures/dns-with-apex-only-environment.yml"
+  }
+
+  assert {
+    condition     = length(digitalocean_record.web_root_a) == 1 && digitalocean_record.web_root_a["grayhaven_systems"].name == "@"
+    error_message = "Production apex DNS must be optional and independent from web aliases."
+  }
+
+  assert {
+    condition     = length(digitalocean_record.web_www_cname) == 0 && length(digitalocean_record.web_dev_cname) == 0
+    error_message = "Production must not plan www/dev aliases when environment.web_aliases is false."
   }
 }
 
