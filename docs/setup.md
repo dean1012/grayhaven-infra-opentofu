@@ -146,7 +146,7 @@ repository.
 ansible-vault encrypt vault/*.yml
 git add .
 git commit -S -m "Initialize production vault data"
-git remote add origin git@github.com:<owner>/<private-vault-repo>.git
+git remote add origin git@github.com:dean1012/grayhaven-vault.git
 git push -u origin main
 ```
 
