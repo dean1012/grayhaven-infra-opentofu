@@ -101,8 +101,12 @@ Example setup flow:
 ```bash
 git clone git@github.com:dean1012/grayhaven-vault-example.git grayhaven-vault
 cd grayhaven-vault
-find .git -type f -delete
-find .git -depth -type d -empty -delete
+```
+
+Remove the `.git` directory so the new private repository does not retain the
+example repository history, then initialize a fresh repository:
+
+```bash
 git init
 ```
 
