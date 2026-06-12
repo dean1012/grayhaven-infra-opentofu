@@ -119,9 +119,6 @@ chmod 0755 .githooks/pre-commit
 git config core.hooksPath .githooks
 ```
 
-Use this hook for the real vault repository unless there is a deliberate
-operational reason to replace it with an equivalent guardrail.
-
 Edit `config.yml` and the files under `vault/` for staging and production as
 shown below. File formats are documented in detail in the
 [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
