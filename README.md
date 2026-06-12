@@ -303,6 +303,7 @@ deployment.
 ## Documentation
 
 - [Infrastructure Conventions](docs/conventions.md)
+- [Troubleshooting](docs/troubleshooting.md)
 - [Workspace Operations](docs/workspaces.md)
 
 [Back to top](#grayhaven-infrastructure-opentofu)

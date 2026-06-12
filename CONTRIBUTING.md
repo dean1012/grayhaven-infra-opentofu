@@ -37,7 +37,7 @@ Run static checks from the repository root:
 tofu fmt -check -recursive
 shellcheck scripts/read-vault-config
 git ls-files '*.yml' '*.yaml' | xargs -r yamllint
-git ls-files '*.md' | xargs -r markdownlint-cli2
+markdownlint-cli2 "**/*.md" "!.terraform/**"
 ```
 
 Run OpenTofu validation and offline plan tests from a temporary state-free copy:
