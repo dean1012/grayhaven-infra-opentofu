@@ -260,7 +260,13 @@ shared records such as MX, SPF, DKIM, DMARC, and CAA records belong under
 protection. Less critical baseline records can be placed under `records`; they
 are managed by the baseline workspace but are not protected from destroy.
 Staging and production own only environment web records for domains marked with
-`environment_web: true`.
+`environment_web: true`. If `environment_web` is omitted, it defaults to false
+and staging/production create no computed web DNS records for that domain.
+Domains listed in the vault `hosted_domains` data should have matching
+`environment_web: true` DNS policy here, and domains marked with
+`environment_web: true` should have matching vault `hosted_domains` data so
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+can converge the vhosts.
 
 DNS records are created in ordered type groups to reduce provider-side DNS
 transaction contention. Computed environment records are ordered as A records,
