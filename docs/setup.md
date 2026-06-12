@@ -46,9 +46,6 @@ scope for this automation.
 | tag           | create, read, delete                |
 | vpc           | create, read, update, delete        |
 
-If DigitalOcean rejects an operation during validation or deployment, inspect
-the denied resource/action and update the token scope deliberately.
-
 [Back to top](#setup)
 
 ## Generate Deploy Key Material
