@@ -86,8 +86,8 @@ git -C ../grayhaven-vault fetch origin main staging
 
 The `grayhaven_config_repo_ref`, `grayhaven_infra_policy_repo_ref`, and
 `grayhaven_certificate_environment` variables are testing-related
-fresh-deployment controls. Changing them on an existing environment is
-undefined operational behavior and is not recommended.
+fresh-deployment controls. Changing them on an existing environment will result
+in undefined operational behavior and is not recommended.
 
 [Back to top](#grayhaven-infrastructure-opentofu)
 
@@ -261,6 +261,14 @@ protection. Less critical baseline records can be placed under `records`; they
 are managed by the baseline workspace but are not protected from destroy.
 Staging and production own only environment web records for domains marked with
 `environment_web: true`.
+
+DNS records are created in ordered type groups to reduce provider-side DNS
+transaction contention. Computed environment records are ordered as A records,
+then CNAME records. Baseline `protected_records` are ordered as A, CNAME, MX,
+TXT, then CAA records. Baseline `records` are ordered as A, CNAME, then TXT
+records. The implementation filters the small DNS policy map once per supported
+record type; because the supported type set is fixed, this remains O(n) with a
+small constant factor and is an intentional readability tradeoff.
 
 The admin SSH key policy uses stable internal keys under `admin_ssh_keys`.
 Each entry has a `title`, which is also the DigitalOcean SSH key name, and a

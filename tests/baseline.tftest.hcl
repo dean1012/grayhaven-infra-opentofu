@@ -63,17 +63,27 @@ run "baseline_plan" {
   }
 
   assert {
-    condition     = length(digitalocean_record.baseline_protected) == 20
+    condition = (
+      length(digitalocean_record.baseline_protected_a) +
+      length(digitalocean_record.baseline_protected_cname) +
+      length(digitalocean_record.baseline_protected_mx) +
+      length(digitalocean_record.baseline_protected_txt) +
+      length(digitalocean_record.baseline_protected_caa)
+    ) == 20
     error_message = "The baseline plan must include all protected shared DNS records."
   }
 
   assert {
-    condition     = length(digitalocean_record.baseline) == 0
+    condition = (
+      length(digitalocean_record.baseline_a) +
+      length(digitalocean_record.baseline_cname) +
+      length(digitalocean_record.baseline_txt)
+    ) == 0
     error_message = "The operational DNS policy should not plan unprotected baseline records until they are explicitly added."
   }
 
   assert {
-    condition     = digitalocean_record.baseline_protected["grayhaven_systems.mx_primary"].type == "MX" && digitalocean_record.baseline_protected["jerry_smith.mx_primary"].type == "MX"
+    condition     = digitalocean_record.baseline_protected_mx["grayhaven_systems.mx_primary"].type == "MX" && digitalocean_record.baseline_protected_mx["jerry_smith.mx_primary"].type == "MX"
     error_message = "The baseline plan must retain mail DNS records under baseline ownership."
   }
 
@@ -112,17 +122,53 @@ run "baseline_unprotected_dns_record_plan" {
   }
 
   assert {
-    condition     = length(digitalocean_record.baseline) == 1
+    condition = (
+      length(digitalocean_record.baseline_a) +
+      length(digitalocean_record.baseline_cname) +
+      length(digitalocean_record.baseline_txt)
+    ) == 3
     error_message = "The baseline test fixture must plan unprotected DNS records."
   }
 
   assert {
-    condition     = digitalocean_record.baseline["grayhaven_systems.infrastructure_notice_txt"].type == "TXT"
-    error_message = "The unprotected DNS record collection must preserve record attributes."
+    condition = (
+      digitalocean_record.baseline_a["grayhaven_systems.infrastructure_notice_a"].type == "A" &&
+      digitalocean_record.baseline_cname["grayhaven_systems.infrastructure_notice_cname"].type == "CNAME" &&
+      digitalocean_record.baseline_txt["grayhaven_systems.infrastructure_notice_txt"].type == "TXT"
+    )
+    error_message = "The unprotected DNS record collection must support A, CNAME, and TXT records."
   }
 
   assert {
-    condition     = length(digitalocean_record.baseline_protected) == 2
-    error_message = "The baseline test fixture must still plan protected DNS records separately."
+    condition     = length(digitalocean_record.baseline_protected_a) == 1 && length(digitalocean_record.baseline_protected_mx) == 2
+    error_message = "The baseline test fixture must still plan protected DNS records separately by type."
   }
+}
+
+run "baseline_unsupported_dns_record_type_rejected" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+  }
+
+  variables {
+    state_encryption_passphrase_baseline = "offline-test-baseline-state-passphrase"
+    do_token                             = "offline-test-token"
+    grayhaven_ansible_deploy_public_key  = "ssh-ed25519 AAAAoffline offline@example"
+    grayhaven_ansible_deploy_private_key = <<-EOT
+      -----BEGIN OPENSSH PRIVATE KEY-----
+      offline-test-private-key
+      -----END OPENSSH PRIVATE KEY-----
+    EOT
+    grayhaven_test_dns_policy_path       = "tests/fixtures/dns-with-unsupported-records.yml"
+  }
+
+  expect_failures = [
+    terraform_data.dns_policy_guard,
+  ]
 }
