@@ -1,4 +1,4 @@
-# Infrastructure Conventions
+# Infrastructure Naming & Tagging Conventions
 
 Grayhaven infrastructure uses consistent names and DigitalOcean tags so resources
 are easy to audit, filter, and operate during routine changes.
@@ -42,7 +42,7 @@ DNS hostnames follow the same role and index pattern. Production hostnames live
 under `grayhavensystems.com`; staging hostnames live under
 `staging.grayhavensystems.com`.
 
-[Back to top](#infrastructure-conventions)
+[Back to top](#infrastructure-naming--tagging-conventions)
 
 ## DigitalOcean Tags
 
@@ -71,7 +71,7 @@ For example, web droplets use a scope tag such as
 `scope-grayhaven-core-prod-web` so firewall rules can target the current web
 pool without listing individual droplet IDs.
 
-[Back to top](#infrastructure-conventions)
+[Back to top](#infrastructure-naming--tagging-conventions)
 
 ## Operational Use
 
@@ -93,4 +93,4 @@ Tags support several operational paths:
 When adding new resource types, keep names and tags aligned with these patterns
 unless there is a clear operational reason to do otherwise.
 
-[Back to top](#infrastructure-conventions)
+[Back to top](#infrastructure-naming--tagging-conventions)

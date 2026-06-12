@@ -22,7 +22,7 @@ Policy files are committed under `policy/`:
 - `policy/firewall/prod.yml`
 
 Names and DigitalOcean tags follow the conventions documented in
-[Infrastructure Conventions](conventions.md).
+[Infrastructure Naming & Tagging Conventions](naming-tagging-conventions.md).
 
 [Back to top](#policy-files)
 

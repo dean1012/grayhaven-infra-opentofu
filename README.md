@@ -90,12 +90,15 @@ control-node changes, TLS-mode changes, secret rotation, and state safety.
 
 ## Other Documentation
 
-- [Setup](docs/setup.md)
-- [Workspaces](docs/workspaces.md)
-- [Policy Files](docs/policy.md)
-- [Operations](docs/operations.md)
-- [Infrastructure Conventions](docs/conventions.md)
-- [Troubleshooting](docs/troubleshooting.md)
+- Setup & Configuration
+  - [Setup](docs/setup.md)
+  - [Policy Files](docs/policy.md)
+- Operations & Safety
+  - [Workspaces](docs/workspaces.md)
+  - [Operations](docs/operations.md)
+  - [Troubleshooting](docs/troubleshooting.md)
+- Architecture & Standards
+  - [Infrastructure Naming & Tagging Conventions](docs/naming-tagging-conventions.md)
 
 [Back to top](#grayhaven-infrastructure-opentofu)
 
