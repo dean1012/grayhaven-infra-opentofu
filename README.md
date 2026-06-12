@@ -86,8 +86,9 @@ cloud-init, bootstraps hosts into
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
 and starts full Ansible convergence from the active control bastion.
 
-See [Operations](docs/operations.md) for plan/apply safety, destroy procedures,
-control-node changes, TLS-mode changes, secret rotation, and state safety.
+See [Operations](docs/operations.md) for routine plan/apply workflows, destroy
+procedures, control-node changes, and TLS-mode changes. See
+[Safety](docs/safety.md) for secret, state, and destructive-action guardrails.
 
 [Back to top](#grayhaven-infrastructure-opentofu)
 
@@ -99,6 +100,7 @@ control-node changes, TLS-mode changes, secret rotation, and state safety.
 - Operations & Safety
   - [Workspaces](docs/workspaces.md)
   - [Operations](docs/operations.md)
+  - [Safety](docs/safety.md)
   - [Troubleshooting](docs/troubleshooting.md)
 - Architecture & Standards
   - [Infrastructure Naming & Tagging Conventions](docs/naming-tagging-conventions.md)
