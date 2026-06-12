@@ -116,6 +116,6 @@ guidelines.
 
 ## License
 
-MIT
+[MIT](LICENSE)
 
 [Back to top](#grayhaven-infrastructure-opentofu)
