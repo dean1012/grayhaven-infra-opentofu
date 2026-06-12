@@ -126,14 +126,6 @@ variable "grayhaven_vault_checkout_path" {
   nullable    = true
 }
 
-variable "grayhaven_vault_password" {
-  description = "Optional shared Ansible Vault password used by bastion hosts to decrypt grayhaven-vault files."
-  type        = string
-  default     = null
-  nullable    = true
-  sensitive   = true
-}
-
 variable "grayhaven_vault_password_staging" {
   description = "Ansible Vault password used by staging bastion hosts to decrypt grayhaven-vault files."
   type        = string

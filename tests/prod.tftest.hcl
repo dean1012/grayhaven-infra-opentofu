@@ -2,7 +2,7 @@ variables {
   state_encryption_passphrase_prod     = "offline-test-prod-state-passphrase"
   do_token                             = "offline-test-token"
   grayhaven_vault_checkout_path        = "/tmp/grayhaven-vault-offline-test"
-  grayhaven_vault_password             = "offline-test-vault-password"
+  grayhaven_vault_password_prod        = "offline-test-prod-vault-password"
   grayhaven_ansible_deploy_public_key  = "ssh-ed25519 AAAAoffline offline@example"
   grayhaven_ansible_deploy_private_key = <<-EOT
     -----BEGIN OPENSSH PRIVATE KEY-----

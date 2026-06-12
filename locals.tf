@@ -87,8 +87,8 @@ locals {
 
   vault_password = !local.is_environment ? null : (
     local.is_prod
-    ? try(coalesce(var.grayhaven_vault_password, var.grayhaven_vault_password_prod), null)
-    : try(coalesce(var.grayhaven_vault_password, var.grayhaven_vault_password_staging), null)
+    ? var.grayhaven_vault_password_prod
+    : var.grayhaven_vault_password_staging
   )
   certificate_env_auto = local.is_prod ? "production" : "staging"
 
