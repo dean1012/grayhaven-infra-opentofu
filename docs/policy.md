@@ -148,7 +148,7 @@ never be committed or printed in terminal output.
 
 ## Firewall Policy
 
-The firewall policy files drive DigitalOcean hardware firewalls in this
+The firewall policy files drive DigitalOcean cloud firewalls in this
 repository and local firewalld policy in
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible):
 

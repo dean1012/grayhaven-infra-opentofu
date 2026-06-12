@@ -24,16 +24,19 @@ private SSH keys, secrets, generated state, or other private operational data.
 
 - Manage shared baseline resources and separate staging/production runtime
   environments.
-- Provision DigitalOcean VPCs, droplets, hardware firewalls, load balancers,
-  DNS records, SSH keys, and project assignments.
-- Define compute, DNS, firewall, and SSH key behavior through committed policy
-  files.
+- Provision DigitalOcean VPCs, droplets, cloud firewalls, load balancers, DNS
+  records, SSH keys, and projects based on vault, environment, and policy
+  configuration files.
+- Manage resource project assignment and tagging for supported resources.
 - Bootstrap hosts into
   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-  for ongoing convergence.
-- Read operational selectors from a local checkout of the private
-  `grayhaven-vault` repository.
-- Keep OpenTofu state encrypted locally.
+  for first-boot configuration and setup for automated full Ansible
+  convergence.
+- Interface with a
+  [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+  based private configuration repository with separate configuration supported
+  for staging and production environments.
+- Maintain local encrypted OpenTofu state.
 
 This repository is not a general-purpose deployment template. Deploying similar
 automation for another organization requires review and adaptation.
