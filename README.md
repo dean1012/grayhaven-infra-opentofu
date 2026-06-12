@@ -69,17 +69,6 @@ export TF_VAR_grayhaven_vault_repo_url='git@github.com:dean1012/grayhaven-vault.
 export TF_VAR_grayhaven_vault_checkout_path='/path/to/grayhaven-vault'
 export TF_VAR_grayhaven_ansible_deploy_public_key='<public deploy/control key>'
 export TF_VAR_grayhaven_ansible_deploy_private_key='<private deploy/control key>'
-```
-
-Use either one shared vault password variable:
-
-```bash
-export TF_VAR_grayhaven_vault_password='<Ansible Vault password>'
-```
-
-Or separate environment-specific vault password variables:
-
-```bash
 export TF_VAR_grayhaven_vault_password_staging='<staging Ansible Vault password>'
 export TF_VAR_grayhaven_vault_password_prod='<production Ansible Vault password>'
 ```
