@@ -87,9 +87,29 @@ example repository history, then initialize a fresh repository:
 git init
 ```
 
+Install `yamllint` on the workstation before enabling the hook. On AlmaLinux 10,
+use a user-level Python install when `pip` is available:
+
+```bash
+python3 -m pip install --user yamllint
+```
+
+If `pip` is not available for the user account, install the operating system
+package instead:
+
+```bash
+sudo dnf install yamllint
+```
+
+Confirm the command is available:
+
+```bash
+command -v yamllint
+```
+
 Install the provided pre-commit hook before the first commit. This hook rejects
 commits when required vault files are missing or staged without Ansible Vault
-encryption. It expects `yamllint` to be available in the shell environment.
+encryption.
 
 ```bash
 mkdir -p .githooks
