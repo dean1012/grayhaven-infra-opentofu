@@ -226,6 +226,18 @@ Staging and production own only environment web records for domains marked with
   `dev.staging.<domain>`.
 - `prod`: `<domain>`, `www.<domain>`, and `dev.<domain>`.
 
+If `environment_web` is false or omitted, staging and production create no
+computed web DNS records for that domain. The domain can still have
+baseline-owned records from `protected_records` or `records`.
+
+For hosted web domains, keep
+[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+`hosted_domains` data and `policy/dns.yml` aligned: each
+`hosted_domains[].domain` should have `environment_web: true`, and each domain
+with `environment_web: true` should have matching `hosted_domains` data so
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+can converge the corresponding vhosts.
+
 To add a hosted domain:
 
 1. Add the domain to `policy/dns.yml`.
