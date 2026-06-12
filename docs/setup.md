@@ -1,7 +1,7 @@
 # Setup
 
-This document describes the first-time setup needed before running
-`grayhaven-infra-opentofu`.
+This document describes the initialization and configuration that must be
+completed before operating within this repository.
 
 ## Table of Contents
 
@@ -20,22 +20,6 @@ Use unique values for each workspace or environment.
 ```bash
 openssl rand -hex 48
 ```
-
-OpenTofu state encryption uses these environment variables:
-
-- `TF_VAR_state_encryption_passphrase_baseline`
-- `TF_VAR_state_encryption_passphrase_staging`
-- `TF_VAR_state_encryption_passphrase_prod`
-
-Ansible Vault uses these environment variables during fresh bastion bootstrap:
-
-- `TF_VAR_grayhaven_vault_password_staging`
-- `TF_VAR_grayhaven_vault_password_prod`
-
-The actual vault files are maintained in the private vault repository. Use the
-procedures documented in
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
-when encrypting, editing, or rekeying those files.
 
 [Back to top](#setup)
 
@@ -69,23 +53,19 @@ the denied resource/action and update the token scope deliberately.
 
 ## Generate Deploy Key Material
 
-Generate an SSH keypair for the Ansible deploy/control key. Store the private
-key in a safe location under `$HOME` with restrictive ownership and
-permissions.
+Generate an SSH keypair for read-only deploy-key access to the private vault
+repository. Store the private key in a safe location under `$HOME` with
+restrictive ownership and permissions.
 
 ```bash
-ssh-keygen -t ed25519 -C "grayhaven-ansible-deploy"
+mkdir -p "$HOME/<safe-key-directory>"
 chmod 0700 "$HOME/<safe-key-directory>"
+ssh-keygen -t ed25519 -C "grayhaven-vault-deploy" \
+  -f "$HOME/<safe-key-directory>/ansible-deploy.key"
 chmod 0600 "$HOME/<safe-key-directory>/ansible-deploy.key"
 chmod 0644 "$HOME/<safe-key-directory>/ansible-deploy.key.pub"
 ```
 
-This key serves two purposes:
-
-- GitHub deploy-key access to the private vault repository.
-- Ansible control-node SSH access from bastion hosts to managed hosts.
-
-Add the public key as a read-only deploy key on the private vault repository.
 Do not commit or print the private key.
 
 [Back to top](#setup)
@@ -110,27 +90,84 @@ example repository history, then initialize a fresh repository:
 git init
 ```
 
-Edit `config.yml` and the files under `vault/` for the real environment, then
-encrypt the vault files before committing. The expected file shapes, encryption
-workflow, vault passphrase rotation, API token guidance, and deploy-key notes
-are documented in
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
-
-Create a new private GitHub repository for the real vault, then commit and push
-the initialized repository:
+Install the provided pre-commit hook before the first commit. This hook rejects
+commits when required vault files are missing or staged without Ansible Vault
+encryption. It expects `yamllint` to be available in the shell environment.
 
 ```bash
+mkdir -p .githooks
+cp ../grayhaven-infra-opentofu/templates/vault/pre-commit .githooks/pre-commit
+chmod 0755 .githooks/pre-commit
+git config core.hooksPath .githooks
+```
+
+Use this hook for the real vault repository unless there is a deliberate
+operational reason to replace it with an equivalent guardrail.
+
+Edit `config.yml` and the files under `vault/` for staging and production as
+shown below. File formats are documented in detail in the
+[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+repository.
+
+Set up the staging branch first:
+
+```bash
+git branch -M staging
+```
+
+Edit the staging values in these files, using the generated passphrases and
+deploy key material from earlier sections where applicable:
+
+- `config.yml`
+- `vault/common.yml`
+- `vault/bastion.yml`
+- `vault/web.yml`
+
+Encrypt the vault files with the staging Ansible Vault passphrase, then commit
+and push staging to the new private GitHub repository. Create the new private
+GitHub repository through GitHub's website before adding `origin` and pushing.
+
+```bash
+ansible-vault encrypt vault/common.yml vault/bastion.yml vault/web.yml
 git add .
-git commit -S -m "Initialize private vault repository"
+git commit -S -m "Initialize staging vault data"
 git remote add origin git@github.com:<owner>/<private-vault-repo>.git
-git branch -M main
-git push -u origin main
-git switch -c staging
 git push -u origin staging
 ```
 
+Create the production branch from the initialized staging branch:
+
+```bash
+git switch -c main
+ansible-vault decrypt vault/common.yml vault/bastion.yml vault/web.yml
+```
+
+Edit the production values in these files, using the generated passphrases and
+deploy key material from earlier sections where applicable:
+
+- `config.yml`
+- `vault/common.yml`
+- `vault/bastion.yml`
+- `vault/web.yml`
+
+Encrypt the vault files with the production Ansible Vault passphrase, then
+commit and push main:
+
+```bash
+ansible-vault encrypt vault/common.yml vault/bastion.yml vault/web.yml
+git add .
+git commit -S -m "Initialize production vault data"
+git push -u origin main
+```
+
 Add the deploy public key generated earlier as a read-only deploy key on the
-new private vault repository.
+new private vault repository through GitHub's website.
+
+Return to the staging branch before continuing with the OpenTofu setup:
+
+```bash
+git switch staging
+```
 
 [Back to top](#setup)
 
@@ -144,8 +181,8 @@ cp grayhaven.env.example "$HOME/.bashrc.d/grayhaven.env"
 chmod 0600 "$HOME/.bashrc.d/grayhaven.env"
 ```
 
-Edit `$HOME/.bashrc.d/grayhaven.env` with real values, then source the shell
-configuration:
+Edit `$HOME/.bashrc.d/grayhaven.env` using the generated values from above
+where applicable, then source the shell configuration:
 
 ```bash
 source "$HOME/.bashrc"
@@ -173,15 +210,6 @@ do
   fi
 done
 ```
-
-Fetch the vault refs before planning or applying:
-
-```bash
-git -C "$TF_VAR_grayhaven_vault_checkout_path" fetch origin main staging
-```
-
-OpenTofu reads `config.yml` from the workspace-selected Git ref in the local
-vault checkout, not from the checkout's current branch.
 
 [Back to top](#setup)
 
