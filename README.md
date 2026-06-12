@@ -241,7 +241,7 @@ Policy files are committed under `policy/`:
 - `policy/compute.yml`: bastion/web instance definitions, active control
   bastion, and web TLS mode.
 - `policy/dns.yml`: managed DNS zones, baseline-owned DNS records, and domains
-  that should receive environment web records.
+  that should receive computed environment DNS records.
 - `policy/ssh-keys.yml`: admin SSH public keys managed by the baseline
   workspace and attached to all environment droplets.
 - `policy/firewall/staging.yml`: staging hardware firewall policy.
@@ -259,12 +259,14 @@ shared records such as MX, SPF, DKIM, DMARC, and CAA records belong under
 `protected_records` and are baseline resources with OpenTofu destroy
 protection. Less critical baseline records can be placed under `records`; they
 are managed by the baseline workspace but are not protected from destroy.
-Staging and production own only environment web records for domains marked with
-`environment_web: true`. If `environment_web` is omitted, it defaults to false
-and staging/production create no computed web DNS records for that domain.
-Domains listed in the vault `hosted_domains` data should have matching
-`environment_web: true` DNS policy here, and domains marked with
-`environment_web: true` should have matching vault `hosted_domains` data so
+Staging and production own only computed environment DNS records for domains
+marked with `environment.apex: true` or `environment.web_aliases: true`.
+`environment.apex` creates the environment apex A record: `staging.<domain>` in
+staging and `<domain>` in production. `environment.web_aliases` creates the
+environment `www` and `dev` CNAME records and requires `environment.apex`.
+Both fields default to false when omitted. Domains listed in vault
+`hosted_domains` data should set both fields to true here, and domains with
+both fields set to true should have matching vault `hosted_domains` data so
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
 can converge the vhosts.
 

@@ -4,7 +4,9 @@ ttl: 300
 domains:
   grayhaven_systems:
     name: grayhavensystems.com
-    environment_web: true
+    environment:
+      apex: true
+      web_aliases: true
     records:
       infrastructure_notice_a:
         type: A
@@ -31,7 +33,9 @@ domains:
 
   jerry_smith:
     name: jerry-smith.net
-    environment_web: true
+    environment:
+      apex: true
+      web_aliases: true
     protected_records:
       mx_primary:
         type: MX

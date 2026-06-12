@@ -126,13 +126,18 @@ locals {
   # Host inventory and cloud-init handoff
   #############################################################################
 
-  web_domain_names = local.is_environment ? flatten([
-    for site in local.environment_dns : [
-      site.site_name,
-      "${site.www_name}.${site.domain}",
-      "${site.dev_name}.${site.domain}"
-    ]
-  ]) : []
+  web_domain_names = local.is_environment ? concat(
+    [
+      for site in local.environment_apex_dns :
+      site.site_name
+    ],
+    flatten([
+      for site in local.environment_web_alias_dns : [
+        "${site.www_name}.${site.domain}",
+        "${site.dev_name}.${site.domain}"
+      ]
+    ])
+  ) : []
 
   firewall_tag_names = local.is_environment ? {
     bastion = digitalocean_tag.bastion_scope[0].name

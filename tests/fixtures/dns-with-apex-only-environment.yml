@@ -1,0 +1,15 @@
+---
+ttl: 300
+
+domains:
+  grayhaven_systems:
+    name: grayhavensystems.com
+    environment:
+      apex: true
+      web_aliases: false
+
+  jerry_smith:
+    name: jerry-smith.net
+    environment:
+      apex: false
+      web_aliases: false

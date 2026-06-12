@@ -4,7 +4,9 @@ ttl: 300
 domains:
   grayhaven_systems:
     name: grayhavensystems.com
-    environment_web: true
+    environment:
+      apex: true
+      web_aliases: true
     protected_records:
       caa_letsencrypt:
         type: CAA
@@ -55,7 +57,9 @@ domains:
 
   jerry_smith:
     name: jerry-smith.net
-    environment_web: true
+    environment:
+      apex: true
+      web_aliases: true
     protected_records:
       caa_letsencrypt:
         type: CAA
