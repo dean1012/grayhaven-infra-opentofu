@@ -31,6 +31,11 @@ output "web_tls_mode" {
   value       = local.is_environment ? local.effective_tls_mode : null
 }
 
+output "web_certificate_domain_names" {
+  description = "Domain names requested for environment web certificates"
+  value       = local.web_domain_names
+}
+
 output "workspace" {
   description = "Active OpenTofu workspace"
   value       = terraform.workspace

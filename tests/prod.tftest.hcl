@@ -215,6 +215,18 @@ run "prod_2x2_auto_load_balancer_plan" {
     condition     = length(digitalocean_loadbalancer.web) == 1 && length(digitalocean_certificate.web_lb_production) == 1
     error_message = "A 2/2 production load-balancer plan must include a load balancer and production certificate."
   }
+
+  assert {
+    condition = jsonencode(output.web_certificate_domain_names) == jsonencode([
+      "grayhavensystems.com",
+      "www.grayhavensystems.com",
+      "dev.grayhavensystems.com",
+      "jerry-smith.net",
+      "www.jerry-smith.net",
+      "dev.jerry-smith.net"
+    ])
+    error_message = "Production load-balancer certificate names must keep the per-domain apex, www, dev order."
+  }
 }
 
 run "prod_apex_only_dns_plan" {
@@ -242,6 +254,11 @@ run "prod_apex_only_dns_plan" {
   assert {
     condition     = length(digitalocean_record.web_www_cname) == 0 && length(digitalocean_record.web_dev_cname) == 0
     error_message = "Production must not plan www/dev aliases when environment.web_aliases is false."
+  }
+
+  assert {
+    condition     = jsonencode(output.web_certificate_domain_names) == jsonencode(["grayhavensystems.com"])
+    error_message = "Production apex-only DNS must request only the apex certificate name."
   }
 }
 

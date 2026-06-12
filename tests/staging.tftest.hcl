@@ -215,6 +215,18 @@ run "staging_2x2_auto_load_balancer_plan" {
     condition     = length(digitalocean_loadbalancer.web) == 1 && length(digitalocean_certificate.web_lb_staging) == 1
     error_message = "A 2/2 staging load-balancer plan must include a load balancer and staging certificate."
   }
+
+  assert {
+    condition = jsonencode(output.web_certificate_domain_names) == jsonencode([
+      "staging.grayhavensystems.com",
+      "www.staging.grayhavensystems.com",
+      "dev.staging.grayhavensystems.com",
+      "staging.jerry-smith.net",
+      "www.staging.jerry-smith.net",
+      "dev.staging.jerry-smith.net"
+    ])
+    error_message = "Staging load-balancer certificate names must keep the per-domain apex, www, dev order."
+  }
 }
 
 run "staging_apex_only_dns_plan" {
@@ -242,6 +254,11 @@ run "staging_apex_only_dns_plan" {
   assert {
     condition     = length(digitalocean_record.web_www_cname) == 0 && length(digitalocean_record.web_dev_cname) == 0
     error_message = "Staging must not plan www/dev aliases when environment.web_aliases is false."
+  }
+
+  assert {
+    condition     = jsonencode(output.web_certificate_domain_names) == jsonencode(["staging.grayhavensystems.com"])
+    error_message = "Staging apex-only DNS must request only the apex certificate name."
   }
 }
 
