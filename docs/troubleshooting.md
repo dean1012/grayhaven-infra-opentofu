@@ -13,6 +13,10 @@ while OpenTofu is creating several resources at once. These errors can affect
 different resource types and do not necessarily mean the configuration is
 wrong.
 
+DNS records are ordered by type in this repository to reduce provider-side DNS
+transaction contention. If the provider still returns a transient deadlock, use
+the same retry pattern as other provider API errors.
+
 When this happens:
 
 1. Run `tofu plan` again and review the remaining changes.

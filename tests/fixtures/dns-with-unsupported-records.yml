@@ -1,0 +1,18 @@
+---
+ttl: 300
+
+domains:
+  grayhaven_systems:
+    name: grayhavensystems.com
+    environment_web: true
+    records:
+      unsupported_mx:
+        type: MX
+        name: "@"
+        value: mail.example.com.
+        priority: 10
+    protected_records:
+      unsupported_srv:
+        type: SRV
+        name: _service._tcp
+        value: service.example.com.

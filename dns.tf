@@ -2,6 +2,10 @@ locals {
   dns_policy_path = coalesce(var.grayhaven_test_dns_policy_path, "${path.module}/policy/dns.yml")
   dns_policy      = yamldecode(file(local.dns_policy_path))
   dns_ttl         = try(local.dns_policy.ttl, 300)
+
+  dns_supported_protected_record_types = toset(["A", "CNAME", "MX", "TXT", "CAA"])
+  dns_supported_record_types           = toset(["A", "CNAME", "TXT"])
+
   dns_domains = {
     for domain_key, domain in local.dns_policy.domains : domain_key => {
       name              = domain.name
@@ -33,6 +37,30 @@ locals {
     ]
   ])...)
 
+  dns_protected_record_types = toset([
+    for _, record in local.dns_protected_records :
+    upper(tostring(try(record.record.type, "")))
+  ])
+
+  dns_record_types = toset([
+    for _, record in local.dns_records :
+    upper(tostring(try(record.record.type, "")))
+  ])
+
+  dns_protected_records_by_type = {
+    for record_type in local.dns_supported_protected_record_types : record_type => {
+      for record_key, record in local.dns_protected_records : record_key => record
+      if upper(tostring(try(record.record.type, ""))) == record_type
+    }
+  }
+
+  dns_records_by_type = {
+    for record_type in local.dns_supported_record_types : record_type => {
+      for record_key, record in local.dns_records : record_key => record
+      if upper(tostring(try(record.record.type, ""))) == record_type
+    }
+  }
+
   environment_dns = local.is_environment ? {
     for domain_key, domain in local.dns_domains : domain_key => {
       domain       = domain.name
@@ -51,6 +79,25 @@ data "digitalocean_domain" "managed" {
   name = each.value.name
 }
 
+resource "terraform_data" "dns_policy_guard" {
+  input = {
+    protected_record_types = local.dns_protected_record_types
+    record_types           = local.dns_record_types
+  }
+
+  lifecycle {
+    precondition {
+      condition     = length(setsubtract(local.dns_protected_record_types, local.dns_supported_protected_record_types)) == 0
+      error_message = "DNS protected_records support only A, CNAME, MX, TXT, and CAA record types."
+    }
+
+    precondition {
+      condition     = length(setsubtract(local.dns_record_types, local.dns_supported_record_types)) == 0
+      error_message = "DNS records support only A, CNAME, and TXT record types. Use protected_records for MX and CAA."
+    }
+  }
+}
+
 ###############################################################################
 # Baseline DNS zones and shared records
 ###############################################################################
@@ -65,8 +112,8 @@ resource "digitalocean_domain" "managed" {
   }
 }
 
-resource "digitalocean_record" "baseline_protected" {
-  for_each = local.is_baseline ? local.dns_protected_records : {}
+resource "digitalocean_record" "baseline_protected_a" {
+  for_each = local.is_baseline ? local.dns_protected_records_by_type["A"] : {}
 
   domain   = digitalocean_domain.managed[each.value.domain_key].name
   type     = each.value.record.type
@@ -82,8 +129,8 @@ resource "digitalocean_record" "baseline_protected" {
   }
 }
 
-resource "digitalocean_record" "baseline" {
-  for_each = local.is_baseline ? local.dns_records : {}
+resource "digitalocean_record" "baseline_protected_cname" {
+  for_each = local.is_baseline ? local.dns_protected_records_by_type["CNAME"] : {}
 
   domain   = digitalocean_domain.managed[each.value.domain_key].name
   type     = each.value.record.type
@@ -93,6 +140,114 @@ resource "digitalocean_record" "baseline" {
   flags    = try(each.value.record.flags, null)
   tag      = try(each.value.record.tag, null)
   ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.baseline_protected_a]
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_record" "baseline_protected_mx" {
+  for_each = local.is_baseline ? local.dns_protected_records_by_type["MX"] : {}
+
+  domain   = digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.baseline_protected_cname]
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_record" "baseline_protected_txt" {
+  for_each = local.is_baseline ? local.dns_protected_records_by_type["TXT"] : {}
+
+  domain   = digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.baseline_protected_mx]
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_record" "baseline_protected_caa" {
+  for_each = local.is_baseline ? local.dns_protected_records_by_type["CAA"] : {}
+
+  domain   = digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.baseline_protected_txt]
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_record" "baseline_a" {
+  for_each = local.is_baseline ? local.dns_records_by_type["A"] : {}
+
+  domain   = digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.baseline_protected_caa]
+}
+
+resource "digitalocean_record" "baseline_cname" {
+  for_each = local.is_baseline ? local.dns_records_by_type["CNAME"] : {}
+
+  domain   = digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.baseline_a]
+}
+
+resource "digitalocean_record" "baseline_txt" {
+  for_each = local.is_baseline ? local.dns_records_by_type["TXT"] : {}
+
+  domain   = digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.baseline_cname]
 }
 
 ###############################################################################
@@ -120,7 +275,11 @@ resource "digitalocean_record" "web_www_cname" {
   value  = each.value.cname_target
   ttl    = local.dns_ttl
 
-  depends_on = [data.digitalocean_domain.managed]
+  depends_on = [
+    digitalocean_record.web_root_a,
+    digitalocean_record.grayhaven_droplet_a,
+    digitalocean_record.grayhaven_bastion_a,
+  ]
 }
 
 resource "digitalocean_record" "web_dev_cname" {
@@ -132,7 +291,7 @@ resource "digitalocean_record" "web_dev_cname" {
   value  = each.value.cname_target
   ttl    = local.dns_ttl
 
-  depends_on = [data.digitalocean_domain.managed]
+  depends_on = [digitalocean_record.web_www_cname]
 }
 
 resource "digitalocean_record" "grayhaven_droplet_a" {

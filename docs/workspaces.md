@@ -207,6 +207,18 @@ resources use OpenTofu destroy protection and must not be moved into staging or
 production state. Use `records` only for baseline-owned records that may be
 destroyed by a normal baseline plan when removed from policy.
 
+DNS record creation is intentionally ordered by record type. Computed
+environment records are created first, with A records before CNAME records.
+Baseline `protected_records` are created next in A, CNAME, MX, TXT, and CAA
+order. Baseline `records` are created after protected records and support only
+A, CNAME, and TXT records. Put MX and CAA records in `protected_records`.
+
+The implementation filters the DNS policy records by supported type before
+creating the type-specific resource groups. This is O(k*n), where `k` is the
+fixed number of supported DNS record types, so it reduces to O(n). The expected
+DNS policy dataset is small enough that this is an acceptable real-world
+tradeoff for clearer ordering and safer applies.
+
 Staging and production own only environment web records for domains marked with
 `environment_web: true`:
 
@@ -221,7 +233,8 @@ To add a hosted domain:
 3. Add optional baseline records that do not need destroy protection under
    `records`.
 4. Set `environment_web: true` when staging and production web records should
-   be managed for the domain.
+   be managed for the domain. Leave it false or omit it when the domain should
+   have only baseline-owned DNS records.
 5. Run `tofu plan` in `baseline` and review the shared DNS additions.
 6. Run `tofu plan` in `staging` or `prod` and review only environment web DNS
    additions.

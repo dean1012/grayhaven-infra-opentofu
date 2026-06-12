@@ -150,12 +150,22 @@ run "staging_1x1_auto_host_plan" {
   }
 
   assert {
-    condition     = length(digitalocean_record.baseline_protected) == 0
+    condition = (
+      length(digitalocean_record.baseline_protected_a) +
+      length(digitalocean_record.baseline_protected_cname) +
+      length(digitalocean_record.baseline_protected_mx) +
+      length(digitalocean_record.baseline_protected_txt) +
+      length(digitalocean_record.baseline_protected_caa)
+    ) == 0
     error_message = "Staging must not own baseline shared or mail DNS records."
   }
 
   assert {
-    condition     = length(digitalocean_record.baseline) == 0
+    condition = (
+      length(digitalocean_record.baseline_a) +
+      length(digitalocean_record.baseline_cname) +
+      length(digitalocean_record.baseline_txt)
+    ) == 0
     error_message = "Staging must not own unprotected baseline DNS records."
   }
 
