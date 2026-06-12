@@ -44,7 +44,15 @@ Run OpenTofu validation and offline plan tests from a temporary state-free copy:
 
 ```bash
 tmpdir="$(mktemp -d /tmp/grayhaven-infra-validate.XXXXXX)"
-trap 'rm -rf "$tmpdir"' EXIT
+
+cleanup() {
+  if [ -n "$tmpdir" ] && [ -d "$tmpdir" ]; then
+    find "$tmpdir" -type f -delete
+    find "$tmpdir" -depth -type d -empty -delete
+  fi
+}
+
+trap cleanup EXIT
 
 rsync -a \
   --exclude '.git' \

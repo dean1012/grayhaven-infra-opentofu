@@ -1,7 +1,5 @@
 # Infrastructure Conventions
 
-[Return to README](../README.md)
-
 Grayhaven infrastructure uses consistent names and DigitalOcean tags so resources
 are easy to audit, filter, and operate during routine changes.
 

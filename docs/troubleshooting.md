@@ -1,7 +1,5 @@
 # Troubleshooting
 
-[Return to README](../README.md)
-
 This document captures known transient operational issues and safe recovery
 patterns for Grayhaven OpenTofu runs.
 
