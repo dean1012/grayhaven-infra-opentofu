@@ -119,42 +119,15 @@ chmod 0755 .githooks/pre-commit
 git config core.hooksPath .githooks
 ```
 
-Edit `config.yml` and the files under `vault/` for staging and production as
+Edit `config.yml` and the files under `vault/` for production and staging as
 shown below. File formats are documented in detail in the
 [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
 repository.
 
-Set up the staging branch first:
+Configure production first so the initial commit creates the `main` branch:
 
 ```bash
-git branch -M staging
-```
-
-Edit the staging values in these files, using the generated passphrases and
-deploy key material from earlier sections where applicable:
-
-- `config.yml`
-- `vault/common.yml`
-- `vault/bastion.yml`
-- `vault/web.yml`
-
-Encrypt the vault files with the staging Ansible Vault passphrase, then commit
-and push staging to the new private GitHub repository. Create the new private
-GitHub repository through GitHub's website before adding `origin` and pushing.
-
-```bash
-ansible-vault encrypt vault/common.yml vault/bastion.yml vault/web.yml
-git add .
-git commit -S -m "Initialize staging vault data"
-git remote add origin git@github.com:<owner>/<private-vault-repo>.git
-git push -u origin staging
-```
-
-Create the production branch from the initialized staging branch:
-
-```bash
-git switch -c main
-ansible-vault decrypt vault/common.yml vault/bastion.yml vault/web.yml
+git branch -M main
 ```
 
 Edit the production values in these files, using the generated passphrases and
@@ -166,23 +139,45 @@ deploy key material from earlier sections where applicable:
 - `vault/web.yml`
 
 Encrypt the vault files with the production Ansible Vault passphrase, then
-commit and push main:
+commit and push main to the new private GitHub repository. Create the new private
+GitHub repository through GitHub's website before adding `origin` and pushing.
 
 ```bash
 ansible-vault encrypt vault/common.yml vault/bastion.yml vault/web.yml
 git add .
 git commit -S -m "Initialize production vault data"
+git remote add origin git@github.com:<owner>/<private-vault-repo>.git
 git push -u origin main
+```
+
+Create the staging branch from the initialized main branch, then decrypt the
+copied production vault files with the production Ansible Vault passphrase:
+
+```bash
+git switch -c staging
+ansible-vault decrypt vault/common.yml vault/bastion.yml vault/web.yml
+```
+
+Edit the staging values in these files, using the generated passphrases and
+deploy key material from earlier sections where applicable:
+
+- `config.yml`
+- `vault/common.yml`
+- `vault/bastion.yml`
+- `vault/web.yml`
+
+Encrypt the vault files with the staging Ansible Vault passphrase, then commit
+and push staging:
+
+```bash
+ansible-vault encrypt vault/common.yml vault/bastion.yml vault/web.yml
+git add .
+git commit -S -m "Initialize staging vault data"
+git push -u origin staging
 ```
 
 Add the deploy public key generated earlier as a read-only deploy key on the
 new private vault repository through GitHub's website.
-
-Return to the staging branch before continuing with the OpenTofu setup:
-
-```bash
-git switch staging
-```
 
 [Back to top](#setup)
 
