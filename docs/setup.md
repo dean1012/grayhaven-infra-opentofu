@@ -94,10 +94,11 @@ use a user-level Python install when `pip` is available:
 python3 -m pip install --user yamllint
 ```
 
-If `pip` is not available for the user account, install the operating system
-package instead:
+If `pip` is not available for the user account, enable EPEL and install the
+operating system package instead:
 
 ```bash
+sudo dnf install epel-release
 sudo dnf install yamllint
 ```
 
