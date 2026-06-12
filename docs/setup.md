@@ -69,6 +69,11 @@ Do not commit or print the private key.
 
 ## Set Up the Vault Repository
 
+Create a new private repository named `grayhaven-vault` on GitHub. In the
+private repository settings, disable optional features that are not used for
+vault operations: Wiki, issues, sponsorships, discussions, projects, and pull
+request features when GitHub exposes a control for them.
+
 Use
 [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
 as the documented starting shape for the private vault repository.
@@ -130,20 +135,15 @@ Configure production first so the initial commit creates the `main` branch:
 git branch -M main
 ```
 
-Edit the production values in these files, using the generated passphrases and
-deploy key material from earlier sections where applicable:
+Edit `config.yml` and the files under `vault/` using the generated production
+values from above where applicable.
 
-- `config.yml`
-- `vault/common.yml`
-- `vault/bastion.yml`
-- `vault/web.yml`
-
-Encrypt the vault files with the production Ansible Vault passphrase, then
-commit and push main to the new private GitHub repository. Create the new private
-GitHub repository through GitHub's website before adding `origin` and pushing.
+Encrypt the `vault/*.yml` files with the production Ansible Vault passphrase
+generated above, then commit and push `main` to the new private GitHub
+repository.
 
 ```bash
-ansible-vault encrypt vault/common.yml vault/bastion.yml vault/web.yml
+ansible-vault encrypt vault/*.yml
 git add .
 git commit -S -m "Initialize production vault data"
 git remote add origin git@github.com:<owner>/<private-vault-repo>.git
@@ -155,22 +155,18 @@ copied production vault files with the production Ansible Vault passphrase:
 
 ```bash
 git switch -c staging
-ansible-vault decrypt vault/common.yml vault/bastion.yml vault/web.yml
+ansible-vault decrypt vault/*.yml
 ```
 
-Edit the staging values in these files, using the generated passphrases and
-deploy key material from earlier sections where applicable:
+Edit `config.yml` and the files under `vault/` using the generated staging
+values from above where applicable.
 
-- `config.yml`
-- `vault/common.yml`
-- `vault/bastion.yml`
-- `vault/web.yml`
-
-Encrypt the vault files with the staging Ansible Vault passphrase, then commit
-and push staging:
+Encrypt the `vault/*.yml` files with the staging Ansible Vault passphrase
+generated above, then commit and push `staging` to the new private GitHub
+repository.
 
 ```bash
-ansible-vault encrypt vault/common.yml vault/bastion.yml vault/web.yml
+ansible-vault encrypt vault/*.yml
 git add .
 git commit -S -m "Initialize staging vault data"
 git push -u origin staging
