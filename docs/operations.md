@@ -164,7 +164,7 @@ systemctl is-enabled grayhaven-ansible-poller.timer
 systemctl is-active grayhaven-ansible-poller.timer
 ```
 
-Remaining bastions remain SSH jump points.
+Remaining bastions still operate as SSH jump points.
 
 Automatic bastion failover is not supported at this time. You must manually
 switch the active control bastion.
