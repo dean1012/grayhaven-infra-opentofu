@@ -8,7 +8,8 @@ completed before operating within this repository.
 - [Install Dependencies](#install-dependencies)
 - [Generate Passphrases](#generate-passphrases)
 - [Create a DigitalOcean API Token](#create-a-digitalocean-api-token)
-- [Generate an SSH Keypair for Read-only Access to Vault Repository](#generate-an-ssh-keypair-for-read-only-access-to-vault-repository)
+- [Generate an Admin SSH Keypair for SSH Access](#generate-an-admin-ssh-keypair-for-ssh-access)
+- [Generate a Deployment SSH Keypair for Read-only Access to Vault Repository](#generate-a-deployment-ssh-keypair-for-read-only-access-to-vault-repository)
 - [Set Up the Vault Repository](#set-up-the-vault-repository)
 - [Set Up the Environment](#set-up-the-environment)
 - [Edit Policy Files](#edit-policy-files)
@@ -93,11 +94,26 @@ scope for this automation.
 
 [Back to top](#setup)
 
-## Generate an SSH Keypair for Read-only Access to Vault Repository
+## Generate an Admin SSH Keypair for SSH Access
 
-Generate an SSH keypair for read-only deploy-key access to the private vault
-repository. Store the private key in a safe location under `$HOME` with
-restrictive ownership and permissions.
+Generate an admin SSH keypair that will be used for SSH access to Grayhaven
+Systems LLC infrastructure:
+
+```bash
+mkdir -p "$HOME/.ssh"
+chmod 0700 "$HOME/.ssh"
+ssh-keygen -t ed25519 -C "grayhaven-admin" -f "$HOME/.ssh/id_ed25519"
+chmod 0600 "$HOME/.ssh/id_ed25519"
+chmod 0644 "$HOME/.ssh/id_ed25519.pub"
+```
+
+[Back to top](#setup)
+
+## Generate a Deployment SSH Keypair for Read-only Access to Vault Repository
+
+Generate a new deployment SSH keypair for read-only access to the private vault
+repository and store the private key in a safe location under `$HOME` with
+restrictive ownership and permissions:
 
 ```bash
 mkdir -p "$HOME/<safe-key-directory>"
