@@ -257,18 +257,6 @@ git add policy/baseline/
 git commit -S -m "Configure baseline policy files"
 ```
 
-Review and update all `policy/prod/` files setting values appropriate for
-production. Production values are the desired steady-state settings for the
-long-lived `prod` workspace.
-
-After editing all `policy/prod/` files, review and commit them:
-
-```bash
-git status --short policy/prod/
-git add policy/prod/
-git commit -S -m "Configure production policy files"
-```
-
 Review and update all `policy/staging/` files setting values appropriate for
 staging.
 Staging values should support short-lived validation deployments before
@@ -280,6 +268,18 @@ After editing all `policy/staging/` files, review and commit them:
 git status --short policy/staging/
 git add policy/staging/
 git commit -S -m "Configure staging policy files"
+```
+
+Review and update all `policy/prod/` files setting values appropriate for
+production. Production values are the desired steady-state settings for the
+long-lived `prod` workspace.
+
+After editing all `policy/prod/` files, review and commit them:
+
+```bash
+git status --short policy/prod/
+git add policy/prod/
+git commit -S -m "Configure production policy files"
 ```
 
 [Back to top](#setup)
