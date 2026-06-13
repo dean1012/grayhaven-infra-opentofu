@@ -9,6 +9,7 @@ Systems LLC infrastructure. Policy file schemas are documented in
 - [Supported Runtime Roles](#supported-runtime-roles)
 - [Control Bastion](#control-bastion)
 - [Web TLS Modes](#web-tls-modes)
+- [Firewall Policy](#firewall-policy)
 - [Configuration Handoff](#configuration-handoff)
 
 ## Supported Runtime Roles
@@ -55,6 +56,18 @@ Adding or removing nodes from an existing load-balanced layout does not require
 host certificate issuance. Moving between host TLS and load balancer TLS can
 produce a short transition window while DNS, load balancer certificates, and
 Ansible backend configuration converge.
+
+[Back to top](#runtime-architecture)
+
+## Firewall Policy
+
+Cloud firewalls and host firewalld policy are both derived from the
+environment-specific `firewall.yml` file in `grayhaven-vault`.
+
+OpenTofu reads this file from the local vault checkout during plan and apply.
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+reads the same file from the vault checkout on the active control bastion
+during convergence.
 
 [Back to top](#runtime-architecture)
 

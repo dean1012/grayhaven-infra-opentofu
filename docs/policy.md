@@ -10,7 +10,6 @@ workspace. This document describes the supported policy file schemas.
 - [Environment DNS Policy](#environment-dns-policy)
 - [Admin SSH Key Policy](#admin-ssh-key-policy)
 - [Compute Policy](#compute-policy)
-- [Firewall Policy](#firewall-policy)
 
 ## Overview
 
@@ -24,8 +23,8 @@ Workspace policy directories contain files relevant to the resources owned by
 that workspace:
 
 - `policy/baseline/`: `dns.yml`, `ssh-keys.yml`
-- `policy/staging/`: `compute.yml`, `dns.yml`, `firewall.yml`
-- `policy/prod/`: `compute.yml`, `dns.yml`, `firewall.yml`
+- `policy/staging/`: `compute.yml`, `dns.yml`
+- `policy/prod/`: `compute.yml`, `dns.yml`
 
 OpenTofu selects policy files from the directory that matches the active
 workspace. The `baseline` workspace uses `policy/baseline/`, `staging` uses
@@ -39,6 +38,8 @@ Names and DigitalOcean tags follow
 Runtime role and TLS behavior are described in
 [Runtime Architecture](runtime-architecture.md).
 DNS behavior and ownership are described in [DNS](dns.md).
+Shared firewall policy is documented in
+[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
 
 [Back to top](#policy-files)
 
@@ -216,63 +217,6 @@ web:
   instances:
     web-01:
       index: 1
-```
-
-[Back to top](#policy-files)
-
-## Firewall Policy
-
-`policy/staging/firewall.yml` and `policy/prod/firewall.yml` define
-DigitalOcean cloud firewall rules.
-
-Supported top-level keys:
-
-- `firewalls`: map of firewall policies.
-
-Supported firewall keys:
-
-- `firewalls.bastion`: bastion cloud firewall policy.
-- `firewalls.web`: web cloud firewall policy.
-
-Each firewall policy supports:
-
-- `inbound`: list of inbound firewall rules.
-- `outbound`: list of outbound firewall rules.
-
-Supported inbound rule keys:
-
-- `protocol`: network protocol.
-- `port_range`: port or port range.
-- `source_addresses`: optional list of source CIDR blocks.
-- `source_tags`: optional list of source tag aliases.
-
-Supported outbound rule keys:
-
-- `protocol`: network protocol.
-- `port_range`: port or port range.
-- `destination_addresses`: optional list of destination CIDR blocks.
-- `destination_tags`: optional list of destination tag aliases.
-
-Supported tag aliases are:
-
-- `bastion`
-- `web`
-
-Example shape:
-
-```yaml
-firewalls:
-  bastion:
-    inbound:
-      - protocol: tcp
-        port_range: "22"
-        source_addresses:
-          - 0.0.0.0/0
-    outbound:
-      - protocol: tcp
-        port_range: "22"
-        destination_tags:
-          - web
 ```
 
 [Back to top](#policy-files)

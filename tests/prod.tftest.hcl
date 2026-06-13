@@ -92,7 +92,7 @@ mock_provider "external" {
   mock_data "external" {
     defaults = {
       result = {
-        config_yml = <<-EOT
+        config_yml   = <<-EOT
           certificate_environment: production
           discord_webhook: production
           backup:
@@ -107,6 +107,32 @@ mock_provider "external" {
               - /home
               - /var/log
             exclude: []
+        EOT
+        firewall_yml = <<-EOT
+          firewalls:
+            bastion:
+              inbound:
+                - protocol: tcp
+                  port_range: "22"
+                  source_addresses:
+                    - 0.0.0.0/0
+              outbound:
+                - protocol: tcp
+                  port_range: "22"
+                  destination_tags:
+                    - bastion
+                    - web
+            web:
+              inbound:
+                - protocol: tcp
+                  port_range: "22"
+                  source_tags:
+                    - bastion
+              outbound:
+                - protocol: tcp
+                  port_range: "443"
+                  destination_addresses:
+                    - 0.0.0.0/0
         EOT
       }
     }
