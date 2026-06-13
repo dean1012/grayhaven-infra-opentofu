@@ -21,12 +21,21 @@ Install OpenTofu from the
 [official OpenTofu RPM repository](https://opentofu.org/docs/intro/install/rpm/):
 
 ```bash
-curl --proto '=https' --tlsv1.2 -fsSL \
-  https://get.opentofu.org/install-opentofu.sh \
-  -o install-opentofu.sh
-chmod +x install-opentofu.sh
-./install-opentofu.sh --install-method rpm
-rm -f install-opentofu.sh
+cat <<EOF | sudo tee /etc/yum.repos.d/opentofu.repo
+[opentofu]
+name=opentofu
+baseurl=https://packages.opentofu.org/opentofu/tofu/rpm_any/rpm_any/\$basearch
+repo_gpgcheck=0
+gpgcheck=1
+enabled=1
+gpgkey=https://get.opentofu.org/opentofu.gpg https://packages.opentofu.org/opentofu/tofu/gpgkey
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+metadata_expire=300
+EOF
+sudo rpm --import https://get.opentofu.org/opentofu.gpg
+sudo rpm --import https://packages.opentofu.org/opentofu/tofu/gpgkey
+sudo dnf install -y tofu
 ```
 
 Install Ansible, OpenSSL, and local validation tools on the workstation:
