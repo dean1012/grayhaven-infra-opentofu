@@ -19,16 +19,14 @@ and contribution.
 Install verification dependencies:
 
 ```bash
-sudo dnf install ShellCheck golang npm
+sudo dnf install ShellCheck npm
 python3 -m pip install --upgrade pip
 python3 -m pip install yamllint
+python3 -m pip install actionlint-py
 npm config set prefix "$HOME/.local"
 npm install --global markdownlint-cli2
-go install github.com/rhysd/actionlint/cmd/actionlint@latest
 printf '%s\n' "$PATH" | grep -qE "(^|:)$HOME/\\.local/bin(:|$)" || \
   printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
-printf '%s\n' "$PATH" | grep -qE "(^|:)$HOME/go/bin(:|$)" || \
-  printf '\nexport PATH="$HOME/go/bin:$PATH"\n' >> "$HOME/.bashrc"
 source "$HOME/.bashrc"
 ```
 
