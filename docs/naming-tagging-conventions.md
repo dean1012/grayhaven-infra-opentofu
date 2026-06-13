@@ -1,7 +1,7 @@
 # Infrastructure Naming & Tagging Conventions
 
-Grayhaven infrastructure uses consistent names and DigitalOcean tags so resources
-are easy to audit, filter, and operate during routine changes.
+Grayhaven Systems LLC infrastructure uses consistent names and DigitalOcean tags
+so resources are easy to audit, filter, and operate during routine changes.
 
 ## Table of Contents
 
