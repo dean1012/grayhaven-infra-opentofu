@@ -1,7 +1,8 @@
 # Policy Files
 
 Committed policy files define the intended infrastructure shape for each
-workspace. This document describes the supported policy file schemas.
+workspace environment. This document describes the supported policy file
+schemas.
 
 ## Table of Contents
 
@@ -13,33 +14,12 @@ workspace. This document describes the supported policy file schemas.
 
 ## Overview
 
-Policy files are committed under workspace-specific directories:
+Each workspace environment contains a set of policy configuration files stored
+in `policy/<workspace>`.
 
-- `policy/baseline/`
-- `policy/staging/`
-- `policy/prod/`
-
-Workspace policy directories contain files relevant to the resources owned by
-that workspace:
-
-- `policy/baseline/`: `dns.yml`, `ssh-keys.yml`
-- `policy/staging/`: `compute.yml`, `dns.yml`
-- `policy/prod/`: `compute.yml`, `dns.yml`
-
-OpenTofu selects policy files from the directory that matches the active
-workspace. The `baseline` workspace uses `policy/baseline/`, `staging` uses
-`policy/staging/`, and `prod` uses `policy/prod/`.
-
-Baseline admin SSH key policy is also read by `staging` and `prod` because
-`baseline` owns the DigitalOcean SSH key resources.
-
-Names and DigitalOcean tags follow
-[Infrastructure Naming & Tagging Conventions](naming-tagging-conventions.md).
-Runtime role and TLS behavior are described in
-[Runtime Architecture](runtime-architecture.md).
-DNS behavior and ownership are described in [DNS](dns.md).
-Shared firewall policy is documented in
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
+The `baseline` workspace environment supports DNS and admin SSH key policy
+configuration. All other workspace environments support compute and DNS policy
+configuration.
 
 [Back to top](#policy-files)
 
