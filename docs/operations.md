@@ -120,7 +120,6 @@ To rotate the OpenTofu DigitalOcean API token:
      printf '\033[32mTF_VAR_do_token=defined\033[0m\n'
    else
      printf '\033[31mTF_VAR_do_token=missing\033[0m\n'
-     exit 1
    fi
    ```
 
