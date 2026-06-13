@@ -109,9 +109,12 @@ git diff --check
 
 ## Pull Requests
 
-Pull requests must either reference or close a GitHub issue as appropriate,
-must contain signed commits, must have no open review conversations, and must
-pass all CI checks before merging.
+Pull requests must meet all of these requirements to be merged:
+
+- Reference or close a GitHub issue as appropriate.
+- Contain signed commits.
+- Have no open review conversations.
+- Pass all CI checks.
 
 [Back to top](#contributing)
 
