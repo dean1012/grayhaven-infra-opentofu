@@ -11,10 +11,6 @@ while OpenTofu is creating several resources at once. These errors can affect
 different resource types and do not necessarily mean the configuration is
 wrong.
 
-DNS records are ordered by type in this repository to reduce provider-side DNS
-transaction contention. If the provider still returns a transient deadlock, use
-the same retry pattern as other provider API errors.
-
 When this happens:
 
 1. Run `tofu plan` again and review the remaining changes.
@@ -32,21 +28,20 @@ that still need to be created or updated.
 
 ## DigitalOcean Permission Errors
 
-DigitalOcean can reject an OpenTofu operation when the active token is missing
-one of the required permissions. The exact message depends on the affected
-resource, but it may resemble this example:
+DigitalOcean can reject an OpenTofu operation when the `TF_VAR_do_token` API
+token is missing a required permission. The exact message depends on the
+affected resource, but it may resemble this example:
 
 ```text
 Error: GET https://api.digitalocean.com/v2/example-resource: 403
 The access token does not have the required scope for this request.
 ```
 
-DigitalOcean token scopes cannot be updated in place. Resolve this by creating
-a replacement token with the missing permission included, updating
-`TF_VAR_do_token`, validating the new token with `tofu plan`, and revoking the
-old token after validation. Follow
-[DigitalOcean Token Rotation](operations.md#digitalocean-token-rotation) for
-the full rotation procedure.
+DigitalOcean API token scopes cannot be updated in place. Resolve this by
+creating a replacement API token with the missing permission included and
+following the
+[DigitalOcean Token Rotation](operations.md#digitalocean-token-rotation)
+documentation to rotate the token.
 
 If the missing permission is required for normal repository operation, update
 the token scope table in [Setup](setup.md#create-a-digitalocean-token) so the
