@@ -242,15 +242,8 @@ done
 
 ## Edit Policy Files
 
-Review and update the committed policy files before first deployment:
+Review and update all `policy/` files.
 
-- `policy/compute.yml`
-- `policy/dns.yml`
-- `policy/ssh-keys.yml`
-- `policy/firewall/staging.yml`
-- `policy/firewall/prod.yml`
-
-Policy file structure and change procedures are documented in
-[Policy Files](policy.md).
+[Policy](policy.md) documentation details file formats for all policy files.
 
 [Back to top](#setup)
