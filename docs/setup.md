@@ -12,6 +12,7 @@ completed before operating within this repository.
 - [Set Up the Environment](#set-up-the-environment)
 - [Edit Policy Files](#edit-policy-files)
 - [Validate Initialization & Configuration](#validate-initialization--configuration)
+- [Deploy Initial Environments](#deploy-initial-environments)
 
 ## Generate Passphrases
 
@@ -324,5 +325,38 @@ Run Markdownlint on all Markdown files in the infra checkout:
 ```bash
 markdownlint-cli2 "**/*.md" "!.terraform/**"
 ```
+
+[Back to top](#setup)
+
+## Deploy Initial Environments
+
+Deploy baseline first so shared protected resources exist before environment
+runtime resources:
+
+```bash
+tofu workspace select baseline
+tofu plan
+tofu apply
+```
+
+Deploy staging next and validate it before production:
+
+```bash
+tofu workspace select staging
+tofu plan
+tofu apply
+```
+
+Deploy production after staging review is complete:
+
+```bash
+tofu workspace select prod
+tofu plan
+tofu apply
+```
+
+Review [Workspaces](workspaces.md), [Operations](operations.md),
+[Safety](safety.md), and [Troubleshooting](troubleshooting.md) documentation
+for further information.
 
 [Back to top](#setup)
