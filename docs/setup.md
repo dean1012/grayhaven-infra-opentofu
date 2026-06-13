@@ -41,7 +41,7 @@ Install Ansible, OpenSSL, and local validation tools on the workstation:
 
 ```bash
 sudo dnf install epel-release
-sudo dnf install ansible-core openssl python3-pip ShellCheck
+sudo dnf install ansible-core openssl python3-pip
 python3 -m pip install --user --upgrade pip
 python3 -m pip install --user yamllint
 ```
@@ -53,7 +53,6 @@ command -v tofu
 command -v ansible-vault
 command -v openssl
 command -v yamllint
-command -v shellcheck
 ```
 
 [Back to top](#setup)
@@ -328,12 +327,6 @@ Check OpenTofu formatting in the infra checkout:
 
 ```bash
 tofu fmt -check -recursive
-```
-
-Run ShellCheck on the tracked shell entrypoint checked by CI:
-
-```bash
-shellcheck scripts/read-vault-config
 ```
 
 Run Yamllint on YAML files in the infra checkout:
