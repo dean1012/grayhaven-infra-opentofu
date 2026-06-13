@@ -11,7 +11,7 @@ infrastructure.
 - [Deploying Staging Workspace with Ansible Testing Branch](#deploying-staging-workspace-with-ansible-testing-branch)
 - [Destroy the Staging Workspace Environment](#destroy-the-staging-workspace-environment)
 - [DigitalOcean API Token Rotation](#digitalocean-api-token-rotation)
-- [Active Control Bastion Changes](#active-control-bastion-changes)
+- [Bastion Failover](#bastion-failover)
 - [TLS Mode Changes](#tls-mode-changes)
 - [Certificate Selectors](#certificate-selectors)
 
@@ -133,7 +133,7 @@ please update the documented
 
 [Back to top](#operations)
 
-## Active Control Bastion Changes
+## Bastion Failover
 
 The active control bastion is selected with `bastions.control_node` in the
 target environment's `policy/<environment>/compute.yml`. Only that bastion
@@ -154,7 +154,19 @@ sudo systemctl start grayhaven-ansible-runner.service
 ```
 
 After convergence, verify the runner and poller timers are enabled only on the
-new control bastion. Existing non-control bastions remain SSH jump points.
+new control bastion:
+
+```bash
+systemctl is-enabled grayhaven-ansible-runner.timer
+systemctl is-active grayhaven-ansible-runner.timer
+systemctl is-enabled grayhaven-ansible-poller.timer
+systemctl is-active grayhaven-ansible-poller.timer
+```
+
+Remaining bastions remain SSH jump points.
+
+Automatic bastion failover is not supported at this time. You must manually
+switch the active control bastion.
 
 [Back to top](#operations)
 
