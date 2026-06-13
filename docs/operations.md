@@ -11,8 +11,12 @@ infrastructure.
 - [Deploying Staging Workspace with Ansible Testing Branch](#deploying-staging-workspace-with-ansible-testing-branch)
 - [Destroy the Staging Workspace Environment](#destroy-the-staging-workspace-environment)
 - [DigitalOcean API Token Rotation](#digitalocean-api-token-rotation)
+- [OpenTofu State Encryption Passphrase Rotation](#opentofu-state-encryption-passphrase-rotation)
+- [Ansible Vault Passphrase Rotation](#ansible-vault-passphrase-rotation)
+- [grayhaven-vault Deployment SSH Keypair Rotation](#grayhaven-vault-deployment-ssh-keypair-rotation)
 - [Bastion Failover](#bastion-failover)
 - [Updating Workspace Environment TLS Mode](#updating-workspace-environment-tls-mode)
+- [Managing Admin SSH Keys](#managing-admin-ssh-keys)
 
 ## List Available Workspaces
 
@@ -132,6 +136,66 @@ please update the documented
 
 [Back to top](#operations)
 
+## OpenTofu State Encryption Passphrase Rotation
+
+State encryption passphrases are workspace-specific:
+
+- `TF_VAR_state_encryption_passphrase_baseline`
+- `TF_VAR_state_encryption_passphrase_staging`
+- `TF_VAR_state_encryption_passphrase_prod`
+
+To rotate one workspace state passphrase:
+
+1. Back up the target workspace state and keep the backup private.
+2. Export the old passphrase as the matching previous-passphrase variable:
+   `TF_VAR_state_encryption_previous_passphrase_<workspace>`.
+3. Export the new passphrase as
+   `TF_VAR_state_encryption_passphrase_<workspace>`.
+4. Select the target workspace.
+5. Run `tofu plan` and confirm OpenTofu can read the existing state through
+   the fallback method.
+6. Run `tofu apply` so OpenTofu writes state with the new passphrase.
+7. Unset and remove the previous-passphrase variable from the local shell
+   configuration.
+8. Run `tofu plan` again with only the new passphrase defined.
+
+Do not remove or unset the previous passphrase until the apply has completed
+and a follow-up plan succeeds with only the new passphrase.
+
+[Back to top](#operations)
+
+## Ansible Vault Passphrase Rotation
+
+Fresh bastion bootstrap receives the Ansible Vault password from:
+
+- `TF_VAR_grayhaven_vault_password_staging`
+- `TF_VAR_grayhaven_vault_password_prod`
+
+When rotating an Ansible Vault passphrase, update the matching OpenTofu
+environment variable for future deployments. The encrypted vault files are not
+stored in this repository; rekey them by following the vault procedures
+documented in
+[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
+
+For already deployed bastions, rotate the persisted password with
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+`playbooks/rotate-vault-password.yml`, then verify a manual runner invocation
+can decrypt the vault after the rotation.
+
+[Back to top](#operations)
+
+## grayhaven-vault Deployment SSH Keypair Rotation
+
+The deploy/control key is supplied to fresh droplets through
+`TF_VAR_grayhaven_ansible_deploy_public_key` and
+`TF_VAR_grayhaven_ansible_deploy_private_key`. For deployed bastions, rotate
+the persisted key with
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+`playbooks/rotate-vault-deploy-key.yml`, then update the OpenTofu variables so
+future droplets receive the new key during bootstrap.
+
+[Back to top](#operations)
+
 ## Bastion Failover
 
 The active control bastion is selected with `bastions.control_node` in the
@@ -189,5 +253,14 @@ tofu apply
 ```
 
 Policy documentation details [supported TLS modes](policy.md#compute-policy).
+
+[Back to top](#operations)
+
+## Managing Admin SSH Keys
+
+Admin SSH public keys are managed in `policy/baseline/ssh-keys.yml`. Update
+that baseline policy first, then update the private vault repository as
+appropriate for users or automation keys by following
+[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
 
 [Back to top](#operations)

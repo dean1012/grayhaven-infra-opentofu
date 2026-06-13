@@ -6,7 +6,6 @@ This document describes Grayhaven Systems LLC operational safety guidelines.
 
 - [OpenTofu Workspace Environment](#opentofu-workspace-environment)
 - [Sensitive Output](#sensitive-output)
-- [Secret Rotation](#secret-rotation)
 - [State Safety](#state-safety)
 
 ## OpenTofu Workspace Environment
@@ -32,82 +31,6 @@ Recommended handling:
 - Keep private keys, Ansible Vault passphrases, DigitalOcean API tokens, state
   encryption passphrases, and other secrets out of GitHub issues, comments,
   pull requests, and commit history.
-
-[Back to top](#safety)
-
-## Secret Rotation
-
-Rotate secrets deliberately, one workspace or secret class at a time. Before
-any rotation, confirm no other OpenTofu run or Ansible maintenance playbook is
-active, back up local encrypted state, and keep all terminal output private.
-
-### OpenTofu State Encryption Passphrases
-
-State encryption passphrases are workspace-specific:
-
-- `TF_VAR_state_encryption_passphrase_baseline`
-- `TF_VAR_state_encryption_passphrase_staging`
-- `TF_VAR_state_encryption_passphrase_prod`
-
-To rotate one workspace state passphrase:
-
-1. Back up the target workspace state and keep the backup private.
-2. Export the old passphrase as the matching previous-passphrase variable:
-   `TF_VAR_state_encryption_previous_passphrase_<workspace>`.
-3. Export the new passphrase as
-   `TF_VAR_state_encryption_passphrase_<workspace>`.
-4. Select the target workspace.
-5. Run `tofu plan` and confirm OpenTofu can read the existing state through
-   the fallback method.
-6. Run `tofu apply` so OpenTofu writes state with the new passphrase.
-7. Unset and remove the previous-passphrase variable from the local shell
-   configuration.
-8. Run `tofu plan` again with only the new passphrase defined.
-
-Do not remove or unset the previous passphrase until the apply has completed
-and a follow-up plan succeeds with only the new passphrase.
-
-### Ansible Vault Passphrases
-
-Fresh bastion bootstrap receives the Ansible Vault password from:
-
-- `TF_VAR_grayhaven_vault_password_staging`
-- `TF_VAR_grayhaven_vault_password_prod`
-
-When rotating an Ansible Vault passphrase, update the matching OpenTofu
-environment variable for future deployments. The encrypted vault files are not
-stored in this repository; rekey them by following the vault procedures
-documented in
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
-
-For already deployed bastions, rotate the persisted password with
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-`playbooks/rotate-vault-password.yml`, then verify a manual runner invocation
-can decrypt the vault after the rotation.
-
-### DigitalOcean API Token
-
-Create a replacement token with the documented scope, update
-`TF_VAR_do_token`, then run a read-only `tofu plan` in `baseline`, `staging`,
-and `prod` as applicable. Revoke the old token only after the new token can
-plan the required workspaces.
-
-### Deploy And Control Key Material
-
-The deploy/control key is supplied to fresh droplets through
-`TF_VAR_grayhaven_ansible_deploy_public_key` and
-`TF_VAR_grayhaven_ansible_deploy_private_key`. For deployed bastions, rotate
-the persisted key with
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-`playbooks/rotate-vault-deploy-key.yml`, then update the OpenTofu variables so
-future droplets receive the new key during bootstrap.
-
-### Admin SSH Keys
-
-Admin SSH public keys are managed in `policy/baseline/ssh-keys.yml`. Update
-that baseline policy first, then update the private vault repository as
-appropriate for users or automation keys by following
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
 
 [Back to top](#safety)
 
