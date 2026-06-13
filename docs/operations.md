@@ -1,146 +1,91 @@
 # Operations
 
-This document describes routine OpenTofu operations for Grayhaven
+This document describes routine OpenTofu operations for Grayhaven Systems LLC
 infrastructure.
 
 ## Table of Contents
 
-- [Routine Workflow](#routine-workflow)
-- [Baseline Operations](#baseline-operations)
-- [Staging Operations](#staging-operations)
-- [Production Operations](#production-operations)
-- [Destroy Operations](#destroy-operations)
+- [List Available Workspaces](#list-available-workspaces)
+- [Switch Active Workspace](#switch-active-workspace)
+- [Provisioning Resources](#provisioning-resources)
+- [Deploying Staging Workspace with Ansible Testing Branch](#deploying-staging-workspace-with-ansible-testing-branch)
+- [Destroy the Staging Workspace Environment](#destroy-the-staging-workspace-environment)
 - [DigitalOcean API Token Rotation](#digitalocean-api-token-rotation)
 - [Active Control Bastion Changes](#active-control-bastion-changes)
 - [TLS Mode Changes](#tls-mode-changes)
 - [Certificate Selectors](#certificate-selectors)
 
-## Routine Workflow
+## List Available Workspaces
 
-Routine deployment is intentionally plan-first. Select the workspace, review
-the plan, and apply only after the proposed changes are understood:
-
-```bash
-tofu workspace select staging
-tofu plan
-tofu apply
-```
-
-For staging and production, the approved `tofu apply` is the single command
-that carries the environment from infrastructure provisioning through
-configuration convergence. It provisions DigitalOcean resources, renders
-cloud-init for each droplet, bootstraps hosts into
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
-and starts full Ansible convergence from the active control bastion.
-
-When testing a feature branch or policy override, include the same variables in
-both the plan and apply commands:
+To list all available workspaces, from the repository root run:
 
 ```bash
-tofu workspace select staging
-tofu plan -var 'grayhaven_config_repo_ref=<branch-name>'
-tofu apply -var 'grayhaven_config_repo_ref=<branch-name>'
+tofu workspace list
 ```
 
-Keep terminal output private when plans may contain sensitive values. Do not
-commit generated state, plan files, or local environment files. See
-[Safety](safety.md) for secret, state, and destructive-action guardrails.
+The [Workspaces](workspaces.md) documentation details each supported workspace.
 
 [Back to top](#operations)
 
-## Baseline Operations
+## Switch Active Workspace
 
-Select the baseline workspace before managing shared resources:
+To change the active workspace, from the repository root run:
 
 ```bash
-tofu workspace select baseline
-tofu plan
-tofu apply
+tofu workspace select <workspace>
 ```
-
-The baseline workspace must exist before staging or production can be applied
-from an empty DigitalOcean account, because environment workspaces discover the
-shared project and DNS zones created by baseline.
-
-Do not destroy the `baseline` workspace. Staging and production depend on the
-shared resources it manages.
 
 [Back to top](#operations)
 
-## Staging Operations
+## Provisioning Resources
 
-Select the staging workspace before deploying test infrastructure:
+First, change to the desired workspace, then execute `tofu plan` from the
+repository root. Review planned changes carefully, then run `tofu apply` to
+update the live workspace environment.
 
 ```bash
-tofu workspace select staging
+tofu workspace select <workspace>
 tofu plan
 tofu apply
 ```
-
-Staging website records use the `staging.<domain>` DNS namespace. Staging reads
-`config.yml` from the `staging` Git ref in the local `grayhaven-vault`
-checkout. The vault checkout does not need to have `staging` checked out, but
-the ref must be present locally.
-
-Staging defaults to the `main` branch of
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
-but it can test a specific config branch on a fresh deployment:
-
-```bash
-tofu plan -var 'grayhaven_config_repo_ref=<branch-name>'
-tofu apply -var 'grayhaven_config_repo_ref=<branch-name>'
-```
-
-Staging can also test infrastructure policy files from an infra feature branch:
-
-```bash
-tofu plan -var 'grayhaven_infra_policy_repo_ref=<branch-name>'
-tofu apply -var 'grayhaven_infra_policy_repo_ref=<branch-name>'
-```
-
-Branch/ref overrides are fresh-deployment controls. Avoid changing them on an
-existing environment unless the purpose is to test that exact transition.
 
 [Back to top](#operations)
 
-## Production Operations
+## Deploying Staging Workspace with Ansible Testing Branch
 
-Select the production workspace before managing production infrastructure:
-
-```bash
-tofu workspace select prod
-tofu plan
-tofu apply
-```
-
-Production website records use the apex, `www`, and `dev` hostnames for each
-managed domain. Production reads `main` from both
+To run bootstrap and convergence from a
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-and the private `grayhaven-vault` repository. For vault selectors, OpenTofu
-reads `config.yml` from the `main` Git ref in the local vault checkout.
+branch other than `main`, from the repository root run:
 
-Review production plans carefully before applying. Production applies should be
-deliberate, and live certificate issuance should only happen when the vault
-selector and TLS mode are intentionally set for that behavior.
+```bash
+tofu workspace select staging
+tofu plan -var 'grayhaven_config_repo_ref=<branch-name>'
+```
+
+Review planned changes carefully, then run this command to update the live
+workspace environment:
+
+```bash
+tofu apply -var 'grayhaven_config_repo_ref=<branch-name>'
+```
+
+The `grayhaven_config_repo_ref` override is intended to be used with a fresh
+staging workspace deployment only. If you need to change this value, you must
+first destroy the staging workspace environment.
 
 [Back to top](#operations)
 
-## Destroy Operations
+## Destroy the Staging Workspace Environment
 
-Destroy environment workspaces only after selecting the intended workspace:
+The staging workspace environment is meant to be destroyed when not in use. To
+destroy the staging workspace environment safely, run these commands from the
+repository root:
 
 ```bash
 tofu workspace select staging
 tofu plan -destroy
 tofu destroy
 ```
-
-Use destroy for staging cleanup after validation. Do not use destroy against
-`baseline`. Baseline resources have OpenTofu destroy protection, but operators
-should still treat baseline destruction as out of bounds.
-
-After destroying staging, select `baseline` or another expected workspace so a
-future command does not accidentally run in a stale environment context.
 
 [Back to top](#operations)
 
