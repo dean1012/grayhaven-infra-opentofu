@@ -93,34 +93,43 @@ tofu destroy
 
 DigitalOcean API token scopes cannot be changed after token creation. If a
 token is compromised, expired, or missing a required permission, create a new
-token with the full documented scope set and rotate the local OpenTofu
-environment to use the new value.
+token with the
+[full documented scope set](setup.md#create-a-digitalocean-api-token) and
+rotate the local OpenTofu environment to use the new value.
 
 To rotate the OpenTofu DigitalOcean API token:
 
 1. Create a new DigitalOcean API token using the permissions documented in
-   [Setup](setup.md#create-a-digitalocean-api-token).
-2. Update `TF_VAR_do_token` in the local shell environment fragment.
-3. Source the shell configuration:
+   [Setup](setup.md#create-a-digitalocean-api-token), adding or removing any
+   desired permissions if applicable.
+2. Update `$HOME/.bashrc.d/grayhaven.env`, replacing `TF_VAR_do_token` with
+   the new DigitalOcean API token.
+3. Reload `grayhaven.env`:
 
    ```bash
-   source "$HOME/.bashrc"
+   source "$HOME/.bashrc.d/grayhaven.env"
    ```
 
 4. Confirm the variable is present without printing its value:
 
    ```bash
-   test -n "${TF_VAR_do_token:-}" && printf 'TF_VAR_do_token=defined\n'
+   if [ -n "${TF_VAR_do_token:-}" ]; then
+     printf '\033[32mTF_VAR_do_token=defined\033[0m\n'
+   else
+     printf '\033[31mTF_VAR_do_token=missing\033[0m\n'
+     exit 1
+   fi
    ```
 
-5. Run `tofu plan` in the intended workspace to verify the new token can read
-   the expected resources.
-6. Revoke the old DigitalOcean API token only after the new token has been
-   validated.
+5. Deploy the `staging` workspace environment to test your new DigitalOcean
+   API token.
+6. Destroy the `staging` workspace environment once your new DigitalOcean API
+   token has been validated.
+7. Delete your old DigitalOcean API token.
 
-If a new permission is required for normal operation, update
-the DigitalOcean API token scope table in [Setup](setup.md) in the same change
-so the documented token scope declaration matches the repository behavior.
+If you have added or removed a permission from your DigitalOcean API token,
+please update the documented
+[DigitalOcean API token scope table](setup.md#create-a-digitalocean-api-token).
 
 [Back to top](#operations)
 
