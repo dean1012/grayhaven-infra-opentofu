@@ -60,7 +60,8 @@ If GitHub Actions are changed, validate with:
 actionlint
 ```
 
-Run OpenTofu validation and offline plan tests from a temporary state-free copy:
+Run the OpenTofu test suite locally from a temporary state-free copy of this
+repository:
 
 ```bash
 tmpdir="$(mktemp -d /tmp/grayhaven-infra-validate.XXXXXX)"
