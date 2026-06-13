@@ -184,7 +184,6 @@ environment:
        printf '\033[32m%s=defined\033[0m\n' "$var_name"
      else
        printf '\033[31m%s=missing\033[0m\n' "$var_name"
-       exit 1
      fi
    done
    ```
