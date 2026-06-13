@@ -189,7 +189,7 @@ workspace environment:
 tofu apply
 ```
 
-[Policy](policy.md) documentation details supported TLS modes.
+Policy documentation details [supported TLS modes](policy.md#compute-policy).
 
 [Back to top](#operations)
 
