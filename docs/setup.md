@@ -136,7 +136,8 @@ Do not commit or print the private key.
 Follow the
 [setup instructions](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/setup.md)
 in the
-[`grayhaven-vault-example` repository](https://github.com/dean1012/grayhaven-vault-example)
+[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+repository
 using the values generated above as applicable for each environment.
 
 [Back to top](#setup)
