@@ -7,7 +7,7 @@ infrastructure.
 
 - [List Available Workspaces](#list-available-workspaces)
 - [Switch Active Workspace](#switch-active-workspace)
-- [Provisioning Resources](#provisioning-resources)
+- [Provisioning or Updating Infrastructure](#provisioning-or-updating-infrastructure)
 - [Deploying Staging Workspace with Ansible Testing Branch](#deploying-staging-workspace-with-ansible-testing-branch)
 - [Destroy the Staging Workspace Environment](#destroy-the-staging-workspace-environment)
 - [DigitalOcean API Token Rotation](#digitalocean-api-token-rotation)
@@ -37,7 +37,7 @@ tofu workspace select <workspace>
 
 [Back to top](#operations)
 
-## Provisioning Resources
+## Provisioning or Updating Infrastructure
 
 First, change to the desired workspace, then execute `tofu plan` from the
 repository root. Review planned changes carefully, then run `tofu apply` to
