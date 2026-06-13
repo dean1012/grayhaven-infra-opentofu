@@ -261,6 +261,8 @@ To rotate the `grayhaven-vault` deployment SSH keypair:
    Replace the key paths appropriately and run:
 
    ```bash
+   public_key_path="/path/to/ansible-deploy.key.pub"
+   private_key_path="/path/to/ansible-deploy.key"
    backup_dir="$HOME/backups"
    timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 
@@ -268,8 +270,8 @@ To rotate the `grayhaven-vault` deployment SSH keypair:
    chmod 0700 "$backup_dir"
    tar -czf \
      "$backup_dir/grayhaven-vault-deployment-ssh-keypair-${timestamp}.tar.gz" \
-     /path/to/ansible-deploy.key.pub \
-     /path/to/ansible-deploy.key
+     "$public_key_path" \
+     "$private_key_path"
    chmod 0600 \
      "$backup_dir/grayhaven-vault-deployment-ssh-keypair-${timestamp}.tar.gz"
    ```
