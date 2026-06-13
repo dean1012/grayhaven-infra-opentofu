@@ -10,7 +10,7 @@ infrastructure.
 - [Staging Operations](#staging-operations)
 - [Production Operations](#production-operations)
 - [Destroy Operations](#destroy-operations)
-- [DigitalOcean Token Rotation](#digitalocean-token-rotation)
+- [DigitalOcean API Token Rotation](#digitalocean-api-token-rotation)
 - [Active Control Bastion Changes](#active-control-bastion-changes)
 - [TLS Mode Changes](#tls-mode-changes)
 - [Certificate Selectors](#certificate-selectors)
@@ -144,16 +144,16 @@ future command does not accidentally run in a stale environment context.
 
 [Back to top](#operations)
 
-## DigitalOcean Token Rotation
+## DigitalOcean API Token Rotation
 
 DigitalOcean API token scopes cannot be changed after token creation. If a
 token is compromised, expired, or missing a required permission, create a new
 token with the full documented scope set and rotate the local OpenTofu
 environment to use the new value.
 
-To rotate the OpenTofu DigitalOcean token:
+To rotate the OpenTofu DigitalOcean API token:
 
-1. Create a new DigitalOcean token using the permissions documented in
+1. Create a new DigitalOcean API token using the permissions documented in
    [Setup](setup.md#create-a-digitalocean-token).
 2. Update `TF_VAR_do_token` in the local shell environment fragment.
 3. Source the shell configuration:
@@ -170,12 +170,12 @@ To rotate the OpenTofu DigitalOcean token:
 
 5. Run `tofu plan` in the intended workspace to verify the new token can read
    the expected resources.
-6. Revoke the old DigitalOcean token only after the new token has been
+6. Revoke the old DigitalOcean API token only after the new token has been
    validated.
 
 If a new permission is required for normal operation, update
-`docs/setup.md` in the same change so the documented token scope declaration
-matches the repository behavior.
+the DigitalOcean API token scope table in [Setup](setup.md) in the same change
+so the documented token scope declaration matches the repository behavior.
 
 [Back to top](#operations)
 

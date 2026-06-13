@@ -46,9 +46,5 @@ You are not authorized to perform this operation
 DigitalOcean API token scopes cannot be updated in place. Resolve this by
 creating a replacement API token with the missing permission included and
 following the
-[DigitalOcean Token Rotation](operations.md#digitalocean-token-rotation)
+[DigitalOcean API Token Rotation](operations.md#digitalocean-api-token-rotation)
 documentation to rotate the token.
-
-If the missing permission is required for normal repository operation, update
-the token scope table in [Setup](setup.md#create-a-digitalocean-token) so the
-documentation remains accurate.

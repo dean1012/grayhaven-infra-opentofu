@@ -34,9 +34,9 @@ Recommended handling:
 - Store local environment fragments outside the repository.
 - Avoid sharing raw `tofu plan` or `tofu apply` output without reviewing it
   first.
-- Keep private keys, Ansible Vault passphrases, DigitalOcean tokens, and state
-  encryption passphrases out of issue comments, pull requests, and commit
-  history.
+- Keep private keys, Ansible Vault passphrases, DigitalOcean API tokens, and
+  state encryption passphrases out of issue comments, pull requests, and
+  commit history.
 
 [Back to top](#safety)
 
