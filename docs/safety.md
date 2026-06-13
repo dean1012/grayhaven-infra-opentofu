@@ -39,8 +39,9 @@ Recommended handling:
 State is encrypted locally through workspace-specific OpenTofu state
 encryption passphrases. Keep state backups private and do not commit them.
 
-Offline `tofu test` validation should run from a temporary state-free copy, not
-from the operational checkout used for real plan/apply work.
+Local `tofu test` validation should run from a temporary state-free copy of
+this repository. For instructions on doing this safely, please see
+[CONTRIBUTING.md](../CONTRIBUTING.md#local-validation).
 
 Recommended state handling:
 
