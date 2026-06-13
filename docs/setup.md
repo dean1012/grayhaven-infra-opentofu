@@ -107,6 +107,8 @@ chmod 0600 "$HOME/.ssh/id_ed25519"
 chmod 0644 "$HOME/.ssh/id_ed25519.pub"
 ```
 
+Do not commit or print the private key.
+
 [Back to top](#setup)
 
 ## Generate a Deployment SSH Keypair for Read-only Access to Vault Repository
