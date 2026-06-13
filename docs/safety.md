@@ -1,24 +1,18 @@
 # Safety
 
-This document describes safety boundaries for Grayhaven OpenTofu operations.
+This document describes Grayhaven Systems LLC operational safety guidelines.
 
 ## Table of Contents
 
-- [Baseline Safety](#baseline-safety)
+- [OpenTofu Workspace Environment](#opentofu-workspace-environment)
 - [Sensitive Output](#sensitive-output)
 - [Secret Rotation](#secret-rotation)
 - [State Safety](#state-safety)
 
-## Baseline Safety
+## OpenTofu Workspace Environment
 
-Do not destroy the `baseline` workspace. Baseline manages shared resources that
-staging and production depend on, including DNS zones, mail records, CAA
-records, admin SSH keys, the shared DigitalOcean project, and the default
-baseline VPC.
-
-Baseline resources are configured with OpenTofu destroy protection so
-accidental baseline destroy attempts fail before removing shared resources.
-Operators should still treat baseline destruction as out of bounds.
+The `baseline` and `prod` workspace environments should not be destroyed.
+Destroying these environments will result in production outages.
 
 [Back to top](#safety)
 
