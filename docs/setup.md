@@ -41,14 +41,9 @@ Install Ansible, OpenSSL, and local validation tools on the workstation:
 
 ```bash
 sudo dnf install epel-release
-sudo dnf install ansible-core openssl python3-pip ShellCheck npm
+sudo dnf install ansible-core openssl python3-pip ShellCheck
 python3 -m pip install --user --upgrade pip
-python3 -m pip install --user yamllint actionlint-py
-npm config set prefix "$HOME/.local"
-npm install --global markdownlint-cli2
-printf '%s\n' "$PATH" | grep -qE "(^|:)$HOME/\\.local/bin(:|$)" || \
-  printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
-source "$HOME/.bashrc"
+python3 -m pip install --user yamllint
 ```
 
 Confirm the required commands are available:
@@ -59,8 +54,6 @@ command -v ansible-vault
 command -v openssl
 command -v yamllint
 command -v shellcheck
-command -v actionlint
-command -v markdownlint-cli2
 ```
 
 [Back to top](#setup)
@@ -347,18 +340,6 @@ Run Yamllint on YAML files in the infra checkout:
 
 ```bash
 yamllint .
-```
-
-Run Markdownlint on all Markdown files in the infra checkout:
-
-```bash
-markdownlint-cli2 "**/*.md" "!.terraform/**"
-```
-
-If GitHub Actions are changed, validate with:
-
-```bash
-actionlint
 ```
 
 [Back to top](#setup)
