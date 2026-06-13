@@ -233,21 +233,21 @@ temporary state backup taken in step 1 above can be safely removed.
 
 ## Ansible Vault Passphrase Rotation
 
-Fresh bastion bootstrap receives the Ansible Vault password from:
+To rotate the Ansible Vault encryption passphrase for a given workspace
+environment:
 
-- `TF_VAR_grayhaven_vault_password_staging`
-- `TF_VAR_grayhaven_vault_password_prod`
+1. Update `$HOME/.bashrc.d/grayhaven.env`, updating
+   `TF_VAR_grayhaven_vault_password_<workspace>` with the new encryption
+   passphrase.
+2. Rotate the configuration Ansible Vault passphrase for the correct workspace
+   environment by following the instructions located in
+   [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
+3. Rotate the Ansible Vault passphrase for existing resources by following the
+   instructions located in
+   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible).
 
-When rotating an Ansible Vault passphrase, update the matching OpenTofu
-environment variable for future deployments. The encrypted vault files are not
-stored in this repository; rekey them by following the vault procedures
-documented in
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
-
-For already deployed bastions, rotate the persisted password with
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-`playbooks/rotate-vault-password.yml`, then verify a manual runner invocation
-can decrypt the vault after the rotation.
+Do not discard your original Ansible Vault passphrase until you have
+successfully completed the passphrase rotation procedure.
 
 [Back to top](#operations)
 
