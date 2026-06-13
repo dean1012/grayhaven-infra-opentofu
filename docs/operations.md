@@ -154,7 +154,8 @@ sudo systemctl start grayhaven-ansible-runner.service
 ```
 
 After convergence, verify the runner and poller timers are enabled only on the
-new control bastion:
+new control bastion by running the following commands on each remaining
+bastion:
 
 ```bash
 systemctl is-enabled grayhaven-ansible-runner.timer
