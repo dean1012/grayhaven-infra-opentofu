@@ -187,6 +187,27 @@ cp docs/examples/grayhaven.env.example "$HOME/.bashrc.d/grayhaven.env"
 chmod 0600 "$HOME/.bashrc.d/grayhaven.env"
 ```
 
+Ensure `$HOME/.bashrc` loads files from `$HOME/.bashrc.d`. Check for an
+existing `.bashrc.d` block:
+
+```bash
+grep -n '\.bashrc\.d' "$HOME/.bashrc"
+```
+
+If no lines are returned, add this block to `$HOME/.bashrc`:
+
+```bash
+# User specific aliases and functions
+if [ -d ~/.bashrc.d ]; then
+    for rc in ~/.bashrc.d/*; do
+        if [ -f "$rc" ]; then
+            . "$rc"
+        fi
+    done
+fi
+unset rc
+```
+
 Edit `$HOME/.bashrc.d/grayhaven.env` using the generated values from above
 where applicable, then source the shell configuration:
 
