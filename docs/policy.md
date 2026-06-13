@@ -13,13 +13,29 @@ Committed policy files define the intended infrastructure shape.
 
 ## Overview
 
-Policy files are committed under `policy/`:
+Policy files are committed under workspace-specific directories:
 
-- `policy/compute.yml`
-- `policy/dns.yml`
-- `policy/ssh-keys.yml`
-- `policy/firewall/staging.yml`
-- `policy/firewall/prod.yml`
+- `policy/baseline/`
+- `policy/staging/`
+- `policy/prod/`
+
+Each directory contains a complete policy set:
+
+- `compute.yml`
+- `dns.yml`
+- `firewall.yml`
+- `ssh-keys.yml`
+
+OpenTofu selects the policy directory that matches the active workspace. The
+`baseline` workspace uses `policy/baseline/`, `staging` uses
+`policy/staging/`, and `prod` uses `policy/prod/`.
+
+Baseline policy owns shared resources such as DNS zones, baseline DNS records,
+and admin SSH key resources. Staging and production policy own runtime resources
+such as droplets, cloud firewalls, and computed environment DNS records.
+
+`policy/default-vault-config.yml` is a baseline fallback for values normally
+read from the private vault repository. It is not an environment policy set.
 
 Names and DigitalOcean tags follow the conventions documented in
 [Infrastructure Naming & Tagging Conventions](naming-tagging-conventions.md).
@@ -28,8 +44,8 @@ Names and DigitalOcean tags follow the conventions documented in
 
 ## Compute Policy
 
-`policy/compute.yml` declares bastion instances, web instances, the active
-control bastion, and web TLS mode.
+`policy/<environment>/compute.yml` declares bastion instances, web instances,
+the active control bastion, and web TLS mode for `staging` and `prod`.
 
 Stable instance keys such as `bastion-01` and `web-01` are used as OpenTofu
 resource keys. The declared bastion control node receives the easy
@@ -47,21 +63,29 @@ tags used by
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
 to identify the runner host.
 
+`policy/baseline/compute.yml` is intentionally empty-shaped because baseline
+does not deploy bastion or web hosts.
+
 [Back to top](#policy-files)
 
 ## DNS Policy
 
-`policy/dns.yml` defines managed DNS zones, baseline-owned records, and which
-domains receive computed environment DNS records.
+DNS policy is split by workspace ownership:
+
+- `policy/baseline/dns.yml` defines managed DNS zones and baseline-owned
+  records.
+- `policy/staging/dns.yml` and `policy/prod/dns.yml` define the domains that
+  receive computed environment DNS records.
 
 The DNS policy separates baseline and environment ownership. DNS zones and
 shared records such as MX, SPF, DKIM, DMARC, and CAA records belong under
-`protected_records` and are baseline resources with OpenTofu destroy
-protection. Less critical baseline records can be placed under `records`; they
-are managed by the baseline workspace but are not protected from destroy.
+`protected_records` in `policy/baseline/dns.yml` and are baseline resources
+with OpenTofu destroy protection. Less critical baseline records can be placed
+under `records`; they are managed by the baseline workspace but are not
+protected from destroy.
 
 Computed environment records are controlled under each domain's `environment`
-block:
+block in `policy/staging/dns.yml` and `policy/prod/dns.yml`:
 
 - `environment.apex: true` creates `staging.<domain>` in `staging` and
   `<domain>` in `prod`.
@@ -86,26 +110,30 @@ constant factor and is an intentional readability tradeoff.
 
 For hosted web domains, keep
 [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
-`hosted_domains` data and `policy/dns.yml` aligned. Each hosted domain should
-set both `environment.apex: true` and `environment.web_aliases: true`, and
-each domain with both fields set to true should have matching
-`hosted_domains` data so
+`hosted_domains` data and the relevant DNS policy files aligned. Each hosted
+domain should exist in `policy/baseline/dns.yml` and in each environment policy
+where the domain should receive runtime records. Hosted web domains should set
+both `environment.apex: true` and `environment.web_aliases: true` in the target
+environment policy, and each domain with both fields set to true should have
+matching `hosted_domains` data so
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
 can converge the corresponding vhosts.
 
 To add a hosted domain:
 
-1. Add the domain to `policy/dns.yml`.
+1. Add the domain to `policy/baseline/dns.yml`.
 2. Add required baseline shared records under `protected_records`.
 3. Add optional baseline records that do not need destroy protection under
    `records`.
-4. Set `environment.apex: true`.
-5. Set `environment.web_aliases: true` when the domain should receive `www`
-   and `dev` aliases.
-6. Run `tofu plan` in `baseline` and review the shared DNS additions.
-7. Run `tofu plan` in `staging` or `prod` and review only environment DNS
+4. Add the domain to `policy/staging/dns.yml`, `policy/prod/dns.yml`, or both.
+5. Set `environment.apex: true` in each environment that should receive an
+   apex A record.
+6. Set `environment.web_aliases: true` when the environment should receive
+   `www` and `dev` aliases.
+7. Run `tofu plan` in `baseline` and review the shared DNS additions.
+8. Run `tofu plan` in `staging` or `prod` and review only environment DNS
    additions.
-8. Update the `hosted_domains` contract documented in
+9. Update the `hosted_domains` contract documented in
    [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
    so
    [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
@@ -115,30 +143,34 @@ To add a hosted domain:
 
 ## Admin SSH Key Policy
 
-`policy/ssh-keys.yml` defines admin SSH public keys under `admin_ssh_keys`.
-Each entry uses a stable internal key and includes:
+`policy/<workspace>/ssh-keys.yml` defines admin SSH public keys under
+`admin_ssh_keys`. Each entry uses a stable internal key and includes:
 
 - `title`: the human-readable label and DigitalOcean SSH key name.
 - `public_key`: the public SSH key material.
 
-The baseline workspace creates and manages the DigitalOcean SSH key resources.
-Staging and production look up those baseline-managed keys by `title` and
-attach every configured admin key to every bastion and web droplet.
+The baseline workspace creates and manages the DigitalOcean SSH key resources
+from `policy/baseline/ssh-keys.yml`. Staging and production look up the keys
+listed in their own `ssh-keys.yml` files by `title` and attach every configured
+admin key to every bastion and web droplet. Keep environment key policy aligned
+with baseline for keys that should be attached to managed hosts.
 
 To add or rotate an admin key:
 
-1. Update `policy/ssh-keys.yml`.
+1. Update `policy/baseline/ssh-keys.yml`.
 2. Update the private vault repository as appropriate for managed users,
    automation users, or deploy/control keys. Use the file-shape and editing
    guidance documented in
    [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
-3. Select `baseline`.
-4. Run `tofu plan` and confirm only the intended SSH key resources change.
-5. Run `tofu apply`.
-6. Select `staging` or `prod`.
-7. Run `tofu plan` and confirm droplets will receive the expected admin key
+3. Update `policy/staging/ssh-keys.yml`, `policy/prod/ssh-keys.yml`, or both
+   when the key should be attached to environment droplets.
+4. Select `baseline`.
+5. Run `tofu plan` and confirm only the intended SSH key resources change.
+6. Run `tofu apply`.
+7. Select `staging` or `prod`.
+8. Run `tofu plan` and confirm droplets will receive the expected admin key
    fingerprints.
-8. Apply the environment only when the droplet SSH key change is intended for
+9. Apply the environment only when the droplet SSH key change is intended for
    that environment.
 
 Public SSH keys are safe to commit. Private SSH keys and agent material must
@@ -152,10 +184,13 @@ The firewall policy files drive DigitalOcean cloud firewalls in this
 repository and local firewalld policy in
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible):
 
-- `policy/firewall/staging.yml`
-- `policy/firewall/prod.yml`
+- `policy/staging/firewall.yml`
+- `policy/prod/firewall.yml`
 
 When changing firewall policy, validate both cloud and host-level behavior.
+
+`policy/baseline/firewall.yml` is intentionally empty-shaped because baseline
+does not deploy environment cloud firewalls.
 
 [Back to top](#policy-files)
 

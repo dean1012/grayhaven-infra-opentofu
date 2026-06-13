@@ -113,6 +113,24 @@ mock_provider "external" {
   }
 }
 
+run "prod_committed_policy_plan" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  assert {
+    condition     = output.workspace == "prod"
+    error_message = "The committed production policy must plan in the prod workspace."
+  }
+}
+
 run "prod_1x1_auto_host_plan" {
   command = plan
 

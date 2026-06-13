@@ -1,5 +1,5 @@
 locals {
-  ssh_keys_policy_path = coalesce(var.grayhaven_test_ssh_keys_policy_path, "${path.module}/policy/ssh-keys.yml")
+  ssh_keys_policy_path = coalesce(var.grayhaven_test_ssh_keys_policy_path, "${local.policy_directory}/ssh-keys.yml")
   ssh_keys_policy      = yamldecode(file(local.ssh_keys_policy_path))
   admin_ssh_keys       = try(local.ssh_keys_policy.admin_ssh_keys, {})
 

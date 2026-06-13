@@ -113,6 +113,24 @@ mock_provider "external" {
   }
 }
 
+run "staging_committed_policy_plan" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  assert {
+    condition     = output.workspace == "staging"
+    error_message = "The committed staging policy must plan in the staging workspace."
+  }
+}
+
 run "staging_1x1_auto_host_plan" {
   command = plan
 

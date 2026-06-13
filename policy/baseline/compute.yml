@@ -1,0 +1,8 @@
+---
+bastions:
+  control_node: ""
+  instances: {}
+
+web:
+  tls_mode: auto
+  instances: {}

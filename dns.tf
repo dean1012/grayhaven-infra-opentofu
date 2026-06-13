@@ -1,5 +1,5 @@
 locals {
-  dns_policy_path = coalesce(var.grayhaven_test_dns_policy_path, "${path.module}/policy/dns.yml")
+  dns_policy_path = coalesce(var.grayhaven_test_dns_policy_path, "${local.policy_directory}/dns.yml")
   dns_policy      = yamldecode(file(local.dns_policy_path))
   dns_ttl         = try(local.dns_policy.ttl, 300)
 

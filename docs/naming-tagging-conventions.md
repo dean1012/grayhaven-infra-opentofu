@@ -77,7 +77,7 @@ pool without listing individual droplet IDs.
 
 Tags support several operational paths:
 
-- Hardware firewalls target the `scope-*` tags instead of individual droplet
+- Cloud firewalls target the `scope-*` tags instead of individual droplet
   IDs.
 - [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
   inventory groups hosts by DigitalOcean tags.

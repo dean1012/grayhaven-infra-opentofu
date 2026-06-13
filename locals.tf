@@ -43,6 +43,8 @@ locals {
   # Shared selectors and committed policy
   #############################################################################
 
+  policy_workspace = contains(local.supported_workspaces, local.environment) ? local.environment : "baseline"
+  policy_directory = "${path.module}/policy/${local.policy_workspace}"
   common_tags = [
     "client-${local.client_name}",
     "env-${local.environment}",
@@ -51,7 +53,7 @@ locals {
     "tls-mode-${replace(local.effective_tls_mode, "_", "-")}"
   ]
 
-  compute_policy_path = coalesce(var.grayhaven_test_compute_policy_path, "${path.module}/policy/compute.yml")
+  compute_policy_path = coalesce(var.grayhaven_test_compute_policy_path, "${local.policy_directory}/compute.yml")
 
   compute_policy = (
     local.is_environment
@@ -68,9 +70,8 @@ locals {
     }
   )
 
-  firewall_policy_workspace = local.is_environment ? local.environment : "staging"
-  firewall_policy_path      = "${path.module}/policy/firewall/${local.firewall_policy_workspace}.yml"
-  firewall_policy           = yamldecode(file(local.firewall_policy_path))
+  firewall_policy_path = "${local.policy_directory}/firewall.yml"
+  firewall_policy      = yamldecode(file(local.firewall_policy_path))
 
   vault_checkout_path = coalesce(
     var.grayhaven_vault_checkout_path,

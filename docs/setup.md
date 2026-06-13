@@ -245,27 +245,40 @@ done
 
 [Policy](policy.md) documentation details file formats for all policy files.
 
-Review and update all `policy/` files setting values appropriate for
+Review and update all `policy/baseline/` files setting values appropriate for
+shared baseline resources. Baseline values should include shared DNS zones,
+baseline-owned DNS records, and admin SSH keys.
+
+After editing all `policy/baseline/` files, review and commit them:
+
+```bash
+git status --short policy/baseline/
+git add policy/baseline/
+git commit -S -m "Configure baseline policy files"
+```
+
+Review and update all `policy/prod/` files setting values appropriate for
 production. Production values are the desired steady-state settings for the
 long-lived `prod` workspace.
 
-After editing all `policy/` files, review and commit them:
+After editing all `policy/prod/` files, review and commit them:
 
 ```bash
-git status --short policy/
-git add policy/
+git status --short policy/prod/
+git add policy/prod/
 git commit -S -m "Configure production policy files"
 ```
 
-Review and update all `policy/` files setting values appropriate for staging.
+Review and update all `policy/staging/` files setting values appropriate for
+staging.
 Staging values should support short-lived validation deployments before
 promotion to production.
 
-After editing all `policy/` files, review and commit them:
+After editing all `policy/staging/` files, review and commit them:
 
 ```bash
-git status --short policy/
-git add policy/
+git status --short policy/staging/
+git add policy/staging/
 git commit -S -m "Configure staging policy files"
 ```
 

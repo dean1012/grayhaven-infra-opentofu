@@ -181,13 +181,14 @@ matches the repository behavior.
 
 ## Active Control Bastion Changes
 
-The active control bastion is selected with `bastions.control_node` in
-`policy/compute.yml`. Only that bastion receives the `control-node` tag and
-runs the scheduled Ansible runner and poller.
+The active control bastion is selected with `bastions.control_node` in the
+target environment's `policy/<environment>/compute.yml`. Only that bastion
+receives the `control-node` tag and runs the scheduled Ansible runner and
+poller.
 
 To switch the active control bastion:
 
-1. Ensure the target bastion exists in `policy/compute.yml`.
+1. Ensure the target bastion exists in `policy/<environment>/compute.yml`.
 2. Change `bastions.control_node` to the target bastion key.
 3. Select the target workspace and run `tofu plan`.
 4. Confirm the plan only changes the expected DNS/tag relationships.
@@ -205,7 +206,8 @@ new control bastion. Existing non-control bastions remain SSH jump points.
 
 ## TLS Mode Changes
 
-Web TLS behavior is selected by `web.tls_mode` in `policy/compute.yml`:
+Web TLS behavior is selected by `web.tls_mode` in
+`policy/<environment>/compute.yml`:
 
 - `auto`: one web host uses host TLS; two or more web hosts use load balancer
   TLS.
