@@ -1,6 +1,10 @@
 # Contributing
 
-Thank you for your interest in improving `grayhaven-infra-opentofu`.
+This document is intended for Grayhaven Systems LLC employees and assumes that
+this repository has been [initialized and configured](docs/setup.md)
+appropriately.
+If you are not a Grayhaven Systems LLC employee, we still welcome your support
+and contribution.
 
 ## Table of Contents
 
@@ -15,13 +19,16 @@ Thank you for your interest in improving `grayhaven-infra-opentofu`.
 Install verification dependencies:
 
 ```bash
-sudo dnf install ShellCheck npm
+sudo dnf install ShellCheck golang npm
 python3 -m pip install --upgrade pip
 python3 -m pip install yamllint
 npm config set prefix "$HOME/.local"
 npm install --global markdownlint-cli2
+go install github.com/rhysd/actionlint/cmd/actionlint@latest
 printf '%s\n' "$PATH" | grep -qE "(^|:)$HOME/\\.local/bin(:|$)" || \
   printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
+printf '%s\n' "$PATH" | grep -qE "(^|:)$HOME/go/bin(:|$)" || \
+  printf '\nexport PATH="$HOME/go/bin:$PATH"\n' >> "$HOME/.bashrc"
 source "$HOME/.bashrc"
 ```
 
@@ -46,8 +53,14 @@ Validate formatting and syntax from the repository root:
 ```bash
 tofu fmt -check -recursive
 shellcheck scripts/read-vault-config
-git ls-files '*.yml' '*.yaml' | xargs -r yamllint
+yamllint .
 markdownlint-cli2 "**/*.md" "!.terraform/**"
+```
+
+If GitHub Actions are changed, validate with:
+
+```bash
+actionlint
 ```
 
 Run OpenTofu validation and offline plan tests from a temporary state-free copy:
