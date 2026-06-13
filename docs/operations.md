@@ -51,8 +51,9 @@ To provision or update infrastructure:
    ```
 
 2. Make changes to this repository and/or adjust configuration. Make any
-   relevant adjustments to `grayhaven-config-ansible` and `grayhaven-vault` as
-   well.
+   relevant adjustments to
+   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+   and `grayhaven-vault` as well.
 
 3. Run `tofu plan` and review planned changes carefully.
 
