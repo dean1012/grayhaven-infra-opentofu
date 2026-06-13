@@ -292,6 +292,10 @@ To rotate the `grayhaven-vault` deployment SSH keypair:
    by following the instructions located in
    [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#deploy-key-rotation).
 
+Once the new deployment SSH keypair is verified as operational, the temporary
+key backup taken in step 1 above and the original keypair can be safely
+removed.
+
 [Back to top](#operations)
 
 ## Bastion Failover
