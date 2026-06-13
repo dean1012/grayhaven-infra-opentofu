@@ -11,6 +11,7 @@ completed before operating within this repository.
 - [Set Up the Vault Repository](#set-up-the-vault-repository)
 - [Set Up the Environment](#set-up-the-environment)
 - [Edit Policy Files](#edit-policy-files)
+- [Validate Initialization & Configuration](#validate-initialization--configuration)
 
 ## Generate Passphrases
 
@@ -245,5 +246,38 @@ done
 Review and update all `policy/` files.
 
 [Policy](policy.md) documentation details file formats for all policy files.
+
+[Back to top](#setup)
+
+## Validate Initialization & Configuration
+
+Install local validation tools on the workstation:
+
+```bash
+sudo dnf install epel-release
+sudo dnf install ShellCheck npm
+npm config set prefix "$HOME/.local"
+npm install --global markdownlint-cli2
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Confirm the validation commands are available:
+
+```bash
+command -v shellcheck
+command -v markdownlint-cli2
+```
+
+Run ShellCheck on tracked shell entrypoints in the infra checkout:
+
+```bash
+git grep -Il '^#!.*\(ba\)\?sh' -- . | xargs -r shellcheck
+```
+
+Run Markdownlint on all Markdown files in the infra checkout:
+
+```bash
+markdownlint-cli2 "**/*.md" "!.terraform/**"
+```
 
 [Back to top](#setup)
