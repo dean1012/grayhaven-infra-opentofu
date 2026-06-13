@@ -66,74 +66,45 @@ to identify the runner host.
 
 ## DNS Policy
 
-DNS policy is split by workspace ownership:
+DNS policy file behavior and ownership are described in [DNS](dns.md). This
+section documents the policy file shape.
 
-- `policy/baseline/dns.yml` defines managed DNS zones and baseline-owned
-  records.
-- `policy/staging/dns.yml` and `policy/prod/dns.yml` define the domains that
-  receive computed environment DNS records.
+`policy/baseline/dns.yml` supports:
 
-The DNS policy separates baseline and environment ownership. DNS zones and
-shared records such as MX, SPF, DKIM, DMARC, and CAA records belong under
-`protected_records` in `policy/baseline/dns.yml` and are baseline resources
-with OpenTofu destroy protection. Less critical baseline records can be placed
-under `records`; they are managed by the baseline workspace but are not
-protected from destroy.
+- `ttl`: default TTL for managed DNS records.
+- `domains`: map of managed domain entries.
+- `domains.<key>.name`: public domain name.
+- `domains.<key>.protected_records`: baseline records with OpenTofu destroy
+  protection.
+- `domains.<key>.records`: baseline records without OpenTofu destroy
+  protection.
 
-Computed environment records are controlled under each domain's `environment`
-block in `policy/staging/dns.yml` and `policy/prod/dns.yml`:
+`protected_records` supports A, CNAME, MX, TXT, and CAA record types.
+`records` supports A, CNAME, and TXT record types. Use `protected_records` for
+MX and CAA records.
 
-- `environment.apex: true` creates `staging.<domain>` in `staging` and
-  `<domain>` in `prod`.
-- `environment.web_aliases: true` creates `www.staging.<domain>` and
-  `dev.staging.<domain>` in `staging`, or `www.<domain>` and `dev.<domain>`
-  in `prod`.
+Each record entry includes:
+
+- `type`: DNS record type.
+- `name`: record name.
+- `value`: record target or value.
+- `ttl`: optional per-record TTL override.
+- `priority`: priority for record types that use it.
+- `flags`: CAA flags.
+- `tag`: CAA tag.
+
+`policy/staging/dns.yml` and `policy/prod/dns.yml` support:
+
+- `ttl`: default TTL for computed environment DNS records.
+- `domains`: map of domains that should receive computed environment records.
+- `domains.<key>.name`: public domain name.
+- `domains.<key>.environment.apex`: creates the environment apex record.
+- `domains.<key>.environment.web_aliases`: creates `www` and `dev` aliases for
+  the environment.
 
 Both fields default to false when omitted. `environment.web_aliases` requires
 `environment.apex`; valid combinations are true/true, true/false, and
 false/false.
-
-DNS records are created in ordered type groups to reduce provider-side DNS
-transaction contention:
-
-- computed environment records: A, then CNAME;
-- baseline `protected_records`: A, CNAME, MX, TXT, then CAA;
-- baseline `records`: A, CNAME, then TXT.
-
-The implementation filters the small DNS policy map once per supported record
-type. Because the supported type set is fixed, this remains O(n) with a small
-constant factor and is an intentional readability tradeoff.
-
-For hosted web domains, keep
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
-`hosted_domains` data and the relevant DNS policy files aligned. Each hosted
-domain should exist in `policy/baseline/dns.yml` and in each environment policy
-where the domain should receive runtime records. Hosted web domains should set
-both `environment.apex: true` and `environment.web_aliases: true` in the target
-environment policy, and each domain with both fields set to true should have
-matching `hosted_domains` data so
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-can converge the corresponding vhosts.
-
-To add a hosted domain:
-
-1. Add the domain to `policy/baseline/dns.yml`.
-2. Add required baseline shared records under `protected_records`.
-3. Add optional baseline records that do not need destroy protection under
-   `records`.
-4. Add the domain to `policy/staging/dns.yml`, `policy/prod/dns.yml`, or both.
-5. Set `environment.apex: true` in each environment that should receive an
-   apex A record.
-6. Set `environment.web_aliases: true` when the environment should receive
-   `www` and `dev` aliases.
-7. Run `tofu plan` in `baseline` and review the shared DNS additions.
-8. Run `tofu plan` in `staging` or `prod` and review only environment DNS
-   additions.
-9. Update the `hosted_domains` contract documented in
-   [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
-   so
-   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-   can converge the matching vhosts.
 
 [Back to top](#policy-files)
 

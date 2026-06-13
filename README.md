@@ -104,6 +104,7 @@ procedures, control-node changes, and TLS-mode changes. See
   - [Troubleshooting](docs/troubleshooting.md)
 - Architecture & Standards
   - [Infrastructure Naming & Tagging Conventions](docs/naming-tagging-conventions.md)
+  - [DNS](docs/dns.md)
 
 [Back to top](#grayhaven-infrastructure-opentofu)
 
