@@ -247,18 +247,36 @@ Review and update all `policy/` files.
 
 [Policy](policy.md) documentation details file formats for all policy files.
 
+After editing policy files, review and commit them:
+
+```bash
+git status --short policy/
+git add policy/
+git commit -S -m "Configure policy files"
+```
+
 [Back to top](#setup)
 
 ## Validate Initialization & Configuration
 
-Install local validation tools on the workstation:
+Confirm the working tree is clean:
 
 ```bash
-sudo dnf install epel-release
+git status --short
+```
+
+No files should be listed. At this point, all intended setup changes should be
+staged and committed.
+
+Install local validation tools on your workstation:
+
+```bash
 sudo dnf install ShellCheck npm
 npm config set prefix "$HOME/.local"
 npm install --global markdownlint-cli2
-export PATH="$HOME/.local/bin:$PATH"
+grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" || \
+  printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
+source "$HOME/.bashrc"
 ```
 
 Confirm the validation commands are available:
