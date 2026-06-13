@@ -8,7 +8,7 @@ completed before operating within this repository.
 - [Install Dependencies](#install-dependencies)
 - [Generate Passphrases](#generate-passphrases)
 - [Create a DigitalOcean API Token](#create-a-digitalocean-api-token)
-- [Generate Deploy Key Material](#generate-deploy-key-material)
+- [Generate an SSH Keypair for Read-only Access to Vault Repository](#generate-an-ssh-keypair-for-read-only-access-to-vault-repository)
 - [Set Up the Vault Repository](#set-up-the-vault-repository)
 - [Set Up the Environment](#set-up-the-environment)
 - [Edit Policy Files](#edit-policy-files)
@@ -93,7 +93,7 @@ scope for this automation.
 
 [Back to top](#setup)
 
-## Generate Deploy Key Material
+## Generate an SSH Keypair for Read-only Access to Vault Repository
 
 Generate an SSH keypair for read-only deploy-key access to the private vault
 repository. Store the private key in a safe location under `$HOME` with
