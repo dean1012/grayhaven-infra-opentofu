@@ -61,6 +61,10 @@ Baseline fixture tests also verify support for unprotected A, CNAME, and TXT
 records under `records`, and verify that unsupported DNS record types are
 rejected by the DNS policy guard.
 
+DNS fixture tests use the test-only `grayhaven_test_dns_policy_path` variable
+to load static policy files from `tests/fixtures/`. Leave that variable unset
+for operational deployments.
+
 Staging and production tests verify committed policy plans for their matching
 workspaces, plus fixed scenario fixtures:
 

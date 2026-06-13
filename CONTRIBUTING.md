@@ -104,10 +104,6 @@ tofu test -filter=tests/prod.tftest.hcl -no-color
 The [OpenTofu test suite documentation](docs/opentofu-test-suite.md) details
 how the test suite is designed and operates.
 
-The DNS tests include a test-only DNS policy fixture through
-`grayhaven_test_dns_policy_path`. Leave that variable unset for operational
-deployments.
-
 Before committing changes, also check the current diff for whitespace errors:
 
 ```bash
