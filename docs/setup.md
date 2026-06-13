@@ -245,6 +245,9 @@ done
 ## Edit Policy Files
 
 [Policy](policy.md) documentation details file formats for all policy files.
+Please review our
+[Infrastructure Naming & Tagging Conventions](naming-tagging-conventions.md)
+before naming resources.
 
 Review and update all `policy/baseline/` files setting values appropriate for
 shared baseline resources. Baseline values should include shared DNS zones,
