@@ -105,6 +105,7 @@ procedures, control-node changes, and TLS-mode changes. See
 - Architecture & Standards
   - [Infrastructure Naming & Tagging Conventions](docs/naming-tagging-conventions.md)
   - [DNS](docs/dns.md)
+  - [OpenTofu Tests](docs/tests.md)
 
 [Back to top](#grayhaven-infrastructure-opentofu)
 
