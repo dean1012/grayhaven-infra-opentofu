@@ -101,10 +101,8 @@ tofu workspace new prod
 tofu test -filter=tests/prod.tftest.hcl -no-color
 ```
 
-The `tofu test` suite is offline plan-shape validation. It uses mocked
-providers, fake sensitive values, and refresh-disabled plans. It does not
-deploy resources, validate live DigitalOcean behavior, check drift, or prove
-destroy behavior.
+The [OpenTofu test suite documentation](docs/opentofu-test-suite.md) details
+how the test suite is designed and operates.
 
 The DNS tests include a test-only DNS policy fixture through
 `grayhaven_test_dns_policy_path`. Leave that variable unset for operational

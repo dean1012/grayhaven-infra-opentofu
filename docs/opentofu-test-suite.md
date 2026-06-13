@@ -1,4 +1,4 @@
-# OpenTofu Tests
+# OpenTofu Test Suite
 
 This document describes the offline OpenTofu test suite for this repository.
 
@@ -20,7 +20,7 @@ The suite is intended to catch regressions in workspace ownership, DNS
 expansion, compute scaling behavior, TLS mode selection, and admin SSH key
 attachment before a change reaches a live `tofu plan` or `tofu apply`.
 
-[Back to top](#opentofu-tests)
+[Back to top](#opentofu-test-suite)
 
 ## How Tests Run
 
@@ -44,7 +44,7 @@ The test files use mocked providers, fake sensitive values, and
 environment tests so the suite does not need access to the private vault
 repository.
 
-[Back to top](#opentofu-tests)
+[Back to top](#opentofu-test-suite)
 
 ## What Is Tested
 
@@ -78,7 +78,7 @@ Environment tests also verify that staging and production do not plan baseline
 DNS resources. This keeps shared DNS ownership in `baseline` and runtime DNS
 ownership in the environment workspaces.
 
-[Back to top](#opentofu-tests)
+[Back to top](#opentofu-test-suite)
 
 ## Limitations
 
@@ -93,7 +93,7 @@ behavior or live migration behavior for existing state.
 The suite uses static fixtures and mocked provider defaults. It is designed to
 catch repository logic regressions, not to replace live staging validation.
 
-[Back to top](#opentofu-tests)
+[Back to top](#opentofu-test-suite)
 
 ## Local Use
 
@@ -117,4 +117,4 @@ tofu workspace new prod
 tofu test -filter=tests/prod.tftest.hcl -no-color
 ```
 
-[Back to top](#opentofu-tests)
+[Back to top](#opentofu-test-suite)
