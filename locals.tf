@@ -85,11 +85,12 @@ locals {
 
   # Environment workspaces read config.yml from the intended vault Git ref, not
   # from whichever branch is checked out in the local vault working tree.
-  vault_config = (
+  vault_config_yaml = (
     local.is_environment
-    ? yamldecode(data.external.vault_config[0].result.config_yml)
-    : yamldecode(file("${path.module}/policy/default-vault-config.yml"))
+    ? data.external.vault_config[0].result.config_yml
+    : "{}\n"
   )
+  vault_config = yamldecode(local.vault_config_yaml)
 
   vault_password = !local.is_environment ? null : (
     local.is_prod

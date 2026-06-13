@@ -36,9 +36,6 @@ Baseline policy owns shared resources such as DNS zones, baseline DNS records,
 and admin SSH key resources. Staging and production policy own runtime resources
 such as droplets, cloud firewalls, and computed environment DNS records.
 
-`policy/default-vault-config.yml` is a baseline fallback for values normally
-read from the private vault repository. It is not an environment policy set.
-
 Names and DigitalOcean tags follow the conventions documented in
 [Infrastructure Naming & Tagging Conventions](naming-tagging-conventions.md).
 
