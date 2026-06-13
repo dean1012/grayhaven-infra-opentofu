@@ -29,10 +29,13 @@ source "$HOME/.bashrc"
 
 ## Workflow
 
-Create a GitHub issue and feature branch, sign all commits and reference the
-issue number, validate changes locally, then create a pull request to the
-`main` branch referencing the issue number appropriately for code review and
-merge.
+1. Create a GitHub issue.
+2. Create a feature branch for the issue.
+3. Sign all commits and reference the issue number.
+4. Validate changes locally.
+5. Create a pull request to the `main` branch.
+6. Reference or close the issue number in the pull request as appropriate for
+   code review and merge.
 
 [Back to top](#contributing)
 
