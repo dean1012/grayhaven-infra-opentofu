@@ -154,7 +154,7 @@ environment to use the new value.
 To rotate the OpenTofu DigitalOcean API token:
 
 1. Create a new DigitalOcean API token using the permissions documented in
-   [Setup](setup.md#create-a-digitalocean-token).
+   [Setup](setup.md#create-a-digitalocean-api-token).
 2. Update `TF_VAR_do_token` in the local shell environment fragment.
 3. Source the shell configuration:
 

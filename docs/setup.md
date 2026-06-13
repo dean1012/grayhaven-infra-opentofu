@@ -7,7 +7,7 @@ completed before operating within this repository.
 
 - [Install Dependencies](#install-dependencies)
 - [Generate Passphrases](#generate-passphrases)
-- [Create a DigitalOcean Token](#create-a-digitalocean-token)
+- [Create a DigitalOcean API Token](#create-a-digitalocean-api-token)
 - [Generate Deploy Key Material](#generate-deploy-key-material)
 - [Set Up the Vault Repository](#set-up-the-vault-repository)
 - [Set Up the Environment](#set-up-the-environment)
@@ -68,7 +68,7 @@ openssl rand -hex 48
 
 [Back to top](#setup)
 
-## Create a DigitalOcean Token
+## Create a DigitalOcean API Token
 
 Create a DigitalOcean API token for OpenTofu with the narrowest practical
 scope for this automation.
