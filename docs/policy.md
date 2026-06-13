@@ -57,6 +57,20 @@ Web TLS behavior is selected by `web.tls_mode`:
   TLS.
 - `load_balancer`: always use load balancer TLS.
 
+When web hosts scale from one node to two or more nodes in `auto` TLS mode,
+OpenTofu creates a DigitalOcean load balancer and points web DNS at it. A
+manual Ansible run from the active control bastion is recommended immediately
+after web scaling operations so backend nginx configuration converges quickly.
+
+Moving from load-balancer TLS back to host TLS removes the load balancer and
+returns DNS to the primary web host. Confirm the certificate selector is still
+appropriate before applying that change.
+
+Adding or removing nodes from an existing load-balanced layout does not require
+host certificate issuance. Moving between host TLS and load-balancer TLS can
+produce a short transition window while DNS, load balancer certificates, and
+Ansible backend configuration converge.
+
 Changing the active control bastion changes the `bastion.*` DNS record and the
 tags used by
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)

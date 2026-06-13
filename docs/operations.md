@@ -12,7 +12,7 @@ infrastructure.
 - [Destroy the Staging Workspace Environment](#destroy-the-staging-workspace-environment)
 - [DigitalOcean API Token Rotation](#digitalocean-api-token-rotation)
 - [Bastion Failover](#bastion-failover)
-- [TLS Mode Changes](#tls-mode-changes)
+- [Updating Workspace Environment TLS Mode](#updating-workspace-environment-tls-mode)
 - [Certificate Selectors](#certificate-selectors)
 
 ## List Available Workspaces
@@ -171,28 +171,25 @@ switch the active control bastion.
 
 [Back to top](#operations)
 
-## TLS Mode Changes
+## Updating Workspace Environment TLS Mode
 
-Web TLS behavior is selected by `web.tls_mode` in
-`policy/<environment>/compute.yml`:
+To change the currently active TLS mode for a given workspace environment,
+first modify `web.tls_mode` in `policy/<environment>/compute.yml`, then run the
+following commands from the repository root:
 
-- `auto`: one web host uses host TLS; two or more web hosts use load balancer
-  TLS.
-- `load_balancer`: always use load balancer TLS.
+```bash
+tofu workspace select <workspace>
+tofu plan
+```
 
-When web hosts scale from one node to two or more nodes in `auto` TLS mode,
-OpenTofu creates a DigitalOcean load balancer and points web DNS at it. A
-manual Ansible run from the active control bastion is recommended immediately
-after web scaling operations so backend nginx configuration converges quickly.
+Review planned changes carefully, then run this command to update the live
+workspace environment:
 
-Moving from load-balancer TLS back to host TLS removes the load balancer and
-returns DNS to the primary web host. Confirm the certificate selector is still
-appropriate before applying that change.
+```bash
+tofu apply
+```
 
-Adding or removing nodes from an existing load-balanced layout does not require
-host certificate issuance. Moving between host TLS and load-balancer TLS can
-produce a short transition window while DNS, load balancer certificates, and
-Ansible backend configuration converge.
+[Policy](policy.md) documentation details supported TLS modes.
 
 [Back to top](#operations)
 
