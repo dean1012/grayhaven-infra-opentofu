@@ -230,10 +230,10 @@ for var in \
   TF_VAR_grayhaven_vault_password_staging \
   TF_VAR_grayhaven_vault_password_prod
 do
-  if [ -n "${!var}" ]; then
-    printf '%s=defined\n' "$var"
+  if [ -n "${!var:-}" ]; then
+    printf '\033[32m%s=defined\033[0m\n' "$var"
   else
-    printf '%s=missing\n' "$var"
+    printf '\033[31m%s=missing\033[0m\n' "$var"
   fi
 done
 ```
