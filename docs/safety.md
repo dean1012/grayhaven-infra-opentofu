@@ -109,9 +109,8 @@ future droplets receive the new key during bootstrap.
 
 ### Admin SSH Keys
 
-Admin SSH public keys are managed in `policy/<workspace>/ssh-keys.yml`. Update
-`policy/baseline/ssh-keys.yml` first, update the environment policy files that
-should attach the key to droplets, then update the private vault repository as
+Admin SSH public keys are managed in `policy/baseline/ssh-keys.yml`. Update
+that baseline policy first, then update the private vault repository as
 appropriate for users or automation keys by following
 [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
 

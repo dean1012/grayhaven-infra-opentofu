@@ -71,7 +71,12 @@ locals {
   )
 
   firewall_policy_path = "${local.policy_directory}/firewall.yml"
-  firewall_policy      = yamldecode(file(local.firewall_policy_path))
+  firewall_policy_yaml = (
+    local.is_environment
+    ? file(local.firewall_policy_path)
+    : "firewalls: {}\n"
+  )
+  firewall_policy = yamldecode(local.firewall_policy_yaml)
 
   vault_checkout_path = coalesce(
     var.grayhaven_vault_checkout_path,

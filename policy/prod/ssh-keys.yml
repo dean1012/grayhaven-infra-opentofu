@@ -1,8 +1,0 @@
----
-admin_ssh_keys:
-  jsmith:
-    title: jsmith@grayhavensystems.com
-    public_key: >-
-      ssh-ed25519
-      AAAAC3NzaC1lZDI1NTE5AAAAINjlDXayEv2Jg0zwkRHC9LxiJ8ztunzp3N/1Qy5+Ivha
-      jsmith@grayhavensystems.com

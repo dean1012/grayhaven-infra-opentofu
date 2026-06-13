@@ -19,16 +19,18 @@ Policy files are committed under workspace-specific directories:
 - `policy/staging/`
 - `policy/prod/`
 
-Each directory contains a complete policy set:
+Workspace policy directories contain files relevant to the resources owned by
+that workspace:
 
-- `compute.yml`
-- `dns.yml`
-- `firewall.yml`
-- `ssh-keys.yml`
+- `policy/baseline/`: `dns.yml`, `ssh-keys.yml`
+- `policy/staging/`: `compute.yml`, `dns.yml`, `firewall.yml`
+- `policy/prod/`: `compute.yml`, `dns.yml`, `firewall.yml`
 
-OpenTofu selects the policy directory that matches the active workspace. The
-`baseline` workspace uses `policy/baseline/`, `staging` uses
-`policy/staging/`, and `prod` uses `policy/prod/`.
+OpenTofu selects workspace-owned policy files from the directory that matches
+the active workspace. The `baseline` workspace uses `policy/baseline/`,
+`staging` uses `policy/staging/`, and `prod` uses `policy/prod/`. Baseline
+admin SSH key policy is read by all workspaces because baseline owns the
+DigitalOcean SSH key resources.
 
 Baseline policy owns shared resources such as DNS zones, baseline DNS records,
 and admin SSH key resources. Staging and production policy own runtime resources
@@ -62,9 +64,6 @@ Changing the active control bastion changes the `bastion.*` DNS record and the
 tags used by
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
 to identify the runner host.
-
-`policy/baseline/compute.yml` is intentionally empty-shaped because baseline
-does not deploy bastion or web hosts.
 
 [Back to top](#policy-files)
 
@@ -143,17 +142,17 @@ To add a hosted domain:
 
 ## Admin SSH Key Policy
 
-`policy/<workspace>/ssh-keys.yml` defines admin SSH public keys under
+`policy/baseline/ssh-keys.yml` defines admin SSH public keys under
 `admin_ssh_keys`. Each entry uses a stable internal key and includes:
 
 - `title`: the human-readable label and DigitalOcean SSH key name.
 - `public_key`: the public SSH key material.
 
-The baseline workspace creates and manages the DigitalOcean SSH key resources
-from `policy/baseline/ssh-keys.yml`. Staging and production look up the keys
-listed in their own `ssh-keys.yml` files by `title` and attach every configured
-admin key to every bastion and web droplet. Keep environment key policy aligned
-with baseline for keys that should be attached to managed hosts.
+The baseline workspace creates and manages the DigitalOcean SSH key resources.
+Staging and production read the baseline key policy, look up those keys by
+`title`, and attach every configured admin key to every bastion and web
+droplet. The environment workspaces do not define separate admin key policy
+files because the key resources are baseline-owned.
 
 To add or rotate an admin key:
 
@@ -162,15 +161,13 @@ To add or rotate an admin key:
    automation users, or deploy/control keys. Use the file-shape and editing
    guidance documented in
    [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
-3. Update `policy/staging/ssh-keys.yml`, `policy/prod/ssh-keys.yml`, or both
-   when the key should be attached to environment droplets.
-4. Select `baseline`.
-5. Run `tofu plan` and confirm only the intended SSH key resources change.
-6. Run `tofu apply`.
-7. Select `staging` or `prod`.
-8. Run `tofu plan` and confirm droplets will receive the expected admin key
+3. Select `baseline`.
+4. Run `tofu plan` and confirm only the intended SSH key resources change.
+5. Run `tofu apply`.
+6. Select `staging` or `prod`.
+7. Run `tofu plan` and confirm droplets will receive the expected admin key
    fingerprints.
-9. Apply the environment only when the droplet SSH key change is intended for
+8. Apply the environment only when the droplet SSH key change is intended for
    that environment.
 
 Public SSH keys are safe to commit. Private SSH keys and agent material must
@@ -188,9 +185,6 @@ repository and local firewalld policy in
 - `policy/prod/firewall.yml`
 
 When changing firewall policy, validate both cloud and host-level behavior.
-
-`policy/baseline/firewall.yml` is intentionally empty-shaped because baseline
-does not deploy environment cloud firewalls.
 
 [Back to top](#policy-files)
 
