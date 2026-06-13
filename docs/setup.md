@@ -5,6 +5,7 @@ completed before operating within this repository.
 
 ## Table of Contents
 
+- [Install Dependencies](#install-dependencies)
 - [Generate Passphrases](#generate-passphrases)
 - [Create a DigitalOcean Token](#create-a-digitalocean-token)
 - [Generate Deploy Key Material](#generate-deploy-key-material)
@@ -13,6 +14,48 @@ completed before operating within this repository.
 - [Edit Policy Files](#edit-policy-files)
 - [Validate Initialization & Configuration](#validate-initialization--configuration)
 - [Deploy Initial Environments](#deploy-initial-environments)
+
+## Install Dependencies
+
+Install OpenTofu from the
+[official OpenTofu RPM repository](https://opentofu.org/docs/intro/install/rpm/):
+
+```bash
+curl --proto '=https' --tlsv1.2 -fsSL \
+  https://get.opentofu.org/install-opentofu.sh \
+  -o install-opentofu.sh
+chmod +x install-opentofu.sh
+./install-opentofu.sh --install-method rpm
+rm -f install-opentofu.sh
+```
+
+Install Ansible, OpenSSL, and local validation tools on the workstation:
+
+```bash
+sudo dnf install epel-release
+sudo dnf install ansible-core openssl python3-pip ShellCheck npm
+python3 -m pip install --user --upgrade pip
+python3 -m pip install --user yamllint actionlint-py
+npm config set prefix "$HOME/.local"
+npm install --global markdownlint-cli2
+printf '%s\n' "$PATH" | grep -qE "(^|:)$HOME/\\.local/bin(:|$)" || \
+  printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
+source "$HOME/.bashrc"
+```
+
+Confirm the required commands are available:
+
+```bash
+command -v tofu
+command -v ansible-vault
+command -v openssl
+command -v yamllint
+command -v shellcheck
+command -v actionlint
+command -v markdownlint-cli2
+```
+
+[Back to top](#setup)
 
 ## Generate Passphrases
 
@@ -94,27 +137,6 @@ example repository history, then initialize a fresh repository:
 git init
 ```
 
-Install `yamllint` on the workstation before enabling the hook. On AlmaLinux 10,
-use a user-level Python install when `pip` is available:
-
-```bash
-python3 -m pip install --user yamllint
-```
-
-If `pip` is not available for the user account, enable EPEL and install the
-operating system package instead:
-
-```bash
-sudo dnf install epel-release
-sudo dnf install yamllint
-```
-
-Confirm the command is available:
-
-```bash
-command -v yamllint
-```
-
 Install the provided pre-commit hook before the first commit. This hook rejects
 commits when required vault files are missing or staged without Ansible Vault
 encryption.
@@ -145,6 +167,7 @@ generated above, then commit and push `main` to the new private GitHub
 repository.
 
 ```bash
+yamllint .
 ansible-vault encrypt vault/*.yml
 git add .
 git commit -S -m "Initialize production vault data"
@@ -168,6 +191,7 @@ generated above, then commit and push `staging` to the new private GitHub
 repository.
 
 ```bash
+yamllint .
 ansible-vault encrypt vault/*.yml
 git add .
 git commit -S -m "Initialize staging vault data"
@@ -299,34 +323,34 @@ git status --short
 No files should be listed. At this point, all intended setup changes should be
 staged and committed.
 
-Install local validation tools on your workstation:
+Check OpenTofu formatting in the infra checkout:
 
 ```bash
-sudo dnf install ShellCheck npm
-npm config set prefix "$HOME/.local"
-npm install --global markdownlint-cli2
-printf '%s\n' "$PATH" | grep -qE "(^|:)$HOME/\\.local/bin(:|$)" || \
-  printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
-source "$HOME/.bashrc"
+tofu fmt -check -recursive
 ```
 
-Confirm the validation commands are available:
+Run ShellCheck on the tracked shell entrypoint checked by CI:
 
 ```bash
-command -v shellcheck
-command -v markdownlint-cli2
+shellcheck scripts/read-vault-config
 ```
 
-Run ShellCheck on tracked shell entrypoints in the infra checkout:
+Run Yamllint on YAML files in the infra checkout:
 
 ```bash
-git grep -Il '^#!.*\(ba\)\?sh' -- . | xargs -r shellcheck
+yamllint .
 ```
 
 Run Markdownlint on all Markdown files in the infra checkout:
 
 ```bash
 markdownlint-cli2 "**/*.md" "!.terraform/**"
+```
+
+If GitHub Actions are changed, validate with:
+
+```bash
+actionlint
 ```
 
 [Back to top](#setup)
