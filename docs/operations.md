@@ -253,13 +253,42 @@ successfully completed the passphrase rotation procedure.
 
 ## grayhaven-vault Deployment SSH Keypair Rotation
 
-The deploy/control key is supplied to fresh droplets through
-`TF_VAR_grayhaven_ansible_deploy_public_key` and
-`TF_VAR_grayhaven_ansible_deploy_private_key`. For deployed bastions, rotate
-the persisted key with
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-`playbooks/rotate-vault-deploy-key.yml`, then update the OpenTofu variables so
-future droplets receive the new key during bootstrap.
+To rotate the `grayhaven-vault` deployment SSH keypair:
+
+1. Temporarily back up your existing deployment SSH keypair and keep the
+   backup private.
+
+   Replace the key paths appropriately and run:
+
+   ```bash
+   backup_dir="$HOME/backups"
+   timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+
+   mkdir -p "$backup_dir"
+   chmod 0700 "$backup_dir"
+   tar -czf \
+     "$backup_dir/grayhaven-vault-deployment-ssh-keypair-${timestamp}.tar.gz" \
+     /path/to/ansible-deploy.key.pub \
+     /path/to/ansible-deploy.key
+   chmod 0600 \
+     "$backup_dir/grayhaven-vault-deployment-ssh-keypair-${timestamp}.tar.gz"
+   ```
+
+2. [Generate a new keypair](setup.md#generate-a-deployment-ssh-keypair-for-read-only-access-to-vault-repository).
+3. Add the new deploy public key generated in step 2 as a read-only deploy key
+   on your private vault repository through GitHub's website.
+4. Update `$HOME/.bashrc.d/grayhaven.env`, ensuring that
+   `TF_VAR_grayhaven_ansible_deploy_public_key` and
+   `TF_VAR_grayhaven_ansible_deploy_private_key` point to the new keypair.
+5. Reload `grayhaven.env`:
+
+   ```bash
+   source "$HOME/.bashrc.d/grayhaven.env"
+   ```
+
+6. Rotate the `grayhaven-vault` deployment SSH keypair for existing bastions
+   by following the instructions located in
+   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#deploy-key-rotation).
 
 [Back to top](#operations)
 
