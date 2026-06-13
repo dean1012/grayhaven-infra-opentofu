@@ -243,16 +243,33 @@ done
 
 ## Edit Policy Files
 
-Review and update all `policy/` files.
-
 [Policy](policy.md) documentation details file formats for all policy files.
 
-After editing policy files, review and commit them:
+Switch to the main branch:
+
+```bash
+git switch main
+```
+
+Review and update all `policy/` files setting values appropriate for
+production.
+
+After editing all `policy/` files, review and commit them:
 
 ```bash
 git status --short policy/
 git add policy/
-git commit -S -m "Configure policy files"
+git commit -S -m "Configure production policy files"
+```
+
+Review and update all `policy/` files setting values appropriate for staging.
+
+After editing all `policy/` files, review and commit them:
+
+```bash
+git status --short policy/
+git add policy/
+git commit -S -m "Configure staging policy files"
 ```
 
 [Back to top](#setup)
