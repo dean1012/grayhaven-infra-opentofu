@@ -17,7 +17,7 @@ completed before operating within this repository.
 
 ## Install Dependencies
 
-Install OpenTofu from the official OpenTofu RPM repository:
+Install OpenTofu from the official OpenTofu DNF repository:
 
 ```bash
 cat <<EOF | sudo tee /etc/yum.repos.d/opentofu.repo
