@@ -103,7 +103,7 @@ To rotate the OpenTofu DigitalOcean API token:
    [Setup](setup.md#create-a-digitalocean-api-token), adding or removing any
    desired permissions if applicable.
 2. Update `$HOME/.bashrc.d/grayhaven.env`, replacing `TF_VAR_do_token` with
-   the new DigitalOcean API token.
+   your new DigitalOcean API token.
 3. Reload `grayhaven.env`:
 
    ```bash
