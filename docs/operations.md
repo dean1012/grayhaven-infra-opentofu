@@ -221,15 +221,4 @@ In load balancer TLS mode:
 - `production` uses a DigitalOcean-managed live Let's Encrypt certificate on
   the load balancer.
 
-The `grayhaven_certificate_environment` OpenTofu variable can force a
-certificate environment during a fresh test deployment:
-
-```bash
-tofu plan -var 'grayhaven_certificate_environment=staging'
-tofu apply -var 'grayhaven_certificate_environment=staging'
-```
-
-Deployment overrides are for fresh test deployments only. Changing overrides on
-existing environments is undefined operational behavior and is not recommended.
-
 [Back to top](#operations)

@@ -142,17 +142,6 @@ variable "grayhaven_vault_password_prod" {
   sensitive   = true
 }
 
-variable "grayhaven_certificate_environment" {
-  description = "Fresh-deployment certificate environment override. Use staging for Let's Encrypt staging/self-signed test certificates or production for live certificates."
-  type        = string
-  default     = null
-
-  validation {
-    condition     = var.grayhaven_certificate_environment == null || contains(["staging", "production"], var.grayhaven_certificate_environment)
-    error_message = "grayhaven_certificate_environment must be null, staging, or production."
-  }
-}
-
 variable "grayhaven_ansible_deploy_public_key" {
   description = "Public half of the dual-purpose Ansible control and GitHub deploy key."
   type        = string

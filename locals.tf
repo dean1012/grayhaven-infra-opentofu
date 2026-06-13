@@ -100,7 +100,6 @@ locals {
   certificate_env_auto = local.is_prod ? "production" : "staging"
 
   certificate_environment = local.is_environment ? coalesce(
-    var.grayhaven_certificate_environment,
     try(local.vault_config.certificate_environment, null),
     local.certificate_env_auto
   ) : "staging"

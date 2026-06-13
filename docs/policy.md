@@ -177,9 +177,9 @@ The `grayhaven_test_compute_policy_path`,
 variables exist only for offline plan tests and disposable validation
 checkouts. Leave them unset for operational deployment.
 
-The `grayhaven_config_repo_ref`, `grayhaven_infra_policy_repo_ref`, and
-`grayhaven_certificate_environment` variables are testing-related
-fresh-deployment controls. Changing them on an existing environment will result
-in undefined operational behavior and is not recommended.
+The `grayhaven_config_repo_ref` and `grayhaven_infra_policy_repo_ref` variables
+are testing-related fresh-deployment controls. Changing them on an existing
+environment will result in undefined operational behavior and is not
+recommended.
 
 [Back to top](#policy-files)
