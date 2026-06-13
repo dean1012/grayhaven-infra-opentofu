@@ -13,7 +13,6 @@ infrastructure.
 - [DigitalOcean API Token Rotation](#digitalocean-api-token-rotation)
 - [Bastion Failover](#bastion-failover)
 - [Updating Workspace Environment TLS Mode](#updating-workspace-environment-tls-mode)
-- [Certificate Selectors](#certificate-selectors)
 
 ## List Available Workspaces
 
@@ -190,35 +189,5 @@ tofu apply
 ```
 
 Policy documentation details [supported TLS modes](policy.md#compute-policy).
-
-[Back to top](#operations)
-
-## Certificate Selectors
-
-`grayhaven-vault/config.yml` contains the `certificate_environment` selector.
-OpenTofu reads that selector from the workspace-selected Git ref in the local
-vault checkout:
-
-- `staging`: `staging:config.yml`
-- `prod`: `main:config.yml`
-
-The checked-out vault branch does not affect selector loading. Fetch the
-expected refs before planning or applying:
-
-```bash
-git -C "$TF_VAR_grayhaven_vault_checkout_path" fetch origin main staging
-```
-
-In host TLS mode:
-
-- `staging` uses Let's Encrypt staging through Certbot DNS-01.
-- `production` uses live Let's Encrypt through Certbot DNS-01.
-
-In load balancer TLS mode:
-
-- `staging` uses a self-signed custom certificate on the DigitalOcean load
-  balancer.
-- `production` uses a DigitalOcean-managed live Let's Encrypt certificate on
-  the load balancer.
 
 [Back to top](#operations)
