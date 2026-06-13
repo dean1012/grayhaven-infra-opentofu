@@ -3,6 +3,7 @@
 This document is intended for Grayhaven Systems LLC employees and assumes that
 this repository has been [initialized and configured](docs/setup.md)
 appropriately.
+
 If you are not a Grayhaven Systems LLC employee, we still welcome your support
 and contribution.
 
