@@ -8,7 +8,7 @@ completed before operating within this repository.
 - [Install Dependencies](#install-dependencies)
 - [Generate Passphrases](#generate-passphrases)
 - [Create a DigitalOcean API Token](#create-a-digitalocean-api-token)
-- [Generate an Admin SSH Keypair for SSH Access](#generate-an-admin-ssh-keypair-for-ssh-access)
+- [Generate an Admin SSH Keypair for First-Boot SSH Access](#generate-an-admin-ssh-keypair-for-first-boot-ssh-access)
 - [Generate a Deployment SSH Keypair for Read-only Access to Vault Repository](#generate-a-deployment-ssh-keypair-for-read-only-access-to-vault-repository)
 - [Set Up the Vault Repository](#set-up-the-vault-repository)
 - [Set Up the Environment](#set-up-the-environment)
@@ -94,10 +94,11 @@ scope for this automation.
 
 [Back to top](#setup)
 
-## Generate an Admin SSH Keypair for SSH Access
+## Generate an Admin SSH Keypair for First-Boot SSH Access
 
-Generate an admin SSH keypair that will be used for SSH access to Grayhaven
-Systems LLC infrastructure:
+Generate an admin SSH keypair that will be used for first-boot access and
+configuration for new Grayhaven Systems LLC servers. This keypair is temporary
+and will be removed from each server during Ansible convergence.
 
 ```bash
 mkdir -p "$HOME/.ssh"
