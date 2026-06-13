@@ -21,8 +21,6 @@ Install verification dependencies:
 
 ```bash
 sudo dnf install ShellCheck npm
-python3 -m pip install --upgrade pip
-python3 -m pip install yamllint
 python3 -m pip install actionlint-py
 npm config set prefix "$HOME/.local"
 npm install --global markdownlint-cli2
