@@ -18,14 +18,15 @@ Destroying these environments will result in production outages.
 
 ## Sensitive Output
 
-Keep terminal output private when plans may contain sensitive values. Do not
-commit generated state, plan files, local environment files, or command output
-that includes secrets.
+Keep terminal output private until reviewed. OpenTofu normally redacts values
+marked sensitive, but plan and apply output can still contain operational
+details and may expose secrets if future changes fail to mark sensitive values
+correctly.
 
 Recommended handling:
 
 - Keep OpenTofu environment variables out of shell history.
-- Store local environment fragments outside the repository.
+- Store `grayhaven.env` outside of this repository.
 - Avoid sharing raw `tofu plan` or `tofu apply` output without reviewing it
   first.
 - Keep private keys, Ansible Vault passphrases, DigitalOcean API tokens, and
