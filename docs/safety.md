@@ -30,8 +30,8 @@ Recommended handling:
 - Avoid sharing raw `tofu plan` or `tofu apply` output without reviewing it
   first.
 - Keep private keys, Ansible Vault passphrases, DigitalOcean API tokens, state
-  encryption passphrases, and other secrets out of issue comments, pull
-  requests, and commit history.
+  encryption passphrases, and other secrets out of GitHub issues, comments,
+  pull requests, and commit history.
 
 [Back to top](#safety)
 
