@@ -245,14 +245,9 @@ done
 
 [Policy](policy.md) documentation details file formats for all policy files.
 
-Switch to the main branch:
-
-```bash
-git switch main
-```
-
 Review and update all `policy/` files setting values appropriate for
-production.
+production. Production values are the desired steady-state settings for the
+long-lived `prod` workspace.
 
 After editing all `policy/` files, review and commit them:
 
@@ -263,6 +258,8 @@ git commit -S -m "Configure production policy files"
 ```
 
 Review and update all `policy/` files setting values appropriate for staging.
+Staging values should support short-lived validation deployments before
+promotion to production.
 
 After editing all `policy/` files, review and commit them:
 
