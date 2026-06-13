@@ -33,8 +33,14 @@ token is missing a required permission. The exact message depends on the
 affected resource, but it may resemble this example:
 
 ```text
-Error: GET https://api.digitalocean.com/v2/example-resource: 403
-The access token does not have the required scope for this request.
+Error: Unable to load projects: Error retrieving projects:
+GET https://api.digitalocean.com/v2/projects?page=1&per_page=200:
+403 (request "00000000-0000-4000-8000-000000000000")
+You are not authorized to perform this operation
+
+  with data.digitalocean_project.grayhaven[0],
+  on main.tf line 38, in data "digitalocean_project" "grayhaven":
+  38: data "digitalocean_project" "grayhaven" {
 ```
 
 DigitalOcean API token scopes cannot be updated in place. Resolve this by
