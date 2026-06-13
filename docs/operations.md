@@ -241,10 +241,10 @@ environment:
    passphrase.
 2. Rotate the configuration Ansible Vault passphrase for the correct workspace
    environment by following the instructions located in
-   [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
+   [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/operations.md#vault-password-rotation).
 3. Rotate the Ansible Vault passphrase for existing resources by following the
    instructions located in
-   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible).
+   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#vault-password-rotation).
 
 Do not discard your original Ansible Vault passphrase until you have
 successfully completed the passphrase rotation procedure.
