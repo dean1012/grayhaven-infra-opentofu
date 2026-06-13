@@ -198,10 +198,12 @@ environment:
 8. Run `tofu apply` to rotate the state encryption passphrase.
 9. Update `$HOME/.bashrc.d/grayhaven.env`, removing
    `TF_VAR_state_encryption_previous_passphrase_<workspace>`.
-10. Reload `grayhaven.env`:
+10. Unset `TF_VAR_state_encryption_previous_passphrase_<workspace>` in your
+    local shell environment:
 
     ```bash
-    source "$HOME/.bashrc.d/grayhaven.env"
+    workspace="<workspace>"
+    unset "TF_VAR_state_encryption_previous_passphrase_${workspace}"
     ```
 
 11. Run `tofu plan` again to confirm that OpenTofu can read the workspace
