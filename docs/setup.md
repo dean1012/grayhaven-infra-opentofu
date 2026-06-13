@@ -333,11 +333,17 @@ markdownlint-cli2 "**/*.md" "!.terraform/**"
 
 ## Deploy Initial Environments
 
+Initialize OpenTofu once from the repository root:
+
+```bash
+tofu init
+```
+
 Deploy baseline first so shared protected resources exist before environment
 runtime resources:
 
 ```bash
-tofu workspace select baseline
+tofu workspace new baseline
 tofu plan
 tofu apply
 ```
@@ -345,7 +351,7 @@ tofu apply
 Deploy staging next and validate it before production:
 
 ```bash
-tofu workspace select staging
+tofu workspace new staging
 tofu plan
 tofu apply
 ```
@@ -353,7 +359,7 @@ tofu apply
 Deploy production after staging review is complete:
 
 ```bash
-tofu workspace select prod
+tofu workspace new prod
 tofu plan
 tofu apply
 ```
