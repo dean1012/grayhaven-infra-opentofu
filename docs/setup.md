@@ -301,7 +301,7 @@ Install local validation tools on your workstation:
 sudo dnf install ShellCheck npm
 npm config set prefix "$HOME/.local"
 npm install --global markdownlint-cli2
-grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" || \
+printf '%s\n' "$PATH" | grep -qE "(^|:)$HOME/\\.local/bin(:|$)" || \
   printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
 source "$HOME/.bashrc"
 ```
