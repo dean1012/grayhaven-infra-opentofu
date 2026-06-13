@@ -1,15 +1,16 @@
 # Policy Files
 
-Committed policy files define the intended infrastructure shape.
+Committed policy files define the intended infrastructure shape for each
+workspace. This document describes the supported policy file schemas.
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Compute Policy](#compute-policy)
-- [DNS Policy](#dns-policy)
+- [Baseline DNS Policy](#baseline-dns-policy)
+- [Environment DNS Policy](#environment-dns-policy)
 - [Admin SSH Key Policy](#admin-ssh-key-policy)
+- [Compute Policy](#compute-policy)
 - [Firewall Policy](#firewall-policy)
-- [Policy Overrides](#policy-overrides)
 
 ## Overview
 
@@ -26,78 +27,55 @@ that workspace:
 - `policy/staging/`: `compute.yml`, `dns.yml`, `firewall.yml`
 - `policy/prod/`: `compute.yml`, `dns.yml`, `firewall.yml`
 
-OpenTofu selects workspace-owned policy files from the directory that matches
-the active workspace. The `baseline` workspace uses `policy/baseline/`,
-`staging` uses `policy/staging/`, and `prod` uses `policy/prod/`. Baseline
-admin SSH key policy is read by all workspaces because baseline owns the
-DigitalOcean SSH key resources.
+OpenTofu selects policy files from the directory that matches the active
+workspace. The `baseline` workspace uses `policy/baseline/`, `staging` uses
+`policy/staging/`, and `prod` uses `policy/prod/`.
 
-Baseline policy owns shared resources such as DNS zones, baseline DNS records,
-and admin SSH key resources. Staging and production policy own runtime resources
-such as droplets, cloud firewalls, and computed environment DNS records.
+Baseline admin SSH key policy is also read by `staging` and `prod` because
+`baseline` owns the DigitalOcean SSH key resources.
 
-Names and DigitalOcean tags follow the conventions documented in
+Names and DigitalOcean tags follow
 [Infrastructure Naming & Tagging Conventions](naming-tagging-conventions.md).
+Runtime role and TLS behavior are described in
+[Runtime Architecture](runtime-architecture.md).
+DNS behavior and ownership are described in [DNS](dns.md).
 
 [Back to top](#policy-files)
 
-## Compute Policy
+## Baseline DNS Policy
 
-`policy/<environment>/compute.yml` declares bastion instances, web instances,
-the active control bastion, and web TLS mode for `staging` and `prod`.
+`policy/baseline/dns.yml` defines shared DNS zones and baseline records.
 
-Stable instance keys such as `bastion-01` and `web-01` are used as OpenTofu
-resource keys. The declared bastion control node receives the easy
-`bastion.*` DNS record and is the only bastion expected to run the scheduled
-Ansible runner.
-
-Web TLS behavior is selected by `web.tls_mode`:
-
-- `auto`: one web host uses host TLS; two or more web hosts use load balancer
-  TLS.
-- `load_balancer`: always use load balancer TLS.
-
-When web hosts scale from one node to two or more nodes in `auto` TLS mode,
-OpenTofu creates a DigitalOcean load balancer and points web DNS at it. A
-manual Ansible run from the active control bastion is recommended immediately
-after web scaling operations so backend nginx configuration converges quickly.
-
-Moving from load-balancer TLS back to host TLS removes the load balancer and
-returns DNS to the primary web host. Confirm the certificate selector is still
-appropriate before applying that change.
-
-Adding or removing nodes from an existing load-balanced layout does not require
-host certificate issuance. Moving between host TLS and load-balancer TLS can
-produce a short transition window while DNS, load balancer certificates, and
-Ansible backend configuration converge.
-
-Changing the active control bastion changes the `bastion.*` DNS record and the
-tags used by
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-to identify the runner host.
-
-[Back to top](#policy-files)
-
-## DNS Policy
-
-DNS policy file behavior and ownership are described in [DNS](dns.md). This
-section documents the policy file shape.
-
-`policy/baseline/dns.yml` supports:
+Supported top-level keys:
 
 - `ttl`: default TTL for managed DNS records.
 - `domains`: map of managed domain entries.
-- `domains.<key>.name`: public domain name.
-- `domains.<key>.protected_records`: baseline records with OpenTofu destroy
-  protection.
-- `domains.<key>.records`: baseline records without OpenTofu destroy
+
+Supported domain keys:
+
+- `domains.<domain_key>.name`: public domain name.
+- `domains.<domain_key>.protected_records`: baseline records with OpenTofu
+  destroy protection.
+- `domains.<domain_key>.records`: baseline records without OpenTofu destroy
   protection.
 
-`protected_records` supports A, CNAME, MX, TXT, and CAA record types.
-`records` supports A, CNAME, and TXT record types. Use `protected_records` for
-MX and CAA records.
+`protected_records` supports these DNS record types:
 
-Each record entry includes:
+- `A`
+- `CNAME`
+- `MX`
+- `TXT`
+- `CAA`
+
+`records` supports these DNS record types:
+
+- `A`
+- `CNAME`
+- `TXT`
+
+Use `protected_records` for MX and CAA records.
+
+Each record entry supports:
 
 - `type`: DNS record type.
 - `name`: record name.
@@ -107,79 +85,194 @@ Each record entry includes:
 - `flags`: CAA flags.
 - `tag`: CAA tag.
 
-`policy/staging/dns.yml` and `policy/prod/dns.yml` support:
+Example shape:
+
+```yaml
+ttl: 300
+
+domains:
+  example:
+    name: example.com
+    protected_records:
+      mx_primary:
+        type: MX
+        name: "@"
+        value: mail.example.com.
+        priority: 10
+    records:
+      status_txt:
+        type: TXT
+        name: status
+        value: "status=ok"
+```
+
+[Back to top](#policy-files)
+
+## Environment DNS Policy
+
+`policy/staging/dns.yml` and `policy/prod/dns.yml` define computed
+environment DNS records.
+
+Supported top-level keys:
 
 - `ttl`: default TTL for computed environment DNS records.
 - `domains`: map of domains that should receive computed environment records.
-- `domains.<key>.name`: public domain name.
-- `domains.<key>.environment.apex`: creates the environment apex record.
-- `domains.<key>.environment.web_aliases`: creates `www` and `dev` aliases for
-  the environment.
 
-Both fields default to false when omitted. `environment.web_aliases` requires
-`environment.apex`; valid combinations are true/true, true/false, and
-false/false.
+Supported domain keys:
+
+- `domains.<domain_key>.name`: public domain name.
+- `domains.<domain_key>.environment.apex`: creates the environment apex
+  record.
+- `domains.<domain_key>.environment.web_aliases`: creates `www` and `dev`
+  aliases for the environment.
+
+Both `environment.apex` and `environment.web_aliases` default to false when
+omitted. `environment.web_aliases` requires `environment.apex`; valid
+combinations are true/true, true/false, and false/false.
+
+Example shape:
+
+```yaml
+ttl: 300
+
+domains:
+  example:
+    name: example.com
+    environment:
+      apex: true
+      web_aliases: true
+```
 
 [Back to top](#policy-files)
 
 ## Admin SSH Key Policy
 
 `policy/baseline/ssh-keys.yml` defines admin SSH public keys under
-`admin_ssh_keys`. Each entry uses a stable internal key and includes:
+`admin_ssh_keys`.
 
-- `title`: the human-readable label and DigitalOcean SSH key name.
-- `public_key`: the public SSH key material.
+Each entry uses a stable internal key and supports:
 
-The baseline workspace creates and manages the DigitalOcean SSH key resources.
-Staging and production read the baseline key policy, look up those keys by
-`title`, and attach every configured admin key to every bastion and web
-droplet. The environment workspaces do not define separate admin key policy
-files because the key resources are baseline-owned.
+- `title`: human-readable label and DigitalOcean SSH key name.
+- `public_key`: public SSH key material.
 
-To add or rotate an admin key:
+Example shape:
 
-1. Update `policy/baseline/ssh-keys.yml`.
-2. Update the private vault repository as appropriate for managed users,
-   automation users, or deploy/control keys. Use the file-shape and editing
-   guidance documented in
-   [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
-3. Select `baseline`.
-4. Run `tofu plan` and confirm only the intended SSH key resources change.
-5. Run `tofu apply`.
-6. Select `staging` or `prod`.
-7. Run `tofu plan` and confirm droplets will receive the expected admin key
-   fingerprints.
-8. Apply the environment only when the droplet SSH key change is intended for
-   that environment.
+```yaml
+admin_ssh_keys:
+  jsmith:
+    title: jsmith@example.com
+    public_key: >-
+      ssh-ed25519
+      AAAAexamplePublicKeyMaterial
+      jsmith@example.com
+```
 
-Public SSH keys are safe to commit. Private SSH keys and agent material must
-never be committed or printed in terminal output.
+[Back to top](#policy-files)
+
+## Compute Policy
+
+`policy/staging/compute.yml` and `policy/prod/compute.yml` declare bastion
+instances, web instances, the active control bastion, and web TLS mode.
+
+Supported top-level keys:
+
+- `bastions`: bastion role policy.
+- `web`: web role policy.
+
+Supported bastion keys:
+
+- `bastions.control_node`: bastion instance key selected as the active control
+  bastion.
+- `bastions.instances`: map of bastion instances.
+- `bastions.instances.<instance_key>.index`: numeric index used for generated
+  resource names.
+- `bastions.instances.<instance_key>.size`: optional DigitalOcean droplet size.
+- `bastions.instances.<instance_key>.image`: optional DigitalOcean image slug.
+
+Supported web keys:
+
+- `web.tls_mode`: `auto` or `load_balancer`.
+- `web.instances`: map of web instances.
+- `web.instances.<instance_key>.index`: numeric index used for generated
+  resource names.
+- `web.instances.<instance_key>.size`: optional DigitalOcean droplet size.
+- `web.instances.<instance_key>.image`: optional DigitalOcean image slug.
+
+`bastions.control_node` must match a key under `bastions.instances`. Each
+environment compute policy must define at least one bastion and one web host.
+`web.tls_mode` defaults to `auto` when omitted.
+
+Example shape:
+
+```yaml
+bastions:
+  control_node: bastion-01
+  instances:
+    bastion-01:
+      index: 1
+
+web:
+  tls_mode: auto
+  instances:
+    web-01:
+      index: 1
+```
 
 [Back to top](#policy-files)
 
 ## Firewall Policy
 
-The firewall policy files drive DigitalOcean cloud firewalls in this
-repository and local firewalld policy in
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible):
+`policy/staging/firewall.yml` and `policy/prod/firewall.yml` define
+DigitalOcean cloud firewall rules.
 
-- `policy/staging/firewall.yml`
-- `policy/prod/firewall.yml`
+Supported top-level keys:
 
-When changing firewall policy, validate both cloud and host-level behavior.
+- `firewalls`: map of firewall policies.
 
-[Back to top](#policy-files)
+Supported firewall keys:
 
-## Policy Overrides
+- `firewalls.bastion`: bastion cloud firewall policy.
+- `firewalls.web`: web cloud firewall policy.
 
-The `grayhaven_test_compute_policy_path`,
-`grayhaven_test_dns_policy_path`, and `grayhaven_test_ssh_keys_policy_path`
-variables exist only for offline plan tests and disposable validation
-checkouts. Leave them unset for operational deployment.
+Each firewall policy supports:
 
-The `grayhaven_config_repo_ref` and `grayhaven_infra_policy_repo_ref` variables
-are testing-related fresh-deployment controls. Changing them on an existing
-environment will result in undefined operational behavior and is not
-recommended.
+- `inbound`: list of inbound firewall rules.
+- `outbound`: list of outbound firewall rules.
+
+Supported inbound rule keys:
+
+- `protocol`: network protocol.
+- `port_range`: port or port range.
+- `source_addresses`: optional list of source CIDR blocks.
+- `source_tags`: optional list of source tag aliases.
+
+Supported outbound rule keys:
+
+- `protocol`: network protocol.
+- `port_range`: port or port range.
+- `destination_addresses`: optional list of destination CIDR blocks.
+- `destination_tags`: optional list of destination tag aliases.
+
+Supported tag aliases are:
+
+- `bastion`
+- `web`
+
+Example shape:
+
+```yaml
+firewalls:
+  bastion:
+    inbound:
+      - protocol: tcp
+        port_range: "22"
+        source_addresses:
+          - 0.0.0.0/0
+    outbound:
+      - protocol: tcp
+        port_range: "22"
+        destination_tags:
+          - web
+```
 
 [Back to top](#policy-files)

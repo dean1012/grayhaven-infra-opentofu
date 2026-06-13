@@ -6,6 +6,7 @@ This document describes the offline OpenTofu test suite for this repository.
 
 - [Purpose](#purpose)
 - [How Tests Run](#how-tests-run)
+- [Test Policy Fixtures](#test-policy-fixtures)
 - [What Is Tested](#what-is-tested)
 - [Limitations](#limitations)
 - [Local Use](#local-use)
@@ -46,6 +47,20 @@ repository.
 
 [Back to top](#opentofu-test-suite)
 
+## Test Policy Fixtures
+
+The test suite uses optional policy path overrides to load static fixture files
+from `tests/fixtures/`:
+
+- `grayhaven_test_compute_policy_path`
+- `grayhaven_test_dns_policy_path`
+- `grayhaven_test_ssh_keys_policy_path`
+
+These variables exist only for offline plan tests and disposable validation
+checkouts. Leave them unset for operational deployments.
+
+[Back to top](#opentofu-test-suite)
+
 ## What Is Tested
 
 Baseline tests verify that the `baseline` workspace plans shared resources
@@ -61,9 +76,9 @@ Baseline fixture tests also verify support for unprotected A, CNAME, and TXT
 records under `records`, and verify that unsupported DNS record types are
 rejected by the DNS policy guard.
 
-DNS fixture tests use the test-only `grayhaven_test_dns_policy_path` variable
-to load static policy files from `tests/fixtures/`. Leave that variable unset
-for operational deployments.
+DNS fixture tests use the test-only DNS policy override to verify baseline
+unprotected records, unsupported DNS record rejection, apex-only environment
+records, and invalid environment alias combinations.
 
 Staging and production tests verify committed policy plans for their matching
 workspaces, plus fixed scenario fixtures:

@@ -103,6 +103,7 @@ procedures, control-node changes, and TLS-mode changes. See
   - [Safety](docs/safety.md)
   - [Troubleshooting](docs/troubleshooting.md)
 - Architecture & Standards
+  - [Runtime Architecture](docs/runtime-architecture.md)
   - [Infrastructure Naming & Tagging Conventions](docs/naming-tagging-conventions.md)
   - [DNS](docs/dns.md)
   - [OpenTofu Test Suite](docs/opentofu-test-suite.md)

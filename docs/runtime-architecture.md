@@ -1,0 +1,72 @@
+# Runtime Architecture
+
+This document summarizes the supported runtime architecture for Grayhaven
+Systems LLC infrastructure. Policy file schemas are documented in
+[Policy Files](policy.md).
+
+## Table of Contents
+
+- [Supported Runtime Roles](#supported-runtime-roles)
+- [Control Bastion](#control-bastion)
+- [Web TLS Modes](#web-tls-modes)
+- [Configuration Handoff](#configuration-handoff)
+
+## Supported Runtime Roles
+
+Environment workspaces currently support two runtime server roles:
+
+- `bastion`: SSH entry point and, for the selected control bastion, Ansible
+  convergence runner.
+- `web`: nginx-based web host managed by
+  [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible).
+
+Stable instance keys such as `bastion-01` and `web-01` are used as OpenTofu
+resource keys. Numeric `index` values in compute policy are used for generated
+resource names.
+
+[Back to top](#runtime-architecture)
+
+## Control Bastion
+
+The active control bastion is selected by `bastions.control_node` in the
+environment compute policy. The selected bastion receives the easy
+`bastion.*` DNS record and the `control-node` tag.
+
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+uses the control-node tag to identify the host that should run scheduled
+Ansible convergence.
+
+[Back to top](#runtime-architecture)
+
+## Web TLS Modes
+
+Web TLS behavior is selected by `web.tls_mode` in environment compute policy:
+
+- `auto`: one web host uses host TLS; two or more web hosts use load balancer
+  TLS.
+- `load_balancer`: always use load balancer TLS.
+
+When web hosts scale from one node to two or more nodes in `auto` TLS mode,
+OpenTofu creates a DigitalOcean load balancer and points web DNS at it. Moving
+from load balancer TLS back to host TLS removes the load balancer and returns
+DNS to the primary web host.
+
+Adding or removing nodes from an existing load-balanced layout does not require
+host certificate issuance. Moving between host TLS and load balancer TLS can
+produce a short transition window while DNS, load balancer certificates, and
+Ansible backend configuration converge.
+
+[Back to top](#runtime-architecture)
+
+## Configuration Handoff
+
+OpenTofu renders cloud-init data for each new droplet. During first boot, each
+host is bootstrapped into
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+and receives the environment-specific values needed for convergence.
+
+Environment workspaces read `config.yml` from the intended
+`grayhaven-vault` Git ref instead of whichever branch is checked out locally.
+Production uses the `main` ref and staging uses the `staging` ref.
+
+[Back to top](#runtime-architecture)
