@@ -140,7 +140,8 @@ please update the documented
 To rotate the OpenTofu state encryption passphrase for a given workspace
 environment:
 
-1. Back up the target workspace environment state and keep the backup private.
+1. Temporarily back up the target workspace environment state and keep the
+   backup private.
 
    From the repository root, replace `<workspace>` appropriately and run:
 
@@ -225,8 +226,8 @@ tofu workspace select "$workspace"
 tofu plan
 ```
 
-Once the state encryption passphrase has been successfully rotated, the state
-backup can be safely removed.
+Once the state encryption passphrase has been successfully rotated, the
+temporary state backup taken in step 1 above can be safely removed.
 
 [Back to top](#operations)
 
