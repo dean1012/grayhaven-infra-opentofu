@@ -183,7 +183,7 @@ Copy the sample environment file into a private shell fragment:
 
 ```bash
 mkdir -p "$HOME/.bashrc.d"
-cp grayhaven.env.example "$HOME/.bashrc.d/grayhaven.env"
+cp docs/examples/grayhaven.env.example "$HOME/.bashrc.d/grayhaven.env"
 chmod 0600 "$HOME/.bashrc.d/grayhaven.env"
 ```
 
