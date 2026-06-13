@@ -63,23 +63,23 @@ tofu plan -var 'grayhaven_config_repo_ref=<branch-name>'
 ```
 
 Review planned changes carefully, then run this command to update the live
-workspace environment:
+`staging` workspace environment:
 
 ```bash
 tofu apply -var 'grayhaven_config_repo_ref=<branch-name>'
 ```
 
 The `grayhaven_config_repo_ref` override is intended to be used with a fresh
-staging workspace deployment only. If you need to change this value, you must
-first destroy the staging workspace environment.
+`staging` workspace deployment only. If you need to change this value, you must
+first destroy the `staging` workspace environment.
 
 [Back to top](#operations)
 
 ## Destroy the Staging Workspace Environment
 
-The staging workspace environment is meant to be destroyed when not in use. To
-destroy the staging workspace environment safely, run these commands from the
-repository root:
+The `staging` workspace environment is meant to be destroyed when not in use.
+To destroy the `staging` workspace environment safely, run these commands from
+the repository root:
 
 ```bash
 tofu workspace select staging
