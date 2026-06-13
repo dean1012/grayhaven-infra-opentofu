@@ -42,15 +42,39 @@ tofu workspace select <workspace>
 
 ## Provisioning or Updating Infrastructure
 
-First, change to the desired workspace, then execute `tofu plan` from the
-repository root. Review planned changes carefully, then run `tofu apply` to
-update the live workspace environment.
+To provision or update infrastructure:
 
-```bash
-tofu workspace select <workspace>
-tofu plan
-tofu apply
-```
+1. Change to the desired workspace environment.
+
+   ```bash
+   tofu workspace select <workspace>
+   ```
+
+2. Make changes to this repository and/or adjust configuration. Make any
+   relevant adjustments to `grayhaven-config-ansible` and `grayhaven-vault` as
+   well.
+
+3. Run `tofu plan` and review planned changes carefully.
+
+   ```bash
+   tofu plan
+   ```
+
+4. Run `tofu apply`.
+
+   ```bash
+   tofu apply
+   ```
+
+5. If you are moving an existing environment deployment from one web host to two
+   or more web hosts, from two or more web hosts to one web host, or explicitly
+   changing `tls_mode`, manually start the runner from the active control node
+   using the
+   [`grayhaven-config-ansible` manual runner invocation instructions](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#manual-runner-invocation).
+
+It is recommended that all changes to this repository be tested in a `staging`
+workspace environment deployment before updating the `prod` workspace
+environment.
 
 [Back to top](#operations)
 
