@@ -40,17 +40,15 @@ State is encrypted locally through workspace-specific OpenTofu state
 encryption passphrases. Keep state backups private and do not commit them.
 
 Offline `tofu test` validation should run from a temporary state-free copy, not
-from the operational checkout used for real plan/apply work. The tests create
-temporary local workspaces with mocked providers and do not replace live
-workspace planning, drift review, staging deployment, or destroy procedures.
+from the operational checkout used for real plan/apply work.
 
 Recommended state handling:
 
 - Keep state encryption passphrases out of shell history and committed files.
 - Keep `terraform.tfstate*`, `terraform.tfstate.d/`, `.state-backups/`, and
   plan files private.
+- Keep local state backed up regularly with a copy stored offsite at all times.
 - Back up local state before large refactors or provider upgrades.
-- Review plans before applying policy, DNS, load balancer, or certificate
-  changes.
+- Review plans carefully before applying.
 
 [Back to top](#safety)
