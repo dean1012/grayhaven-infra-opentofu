@@ -278,7 +278,7 @@ To rotate the `grayhaven-vault` deployment SSH keypair:
 
 2. [Generate a new keypair](setup.md#generate-a-deployment-ssh-keypair-for-read-only-access-to-vault-repository).
 3. Add the new deploy public key generated in step 2 as a read-only deploy key
-   on your private vault repository through GitHub's website.
+   on the `grayhaven-vault` repository through GitHub's website.
 4. Update `$HOME/.bashrc.d/grayhaven.env`, ensuring that
    `TF_VAR_grayhaven_ansible_deploy_public_key` and
    `TF_VAR_grayhaven_ansible_deploy_private_key` point to the new keypair.

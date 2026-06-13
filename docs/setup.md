@@ -217,7 +217,7 @@ git push -u origin staging
 ```
 
 Add the deploy public key generated earlier as a read-only deploy key on the
-new private vault repository through GitHub's website.
+`grayhaven-vault` repository through GitHub's website.
 
 [Back to top](#setup)
 
