@@ -1,7 +1,7 @@
 # Troubleshooting
 
 This document captures known transient operational issues and safe recovery
-patterns for Grayhaven OpenTofu runs.
+patterns for Grayhaven Systems LLC OpenTofu runs.
 
 ## Transient Provider API Errors
 

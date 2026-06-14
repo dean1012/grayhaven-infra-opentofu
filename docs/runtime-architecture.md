@@ -1,7 +1,7 @@
 # Runtime Architecture
 
-This document summarizes the supported runtime architecture for Grayhaven
-Systems LLC infrastructure. Policy file schemas are documented in
+This document summarizes the supported runtime architecture for
+Grayhaven Systems LLC infrastructure. Policy file schemas are documented in
 [Policy Files](policy.md).
 
 ## Table of Contents

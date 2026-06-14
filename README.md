@@ -1,4 +1,4 @@
-# Grayhaven Infrastructure (OpenTofu)
+# Grayhaven Systems LLC Infrastructure (OpenTofu)
 
 [![CI](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/ci.yml/badge.svg)](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/ci.yml)
 [![OpenTofu Plan Tests](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/tofu-tests.yml/badge.svg)](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/tofu-tests.yml)
@@ -41,14 +41,14 @@ private SSH keys, secrets, generated state, or other private operational data.
 This repository is not a general-purpose deployment template. Deploying similar
 automation for another organization requires review and adaptation.
 
-[Back to top](#grayhaven-infrastructure-opentofu)
+[Back to top](#grayhaven-systems-llc-infrastructure-opentofu)
 
 ## Requirements
 
 This repository must be initialized and configured before use. This process is
 documented in [Setup](docs/setup.md).
 
-[Back to top](#grayhaven-infrastructure-opentofu)
+[Back to top](#grayhaven-systems-llc-infrastructure-opentofu)
 
 ## Deployment Quick Reference
 
@@ -90,7 +90,7 @@ See [Operations](docs/operations.md) for routine plan/apply workflows, destroy
 procedures, control-node changes, and TLS-mode changes. See
 [Safety](docs/safety.md) for secret, state, and destructive-action guardrails.
 
-[Back to top](#grayhaven-infrastructure-opentofu)
+[Back to top](#grayhaven-systems-llc-infrastructure-opentofu)
 
 ## Other Documentation
 
@@ -108,17 +108,17 @@ procedures, control-node changes, and TLS-mode changes. See
   - [DNS](docs/dns.md)
   - [OpenTofu Test Suite](docs/opentofu-test-suite.md)
 
-[Back to top](#grayhaven-infrastructure-opentofu)
+[Back to top](#grayhaven-systems-llc-infrastructure-opentofu)
 
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for validation commands and contribution
 guidelines.
 
-[Back to top](#grayhaven-infrastructure-opentofu)
+[Back to top](#grayhaven-systems-llc-infrastructure-opentofu)
 
 ## License
 
 [MIT](LICENSE)
 
-[Back to top](#grayhaven-infrastructure-opentofu)
+[Back to top](#grayhaven-systems-llc-infrastructure-opentofu)

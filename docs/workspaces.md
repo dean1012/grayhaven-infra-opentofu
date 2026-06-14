@@ -85,8 +85,8 @@ Production reads `config.yml` and `firewall.yml` from the `main` Git ref in the
 local `grayhaven-vault` checkout. The vault checkout does not need to have
 `main` checked out, but the ref must be present locally.
 
-Changes to the `prod` workspace should be deliberate and follow Grayhaven
-Systems LLC change control procedures.
+Changes to the `prod` workspace should follow Grayhaven Systems LLC change
+control procedures.
 
 The `prod` workspace should not be destroyed. Destroying the `prod` workspace
 will cause production outages.
