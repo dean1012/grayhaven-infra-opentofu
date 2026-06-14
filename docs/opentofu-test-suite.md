@@ -122,22 +122,6 @@ catch repository logic regressions, not to replace live staging validation.
 
 Local test execution should happen from a temporary state-free copy, not from
 the operational checkout used for real deployments. The full local validation
-workflow is documented in [CONTRIBUTING.md](../CONTRIBUTING.md).
-
-For a targeted test run from a temporary validation checkout, select the
-matching workspace before running the test file:
-
-```bash
-tofu init -backend=false
-
-tofu workspace new baseline
-tofu test -filter=tests/baseline.tftest.hcl -no-color
-
-tofu workspace new staging
-tofu test -filter=tests/staging.tftest.hcl -no-color
-
-tofu workspace new prod
-tofu test -filter=tests/prod.tftest.hcl -no-color
-```
+workflow is documented in [CONTRIBUTING.md](../CONTRIBUTING.md#local-validation).
 
 [Back to top](#opentofu-test-suite)
