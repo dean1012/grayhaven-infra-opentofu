@@ -161,7 +161,7 @@ during convergence.
 
 These keys are only useful for first-boot access and configuration. If you are
 looking to manage user SSH access to a server, please refer to the
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/operations.md#managing-users)
 documentation and modify `grayhaven-vault` appropriately.
 
 Each entry uses a stable internal key and supports:
