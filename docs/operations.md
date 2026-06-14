@@ -404,6 +404,9 @@ workspace environment:
 tofu apply
 ```
 
+After applying a TLS mode change, manually start the runner from the active
+control node so `grayhaven-config-ansible` converges Nginx and firewalld.
+
 Policy documentation details [supported TLS modes](policy.md#compute-policy).
 
 [Back to top](#operations)
