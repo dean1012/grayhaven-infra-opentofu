@@ -7,8 +7,10 @@ schemas.
 ## Table of Contents
 
 - [Overview](#overview)
-- [Baseline DNS Policy](#baseline-dns-policy)
-- [Environment DNS Policy](#environment-dns-policy)
+- [DNS Policy](#dns-policy)
+  - [DNS Policy Schema](#dns-policy-schema)
+  - [Baseline DNS Policy](#baseline-dns-policy)
+  - [Environment DNS Policy](#environment-dns-policy)
 - [Admin SSH Key Policy](#admin-ssh-key-policy)
 - [Compute Policy](#compute-policy)
 
@@ -23,7 +25,13 @@ configuration.
 
 [Back to top](#policy-files)
 
-## Baseline DNS Policy
+## DNS Policy
+
+DNS zones and records are handled by DNS policy files and through computed,
+automatic DNS records set up by OpenTofu and DigitalOcean. For more information
+on automatic records, please see the [DNS architecture documentation](dns.md).
+
+### DNS Policy Schema
 
 `policy/baseline/dns.yml` defines shared DNS zones and baseline records.
 
@@ -66,6 +74,17 @@ Each record entry supports:
 - `flags`: CAA flags.
 - `tag`: CAA tag.
 
+### Baseline DNS Policy
+
+`policy/baseline/dns.yml` is intended to set up the DNS zone for each supported
+domain and any records that would be shared across workspace environments, such
+as mail-related records.
+
+Mail-related records should be marked as protected by placing them under
+`protected_records`.
+
+All supported domains should be defined in this file.
+
 Example shape:
 
 ```yaml
@@ -80,6 +99,16 @@ domains:
         name: "@"
         value: mail.example.com.
         priority: 10
+      spf_txt:
+        type: TXT
+        name: "@"
+        value: "v=spf1 include:mail.example.com ~all"
+      caa_letsencrypt:
+        type: CAA
+        name: "@"
+        flags: 0
+        tag: issue
+        value: letsencrypt.org.
     records:
       status_txt:
         type: TXT
@@ -87,29 +116,21 @@ domains:
         value: "status=ok"
 ```
 
-[Back to top](#policy-files)
+### Environment DNS Policy
 
-## Environment DNS Policy
+Environment-specific records are created in `policy/<workspace>/dns.yml` and use
+the same format with the addition of an `environment` domain key:
 
-`policy/staging/dns.yml` and `policy/prod/dns.yml` define computed
-environment DNS records.
+- `domains.<domain_key>.environment.apex`: automatically creates an A record for
+  the environment apex. Defaults to false.
+- `domains.<domain_key>.environment.web_aliases`: automatically creates `www`
+  and `dev` CNAME aliases to the environment apex. Defaults to false.
 
-Supported top-level keys:
+Setting `environment.web_aliases` to true requires that `environment.apex` also
+be true. Valid combinations are true/true, true/false, and false/false.
 
-- `ttl`: default TTL for computed environment DNS records.
-- `domains`: map of domains that should receive computed environment records.
-
-Supported domain keys:
-
-- `domains.<domain_key>.name`: public domain name.
-- `domains.<domain_key>.environment.apex`: creates the environment apex
-  record.
-- `domains.<domain_key>.environment.web_aliases`: creates `www` and `dev`
-  aliases for the environment.
-
-Both `environment.apex` and `environment.web_aliases` default to false when
-omitted. `environment.web_aliases` requires `environment.apex`; valid
-combinations are true/true, true/false, and false/false.
+If you have any `hosted_domains` configured in `grayhaven-vault`, you should
+probably set `environment.web_aliases` and `environment.apex` to true.
 
 Example shape:
 
@@ -122,6 +143,11 @@ domains:
     environment:
       apex: true
       web_aliases: true
+  service_example:
+    name: service.example.com
+    environment:
+      apex: true
+      web_aliases: false
 ```
 
 [Back to top](#policy-files)
