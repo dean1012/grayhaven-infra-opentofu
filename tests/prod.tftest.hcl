@@ -320,7 +320,7 @@ run "prod_explicit_dns_record_plan" {
 
   variables {
     grayhaven_test_compute_policy_path = "tests/fixtures/compute-1x1-auto.yml"
-    grayhaven_test_dns_policy_path     = "tests/fixtures/dns-with-unprotected-records.yml"
+    grayhaven_test_dns_policy_path     = "tests/fixtures/dns-with-environment-records.yml"
   }
 
   assert {
@@ -342,9 +342,35 @@ run "prod_explicit_dns_record_plan" {
   }
 
   assert {
-    condition     = length(digitalocean_record.environment_protected_a) == 1 && length(digitalocean_record.environment_protected_mx) == 2
+    condition = (
+      length(digitalocean_record.environment_protected_a) == 1 &&
+      length(digitalocean_record.environment_protected_cname) == 1 &&
+      length(digitalocean_record.environment_protected_txt) == 1
+    )
     error_message = "Production must plan explicit protected DNS records from environment DNS policy."
   }
+}
+
+run "prod_environment_protected_mx_caa_rejected" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path = "tests/fixtures/compute-1x1-auto.yml"
+    grayhaven_test_dns_policy_path     = "tests/fixtures/dns-with-environment-protected-mx-caa.yml"
+  }
+
+  expect_failures = [
+    terraform_data.dns_policy_guard,
+  ]
 }
 
 run "prod_3x3_explicit_load_balancer_plan" {

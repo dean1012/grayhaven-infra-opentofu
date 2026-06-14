@@ -50,9 +50,7 @@ Supported domain keys:
 
 - `A`
 - `CNAME`
-- `MX`
 - `TXT`
-- `CAA`
 
 `records` supports these DNS record types:
 
@@ -60,17 +58,12 @@ Supported domain keys:
 - `CNAME`
 - `TXT`
 
-Use `protected_records` for MX and CAA records.
-
 Each record entry supports:
 
 - `type`: DNS record type.
 - `name`: record name.
 - `value`: record target or value.
 - `ttl`: optional per-record TTL override.
-- `priority`: priority for record types that use it.
-- `flags`: CAA flags.
-- `tag`: CAA tag.
 
 ### Baseline DNS Policy
 
@@ -78,8 +71,15 @@ Each record entry supports:
 domain and any records that would be shared across workspace environments, such
 as mail-related records.
 
-Mail-related records should be marked as protected by placing them under
-`protected_records`.
+Baseline DNS policy supports the following additional `protected_records` types:
+
+- `MX`
+- `CAA`
+
+MX records support a `priority` attribute for MX-specific record compatibility.
+
+CAA records support `flags` and `tag` attributes for CAA-specific record
+compatibility.
 
 All supported domains should be defined in this file.
 

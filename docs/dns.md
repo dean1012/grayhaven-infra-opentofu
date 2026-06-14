@@ -23,7 +23,8 @@ DNS records are created in ordered type groups to reduce provider-side DNS
 transaction contention:
 
 - computed environment records: A, then CNAME;
-- DNS policy `protected_records`: A, CNAME, MX, TXT, then CAA;
+- DNS policy `protected_records`: A, CNAME, then TXT;
+- baseline DNS policy `protected_records`: A, CNAME, MX, TXT, then CAA;
 - DNS policy `records`: A, CNAME, then TXT.
 
 Hosted web domains should stay aligned between DNS policy and the

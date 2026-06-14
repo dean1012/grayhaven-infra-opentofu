@@ -1,0 +1,41 @@
+---
+ttl: 300
+
+domains:
+  grayhaven_systems:
+    name: grayhavensystems.com
+    environment:
+      apex: true
+      web_aliases: true
+    records:
+      infrastructure_notice_a:
+        type: A
+        name: infra
+        value: 192.0.2.10
+      infrastructure_notice_cname:
+        type: CNAME
+        name: notice
+        value: infra.grayhavensystems.com.
+      infrastructure_notice_txt:
+        type: TXT
+        name: _infrastructure
+        value: "Grayhaven Systems LLC infrastructure-managed DNS"
+    protected_records:
+      protected_a:
+        type: A
+        name: protected
+        value: 192.0.2.20
+      protected_cname:
+        type: CNAME
+        name: protected-notice
+        value: protected.grayhavensystems.com.
+      protected_txt:
+        type: TXT
+        name: _protected
+        value: "protected=true"
+
+  jerry_smith:
+    name: jerry-smith.net
+    environment:
+      apex: true
+      web_aliases: true

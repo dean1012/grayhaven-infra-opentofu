@@ -3,8 +3,10 @@ locals {
   dns_policy      = yamldecode(file(local.dns_policy_path))
   dns_ttl         = try(local.dns_policy.ttl, 300)
 
-  dns_supported_protected_record_types = toset(["A", "CNAME", "MX", "TXT", "CAA"])
-  dns_supported_record_types           = toset(["A", "CNAME", "TXT"])
+  dns_supported_baseline_protected_record_types    = toset(["A", "CNAME", "MX", "TXT", "CAA"])
+  dns_supported_environment_protected_record_types = toset(["A", "CNAME", "TXT"])
+  dns_supported_protected_record_types             = local.is_baseline ? local.dns_supported_baseline_protected_record_types : local.dns_supported_environment_protected_record_types
+  dns_supported_record_types                       = toset(["A", "CNAME", "TXT"])
 
   dns_domains = {
     for domain_key, domain in local.dns_policy.domains : domain_key => {
@@ -38,6 +40,17 @@ locals {
     ]
   ])...)
 
+  dns_all_records = merge(
+    {
+      for record_key, record in local.dns_protected_records :
+      "protected.${record_key}" => record
+    },
+    {
+      for record_key, record in local.dns_records :
+      "records.${record_key}" => record
+    }
+  )
+
   dns_protected_record_types = toset([
     for _, record in local.dns_protected_records :
     upper(tostring(try(record.record.type, "")))
@@ -61,6 +74,16 @@ locals {
       if upper(tostring(try(record.record.type, ""))) == record_type
     }
   }
+
+  dns_records_with_unsupported_priority = toset([
+    for record_key, record in local.dns_all_records : record_key
+    if can(record.record.priority) && !(local.is_baseline && upper(tostring(try(record.record.type, ""))) == "MX")
+  ])
+
+  dns_records_with_unsupported_caa_attributes = toset([
+    for record_key, record in local.dns_all_records : record_key
+    if anytrue([can(record.record.flags), can(record.record.tag)]) && !(local.is_baseline && upper(tostring(try(record.record.type, ""))) == "CAA")
+  ])
 
   environment_apex_dns = local.is_environment ? {
     for domain_key, domain in local.dns_domains : domain_key => {
@@ -103,12 +126,22 @@ resource "terraform_data" "dns_policy_guard" {
 
     precondition {
       condition     = length(setsubtract(local.dns_protected_record_types, local.dns_supported_protected_record_types)) == 0
-      error_message = "DNS protected_records support only A, CNAME, MX, TXT, and CAA record types."
+      error_message = "DNS protected_records support A, CNAME, and TXT record types. Baseline protected_records also support MX and CAA."
     }
 
     precondition {
       condition     = length(setsubtract(local.dns_record_types, local.dns_supported_record_types)) == 0
-      error_message = "DNS records support only A, CNAME, and TXT record types. Use protected_records for MX and CAA."
+      error_message = "DNS records support only A, CNAME, and TXT record types."
+    }
+
+    precondition {
+      condition     = length(local.dns_records_with_unsupported_priority) == 0
+      error_message = "DNS priority is supported only for baseline MX records."
+    }
+
+    precondition {
+      condition     = length(local.dns_records_with_unsupported_caa_attributes) == 0
+      error_message = "DNS flags and tag are supported only for baseline CAA records."
     }
   }
 }
@@ -377,25 +410,6 @@ resource "digitalocean_record" "environment_protected_cname" {
   }
 }
 
-resource "digitalocean_record" "environment_protected_mx" {
-  for_each = local.is_environment ? local.dns_protected_records_by_type["MX"] : {}
-
-  domain   = data.digitalocean_domain.managed[each.value.domain_key].name
-  type     = each.value.record.type
-  name     = each.value.record.name
-  value    = each.value.record.value
-  priority = try(each.value.record.priority, null)
-  flags    = try(each.value.record.flags, null)
-  tag      = try(each.value.record.tag, null)
-  ttl      = try(each.value.record.ttl, local.dns_ttl)
-
-  depends_on = [digitalocean_record.environment_protected_cname]
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
 resource "digitalocean_record" "environment_protected_txt" {
   for_each = local.is_environment ? local.dns_protected_records_by_type["TXT"] : {}
 
@@ -408,26 +422,7 @@ resource "digitalocean_record" "environment_protected_txt" {
   tag      = try(each.value.record.tag, null)
   ttl      = try(each.value.record.ttl, local.dns_ttl)
 
-  depends_on = [digitalocean_record.environment_protected_mx]
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "digitalocean_record" "environment_protected_caa" {
-  for_each = local.is_environment ? local.dns_protected_records_by_type["CAA"] : {}
-
-  domain   = data.digitalocean_domain.managed[each.value.domain_key].name
-  type     = each.value.record.type
-  name     = each.value.record.name
-  value    = each.value.record.value
-  priority = try(each.value.record.priority, null)
-  flags    = try(each.value.record.flags, null)
-  tag      = try(each.value.record.tag, null)
-  ttl      = try(each.value.record.ttl, local.dns_ttl)
-
-  depends_on = [digitalocean_record.environment_protected_txt]
+  depends_on = [digitalocean_record.environment_protected_cname]
 
   lifecycle {
     prevent_destroy = true
@@ -446,7 +441,7 @@ resource "digitalocean_record" "environment_a" {
   tag      = try(each.value.record.tag, null)
   ttl      = try(each.value.record.ttl, local.dns_ttl)
 
-  depends_on = [digitalocean_record.environment_protected_caa]
+  depends_on = [digitalocean_record.environment_protected_txt]
 }
 
 resource "digitalocean_record" "environment_cname" {

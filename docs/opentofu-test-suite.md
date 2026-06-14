@@ -79,8 +79,8 @@ rejected by the DNS policy guard.
 
 DNS fixture tests use the test-only DNS policy override to verify baseline
 unprotected records, environment explicit records, unsupported DNS record
-rejection, apex-only environment records, and invalid environment alias
-combinations.
+rejection, baseline-only MX/CAA protected record handling, apex-only environment
+records, and invalid environment alias combinations.
 
 Staging and production tests verify committed policy plans for their matching
 workspaces, plus fixed scenario fixtures:
@@ -90,7 +90,8 @@ workspaces, plus fixed scenario fixtures:
 - 3 bastions / 3 web hosts with explicit load-balancer TLS;
 - control bastion selection for each scaling fixture;
 - environment DNS records for apex, `www`, and `dev`;
-- explicit environment DNS `records` and `protected_records`;
+- explicit environment DNS `records` and A/CNAME/TXT `protected_records`;
+- rejection of environment `protected_records` using MX or CAA;
 - apex-only DNS behavior when aliases are disabled;
 - validation that web aliases require an apex record;
 - load-balancer certificate domain name ordering;
