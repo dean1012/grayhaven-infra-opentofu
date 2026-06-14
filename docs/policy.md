@@ -164,21 +164,22 @@ looking to manage user SSH access to a server, please refer to the
 [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/operations.md#managing-users)
 documentation and modify `grayhaven-vault` appropriately.
 
-Each entry uses a stable internal key and supports:
+Each entry supports:
 
-- `title`: human-readable label and DigitalOcean SSH key name.
-- `public_key`: public SSH key material.
+- Public SSH key material.
+
+The DigitalOcean SSH key name is derived from the public key comment when one is
+present. When no comment is present, the name is generated from the public key
+material.
 
 Example shape:
 
 ```yaml
 admin_ssh_keys:
-  jsmith:
-    title: jsmith@example.com
-    public_key: >-
-      ssh-ed25519
-      AAAAexamplePublicKeyMaterial
-      jsmith@example.com
+  - >-
+    ssh-ed25519
+    AAAAexamplePublicKeyMaterial
+    admin@example.com
 ```
 
 [Back to top](#policy-files)
