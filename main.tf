@@ -124,8 +124,8 @@ module "bastion_firewall" {
   name        = "${local.client_name}-sec-${local.environment}-bastion-fw"
   target_tags = [digitalocean_tag.bastion_scope[0].name]
 
-  inbound_rules  = lookup(local.firewall_rules, "bastion", { inbound = [], outbound = [] }).inbound
-  outbound_rules = lookup(local.firewall_rules, "bastion", { inbound = [], outbound = [] }).outbound
+  inbound_rules  = try(local.firewall_rules.bastion.inbound, [])
+  outbound_rules = try(local.firewall_rules.bastion.outbound, [])
 }
 
 module "web_firewall" {
@@ -135,6 +135,6 @@ module "web_firewall" {
   name        = "${local.client_name}-core-${local.environment}-web-fw"
   target_tags = [digitalocean_tag.web_scope[0].name]
 
-  inbound_rules  = lookup(local.firewall_rules, "web", { inbound = [], outbound = [] }).inbound
-  outbound_rules = lookup(local.firewall_rules, "web", { inbound = [], outbound = [] }).outbound
+  inbound_rules  = try(local.firewall_rules.web.inbound, [])
+  outbound_rules = try(local.firewall_rules.web.outbound, [])
 }

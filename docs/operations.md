@@ -1,133 +1,116 @@
 # Operations
 
-This document describes routine OpenTofu operations for Grayhaven
+This document describes routine OpenTofu operations for Grayhaven Systems LLC
 infrastructure.
 
 ## Table of Contents
 
-- [Routine Workflow](#routine-workflow)
-- [Baseline Operations](#baseline-operations)
-- [Staging Operations](#staging-operations)
-- [Production Operations](#production-operations)
-- [Destroy Operations](#destroy-operations)
-- [Active Control Bastion Changes](#active-control-bastion-changes)
-- [TLS Mode Changes](#tls-mode-changes)
-- [Certificate Selectors](#certificate-selectors)
-- [Secret Rotation](#secret-rotation)
-- [State Safety](#state-safety)
+- [List Available Workspaces](#list-available-workspaces)
+- [Switch Active Workspace](#switch-active-workspace)
+- [Provisioning or Updating Infrastructure](#provisioning-or-updating-infrastructure)
+- [Deploying Staging Workspace with Ansible Testing Branch](#deploying-staging-workspace-with-ansible-testing-branch)
+- [Destroy the Staging Workspace Environment](#destroy-the-staging-workspace-environment)
+- [DigitalOcean API Token Rotation](#digitalocean-api-token-rotation)
+- [OpenTofu State Encryption Passphrase Rotation](#opentofu-state-encryption-passphrase-rotation)
+- [Ansible Vault Passphrase Rotation](#ansible-vault-passphrase-rotation)
+- [Bootstrap Deployment SSH Keypair Rotation](#bootstrap-deployment-ssh-keypair-rotation)
+- [Bastion Failover](#bastion-failover)
+- [Updating Workspace Environment TLS Mode](#updating-workspace-environment-tls-mode)
 
-## Routine Workflow
+## List Available Workspaces
 
-Routine deployment is intentionally plan-first. Select the workspace, review
-the plan, and apply only after the proposed changes are understood:
-
-```bash
-tofu workspace select staging
-tofu plan
-tofu apply
-```
-
-For staging and production, the approved `tofu apply` is the single command
-that carries the environment from infrastructure provisioning through
-configuration convergence. It provisions DigitalOcean resources, renders
-cloud-init for each droplet, bootstraps hosts into
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
-and starts full Ansible convergence from the active control bastion.
-
-When testing a feature branch or policy override, include the same variables in
-both the plan and apply commands:
+To list all available workspaces, from the repository root run:
 
 ```bash
-tofu workspace select staging
-tofu plan -var 'grayhaven_config_repo_ref=<branch-name>'
-tofu apply -var 'grayhaven_config_repo_ref=<branch-name>'
+tofu workspace list
 ```
 
-Keep terminal output private when plans may contain sensitive values. Do not
-commit generated state, plan files, or local environment files.
+The [Workspaces](workspaces.md) documentation details each supported workspace.
 
 [Back to top](#operations)
 
-## Baseline Operations
+## Switch Active Workspace
 
-Select the baseline workspace before managing shared resources:
+To change the active workspace, from the repository root run:
 
 ```bash
-tofu workspace select baseline
-tofu plan
-tofu apply
+tofu workspace select <workspace>
 ```
-
-The baseline workspace must exist before staging or production can be applied
-from an empty DigitalOcean account, because environment workspaces discover the
-shared project and DNS zones created by baseline.
-
-Do not destroy the `baseline` workspace. Staging and production depend on the
-shared resources it manages.
 
 [Back to top](#operations)
 
-## Staging Operations
+## Provisioning or Updating Infrastructure
 
-Select the staging workspace before deploying test infrastructure:
+To provision or update infrastructure:
 
-```bash
-tofu workspace select staging
-tofu plan
-tofu apply
-```
+1. Change to the desired workspace environment.
 
-Staging website records use the `staging.<domain>` DNS namespace. Staging reads
-`config.yml` from the `staging` Git ref in the local `grayhaven-vault`
-checkout. The vault checkout does not need to have `staging` checked out, but
-the ref must be present locally.
+   ```bash
+   tofu workspace select <workspace>
+   ```
 
-Staging defaults to the `main` branch of
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
-but it can test a specific config branch on a fresh deployment:
+2. Make changes to this repository and/or adjust configuration. Make any
+   relevant adjustments to
+   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+   and `grayhaven-vault` as
+   well. Refer to
+   [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+   for additional information as needed.
 
-```bash
-tofu plan -var 'grayhaven_config_repo_ref=<branch-name>'
-tofu apply -var 'grayhaven_config_repo_ref=<branch-name>'
-```
+3. Run `tofu plan` and review planned changes carefully.
 
-Staging can also test infrastructure policy files from an infra feature branch:
+   ```bash
+   tofu plan
+   ```
 
-```bash
-tofu plan -var 'grayhaven_infra_policy_repo_ref=<branch-name>'
-tofu apply -var 'grayhaven_infra_policy_repo_ref=<branch-name>'
-```
+4. Run `tofu apply`.
 
-Branch/ref overrides are fresh-deployment controls. Avoid changing them on an
-existing environment unless the purpose is to test that exact transition.
+   ```bash
+   tofu apply
+   ```
+
+5. If you are moving an existing environment deployment from one web host to two
+   or more web hosts, from two or more web hosts to one web host, or explicitly
+   changing `tls_mode`, manually start the runner from the active control node
+   using the
+   [manual runner invocation instructions](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#manual-runner-invocation)
+   in the `grayhaven-config-ansible` repository.
+
+It is recommended that all changes to this repository be tested in a `staging`
+workspace environment deployment before updating the `prod` workspace
+environment.
 
 [Back to top](#operations)
 
-## Production Operations
+## Deploying Staging Workspace with Ansible Testing Branch
 
-Select the production workspace before managing production infrastructure:
-
-```bash
-tofu workspace select prod
-tofu plan
-tofu apply
-```
-
-Production website records use the apex, `www`, and `dev` hostnames for each
-managed domain. Production reads `main` from both
+To run bootstrap and convergence from a
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-and the private `grayhaven-vault` repository. For vault selectors, OpenTofu
-reads `config.yml` from the `main` Git ref in the local vault checkout.
+branch other than `main`, from the repository root run:
 
-Review production plans carefully before applying. Production applies should be
-deliberate, and live certificate issuance should only happen when the vault
-selector and TLS mode are intentionally set for that behavior.
+```bash
+tofu workspace select staging
+tofu plan -var 'grayhaven_config_repo_ref=<branch-name>'
+```
+
+Review planned changes carefully, then run this command to update the live
+`staging` workspace environment:
+
+```bash
+tofu apply -var 'grayhaven_config_repo_ref=<branch-name>'
+```
+
+The `grayhaven_config_repo_ref` override is intended to be used with a fresh
+`staging` workspace deployment only. If you need to change this value, you must
+first destroy the `staging` workspace environment.
 
 [Back to top](#operations)
 
-## Destroy Operations
+## Destroy the Staging Workspace Environment
 
-Destroy environment workspaces only after selecting the intended workspace:
+The `staging` workspace environment is meant to be destroyed when not in use.
+To destroy the `staging` workspace environment safely, run these commands from
+the repository root:
 
 ```bash
 tofu workspace select staging
@@ -135,200 +118,292 @@ tofu plan -destroy
 tofu destroy
 ```
 
-Use destroy for staging cleanup after validation. Do not use destroy against
-`baseline`. Baseline resources have OpenTofu destroy protection, but operators
-should still treat baseline destruction as out of bounds.
+[Back to top](#operations)
 
-After destroying staging, select `baseline` or another expected workspace so a
-future command does not accidentally run in a stale environment context.
+## DigitalOcean API Token Rotation
+
+DigitalOcean API token scopes cannot be changed after token creation. If a
+token is compromised, expired, or missing a required permission, create a new
+token with the
+[full documented scope set](setup.md#create-a-digitalocean-api-token) and
+rotate the local OpenTofu environment to use the new value.
+
+To rotate the OpenTofu DigitalOcean API token:
+
+1. Create a new DigitalOcean API token using the permissions documented in
+   [Setup](setup.md#create-a-digitalocean-api-token), adding or removing any
+   desired permissions if applicable.
+2. Update `$HOME/.bashrc.d/grayhaven.env`, replacing `TF_VAR_do_token` with
+   your new DigitalOcean API token.
+3. Reload `grayhaven.env`:
+
+   ```bash
+   source "$HOME/.bashrc.d/grayhaven.env"
+   ```
+
+4. Confirm the variable is present without printing its value:
+
+   ```bash
+   if [ -n "${TF_VAR_do_token:-}" ]; then
+     printf '\033[32mTF_VAR_do_token=defined\033[0m\n'
+   else
+     printf '\033[31mTF_VAR_do_token=missing\033[0m\n'
+   fi
+   ```
+
+5. Deploy the `staging` workspace environment to test your new DigitalOcean
+   API token.
+6. Destroy the `staging` workspace environment once your new DigitalOcean API
+   token has been validated.
+7. Delete your old DigitalOcean API token.
+
+If you have added or removed a permission from your DigitalOcean API token,
+please update the documented
+[DigitalOcean API token scope table](setup.md#create-a-digitalocean-api-token).
 
 [Back to top](#operations)
 
-## Active Control Bastion Changes
+## OpenTofu State Encryption Passphrase Rotation
 
-The active control bastion is selected with `bastions.control_node` in
-`policy/compute.yml`. Only that bastion receives the `control-node` tag and
-runs the scheduled Ansible runner and poller.
+To rotate the OpenTofu state encryption passphrase for a given workspace
+environment, follow each section in order.
+
+### Back Up State
+
+Temporarily back up the target workspace environment state and keep the backup
+private.
+
+From the repository root, replace `<workspace>` appropriately and run:
+
+```bash
+workspace="<workspace>"
+backup_dir="$HOME/backups"
+timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+
+mkdir -p "$backup_dir"
+chmod 0700 "$backup_dir"
+tar -czf \
+  "$backup_dir/grayhaven-infra-opentofu-${workspace}-state-${timestamp}.tar.gz" \
+  "terraform.tfstate.d/${workspace}"
+chmod 0600 \
+  "$backup_dir/grayhaven-infra-opentofu-${workspace}-state-${timestamp}.tar.gz"
+```
+
+### Configure Passphrase Variables
+
+Update `$HOME/.bashrc.d/grayhaven.env`, renaming
+`TF_VAR_state_encryption_passphrase_<workspace>` to
+`TF_VAR_state_encryption_previous_passphrase_<workspace>`.
+
+Add `TF_VAR_state_encryption_passphrase_<workspace>` with the new encryption
+passphrase, then reload `grayhaven.env`:
+
+```bash
+source "$HOME/.bashrc.d/grayhaven.env"
+```
+
+Validate both variables are present by replacing `<workspace>` appropriately and
+running this command:
+
+```bash
+workspace="<workspace>"
+current_var="TF_VAR_state_encryption_passphrase_${workspace}"
+previous_var="TF_VAR_state_encryption_previous_passphrase_${workspace}"
+
+for var_name in "$current_var" "$previous_var"; do
+  if [ -n "${!var_name:-}" ]; then
+    printf '\033[32m%s=defined\033[0m\n' "$var_name"
+  else
+    printf '\033[31m%s=missing\033[0m\n' "$var_name"
+  fi
+done
+```
+
+### Rotate State
+
+Select the target workspace:
+
+```bash
+tofu workspace select <workspace>
+```
+
+Run `tofu plan` to confirm that OpenTofu can read the workspace environment
+state with the previous passphrase, then run `tofu apply` to rotate the state
+encryption passphrase.
+
+### Remove the Previous Passphrase
+
+Update `$HOME/.bashrc.d/grayhaven.env`, removing
+`TF_VAR_state_encryption_previous_passphrase_<workspace>`.
+
+Unset `TF_VAR_state_encryption_previous_passphrase_<workspace>` in your local
+shell environment:
+
+```bash
+workspace="<workspace>"
+unset "TF_VAR_state_encryption_previous_passphrase_${workspace}"
+```
+
+Run `tofu plan` again to confirm that OpenTofu can read the workspace
+environment state with the new passphrase.
+
+### Rollback
+
+If anything goes wrong with the above steps, rollback by first ensuring that
+`TF_VAR_state_encryption_passphrase_<workspace>` in
+`$HOME/.bashrc.d/grayhaven.env` is set to the original encryption passphrase,
+then restore state by executing the following from the repository root:
+
+```bash
+workspace="<workspace>"
+backup_file="$HOME/backups/grayhaven-infra-opentofu-${workspace}-state-<timestamp>.tar.gz"
+
+source "$HOME/.bashrc.d/grayhaven.env"
+tar -tzf "$backup_file"
+tar -xzf "$backup_file"
+tofu workspace select "$workspace"
+tofu plan
+```
+
+### Cleanup
+
+Once the state encryption passphrase has been successfully rotated, the
+temporary state backup can be safely removed.
+
+[Back to top](#operations)
+
+## Ansible Vault Passphrase Rotation
+
+To rotate the Ansible Vault encryption passphrase for a given workspace
+environment:
+
+1. Update `$HOME/.bashrc.d/grayhaven.env`, updating
+   `TF_VAR_grayhaven_vault_password_<workspace>` with the new encryption
+   passphrase.
+2. Rotate the configuration Ansible Vault passphrase for the correct workspace
+   environment by following the
+   [vault password rotation documentation](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/operations.md#vault-password-rotation)
+   in the
+   [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+   repository.
+3. Rotate the Ansible Vault passphrase for existing resources by following the
+   [vault password rotation documentation](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#vault-password-rotation)
+   in the
+   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+   repository.
+
+Do not discard your original Ansible Vault passphrase until you have
+successfully completed the passphrase rotation procedure.
+
+[Back to top](#operations)
+
+## Bootstrap Deployment SSH Keypair Rotation
+
+To rotate the bootstrap deployment SSH keypair:
+
+1. Temporarily back up your existing bootstrap deployment SSH keypair and keep
+   the backup private.
+
+   Replace the key paths appropriately and run:
+
+   ```bash
+   public_key_path="/path/to/ansible-deploy.key.pub"
+   private_key_path="/path/to/ansible-deploy.key"
+   backup_dir="$HOME/backups"
+   timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+
+   mkdir -p "$backup_dir"
+   chmod 0700 "$backup_dir"
+   tar -czf \
+     "$backup_dir/grayhaven-vault-deployment-ssh-keypair-${timestamp}.tar.gz" \
+     "$public_key_path" \
+     "$private_key_path"
+   chmod 0600 \
+     "$backup_dir/grayhaven-vault-deployment-ssh-keypair-${timestamp}.tar.gz"
+   ```
+
+2. [Generate a new keypair](setup.md#generate-a-bootstrap-deployment-ssh-keypair-for-vault-repository-access).
+3. Add the new deploy public key generated in step 2 as a read-only deploy key
+   on the `grayhaven-vault`
+   repository through GitHub's website.
+4. Update `$HOME/.bashrc.d/grayhaven.env`, ensuring that
+   `TF_VAR_grayhaven_ansible_deploy_public_key` and
+   `TF_VAR_grayhaven_ansible_deploy_private_key` point to the new keypair.
+5. Reload `grayhaven.env`:
+
+   ```bash
+   source "$HOME/.bashrc.d/grayhaven.env"
+   ```
+
+6. Rotate the retained vault deployment SSH keypair on existing bastions by
+   following the
+   [deploy key rotation documentation](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#deploy-key-rotation)
+   in the
+   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+   repository.
+
+Once the new bootstrap deployment SSH keypair is verified as operational, the
+temporary key backup taken in step 1 above and the original keypair can be
+safely removed.
+
+[Back to top](#operations)
+
+## Bastion Failover
+
+The active control bastion is selected with `bastions.control_node` in the
+target environment's `policy/<environment>/compute.yml`. Only that bastion
+receives the `control-node` tag and runs the scheduled Ansible runner and
+poller.
 
 To switch the active control bastion:
 
-1. Ensure the target bastion exists in `policy/compute.yml`.
+1. Ensure the target bastion exists in `policy/<environment>/compute.yml`.
 2. Change `bastions.control_node` to the target bastion key.
 3. Select the target workspace and run `tofu plan`.
 4. Confirm the plan only changes the expected DNS/tag relationships.
 5. Run `tofu apply`.
-6. SSH to the new `bastion.*` target and start a manual config run:
+6. SSH to the new `bastion.*` target and start a manual configuration run:
 
 ```bash
 sudo systemctl start grayhaven-ansible-runner.service
 ```
 
 After convergence, verify the runner and poller timers are enabled only on the
-new control bastion. Existing non-control bastions remain SSH jump points.
-
-[Back to top](#operations)
-
-## TLS Mode Changes
-
-Web TLS behavior is selected by `web.tls_mode` in `policy/compute.yml`:
-
-- `auto`: one web host uses host TLS; two or more web hosts use load balancer
-  TLS.
-- `load_balancer`: always use load balancer TLS.
-
-When web hosts scale from one node to two or more nodes in `auto` TLS mode,
-OpenTofu creates a DigitalOcean load balancer and points web DNS at it. A
-manual Ansible run from the active control bastion is recommended immediately
-after web scaling operations so backend nginx configuration converges quickly.
-
-Moving from load-balancer TLS back to host TLS removes the load balancer and
-returns DNS to the primary web host. Confirm the certificate selector is still
-appropriate before applying that change.
-
-Adding or removing nodes from an existing load-balanced layout does not require
-host certificate issuance. Moving between host TLS and load-balancer TLS can
-produce a short transition window while DNS, load balancer certificates, and
-Ansible backend configuration converge.
-
-[Back to top](#operations)
-
-## Certificate Selectors
-
-`grayhaven-vault/config.yml` contains the `certificate_environment` selector.
-OpenTofu reads that selector from the workspace-selected Git ref in the local
-vault checkout:
-
-- `staging`: `staging:config.yml`
-- `prod`: `main:config.yml`
-
-The checked-out vault branch does not affect selector loading. Fetch the
-expected refs before planning or applying:
+new control bastion by running the following commands on each remaining
+bastion:
 
 ```bash
-git -C "$TF_VAR_grayhaven_vault_checkout_path" fetch origin main staging
+systemctl is-enabled grayhaven-ansible-runner.timer
+systemctl is-active grayhaven-ansible-runner.timer
+systemctl is-enabled grayhaven-ansible-poller.timer
+systemctl is-active grayhaven-ansible-poller.timer
 ```
 
-In host TLS mode:
+Remaining bastions still operate as SSH jump points.
 
-- `staging` uses Let's Encrypt staging through Certbot DNS-01.
-- `production` uses live Let's Encrypt through Certbot DNS-01.
+Automatic bastion failover is not supported at this time. You must manually
+switch the active control bastion.
 
-In load balancer TLS mode:
+[Back to top](#operations)
 
-- `staging` uses a self-signed custom certificate on the DigitalOcean load
-  balancer.
-- `production` uses a DigitalOcean-managed live Let's Encrypt certificate on
-  the load balancer.
+## Updating Workspace Environment TLS Mode
 
-The `grayhaven_certificate_environment` OpenTofu variable can force a
-certificate environment during a fresh test deployment:
+To change the currently active TLS mode for a given workspace environment,
+first modify `web.tls_mode` in `policy/<environment>/compute.yml`, then run the
+following commands from the repository root:
 
 ```bash
-tofu plan -var 'grayhaven_certificate_environment=staging'
-tofu apply -var 'grayhaven_certificate_environment=staging'
+tofu workspace select <workspace>
+tofu plan
 ```
 
-Deployment overrides are for fresh test deployments only. Changing overrides on
-existing environments is undefined operational behavior and is not recommended.
+Review planned changes carefully, then run this command to update the live
+workspace environment:
 
-[Back to top](#operations)
+```bash
+tofu apply
+```
 
-## Secret Rotation
-
-Rotate secrets deliberately, one workspace or secret class at a time. Before
-any rotation, confirm no other OpenTofu run or Ansible maintenance playbook is
-active, back up local encrypted state, and keep all terminal output private.
-
-### OpenTofu State Encryption Passphrases
-
-State encryption passphrases are workspace-specific:
-
-- `TF_VAR_state_encryption_passphrase_baseline`
-- `TF_VAR_state_encryption_passphrase_staging`
-- `TF_VAR_state_encryption_passphrase_prod`
-
-To rotate one workspace state passphrase:
-
-1. Back up the target workspace state and keep the backup private.
-2. Export the old passphrase as the matching previous-passphrase variable:
-   `TF_VAR_state_encryption_previous_passphrase_<workspace>`.
-3. Export the new passphrase as
-   `TF_VAR_state_encryption_passphrase_<workspace>`.
-4. Select the target workspace.
-5. Run `tofu plan` and confirm OpenTofu can read the existing state through
-   the fallback method.
-6. Run `tofu apply` so OpenTofu writes state with the new passphrase.
-7. Unset and remove the previous-passphrase variable from the local shell
-   configuration.
-8. Run `tofu plan` again with only the new passphrase defined.
-
-Do not remove or unset the previous passphrase until the apply has completed
-and a follow-up plan succeeds with only the new passphrase.
-
-### Ansible Vault Passphrases
-
-Fresh bastion bootstrap receives the Ansible Vault password from:
-
-- `TF_VAR_grayhaven_vault_password_staging`
-- `TF_VAR_grayhaven_vault_password_prod`
-
-When rotating an Ansible Vault passphrase, update the matching OpenTofu
-environment variable for future deployments. The encrypted vault files are not
-stored in this repository; rekey them by following the vault procedures
-documented in
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
-
-For already deployed bastions, rotate the persisted password with
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-`playbooks/rotate-vault-password.yml`, then verify a manual runner invocation
-can decrypt the vault after the rotation.
-
-### DigitalOcean API Token
-
-Create a replacement token with the documented scope, update
-`TF_VAR_do_token`, then run a read-only `tofu plan` in `baseline`, `staging`,
-and `prod` as applicable. Revoke the old token only after the new token can
-plan the required workspaces.
-
-### Deploy And Control Key Material
-
-The deploy/control key is supplied to fresh droplets through
-`TF_VAR_grayhaven_ansible_deploy_public_key` and
-`TF_VAR_grayhaven_ansible_deploy_private_key`. For deployed bastions, rotate
-the persisted key with
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-`playbooks/rotate-vault-deploy-key.yml`, then update the OpenTofu variables so
-future droplets receive the new key during bootstrap.
-
-### Admin SSH Keys
-
-Admin SSH public keys are managed in `policy/ssh-keys.yml`. Update that policy
-first, then update the private vault repository as appropriate for users or
-automation keys by following
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
-
-[Back to top](#operations)
-
-## State Safety
-
-Baseline resources are configured with OpenTofu destroy protection so
-accidental baseline destroy attempts fail before removing shared resources.
-
-State is encrypted locally through workspace-specific OpenTofu state
-encryption passphrases. Keep state backups private and do not commit them.
-
-Offline `tofu test` validation should run from a temporary state-free copy, not
-from the operational checkout used for real plan/apply work. The tests create
-temporary local workspaces with mocked providers and do not replace live
-workspace planning, drift review, staging deployment, or destroy procedures.
-
-Recommended state handling:
-
-- Keep state encryption passphrases out of shell history and committed files.
-- Keep `terraform.tfstate*`, `terraform.tfstate.d/`, `.state-backups/`, and
-  plan files private.
-- Back up local state before large refactors or provider upgrades.
-- Review plans before applying policy, DNS, load balancer, or certificate
-  changes.
+Policy documentation details [supported TLS modes](policy.md#compute-policy).
 
 [Back to top](#operations)

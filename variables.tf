@@ -81,17 +81,6 @@ variable "grayhaven_config_repo_ref" {
   }
 }
 
-variable "grayhaven_infra_policy_repo_ref" {
-  description = "Git ref used by Ansible when downloading infrastructure policy files. Intended for staging validation."
-  type        = string
-  default     = "main"
-
-  validation {
-    condition     = can(regex("^[A-Za-z0-9._/-]+$", var.grayhaven_infra_policy_repo_ref)) && !strcontains(var.grayhaven_infra_policy_repo_ref, "..")
-    error_message = "grayhaven_infra_policy_repo_ref must be a simple Git ref containing only letters, numbers, dots, underscores, hyphens, and slashes."
-  }
-}
-
 variable "grayhaven_test_compute_policy_path" {
   description = "Optional compute policy file path override for offline plan tests. Leave unset for operational deployments."
   type        = string
@@ -120,7 +109,7 @@ variable "grayhaven_vault_repo_url" {
 }
 
 variable "grayhaven_vault_checkout_path" {
-  description = "Local checkout path for grayhaven-vault. OpenTofu reads config.yml from this checkout."
+  description = "Local checkout path for grayhaven-vault. OpenTofu reads config.yml and firewall.yml from this checkout."
   type        = string
   default     = null
   nullable    = true
@@ -142,25 +131,14 @@ variable "grayhaven_vault_password_prod" {
   sensitive   = true
 }
 
-variable "grayhaven_certificate_environment" {
-  description = "Fresh-deployment certificate environment override. Use staging for Let's Encrypt staging/self-signed test certificates or production for live certificates."
-  type        = string
-  default     = null
-
-  validation {
-    condition     = var.grayhaven_certificate_environment == null || contains(["staging", "production"], var.grayhaven_certificate_environment)
-    error_message = "grayhaven_certificate_environment must be null, staging, or production."
-  }
-}
-
 variable "grayhaven_ansible_deploy_public_key" {
-  description = "Public half of the dual-purpose Ansible control and GitHub deploy key."
+  description = "Public half of the bootstrap deployment key used for first-boot automation and GitHub deploy access."
   type        = string
   sensitive   = true
 }
 
 variable "grayhaven_ansible_deploy_private_key" {
-  description = "Private half of the dual-purpose Ansible control and GitHub deploy key, installed only on bastion hosts."
+  description = "Private half of the bootstrap deployment key used for first-boot automation and GitHub deploy access, installed only on bastion hosts."
   type        = string
   sensitive   = true
 }

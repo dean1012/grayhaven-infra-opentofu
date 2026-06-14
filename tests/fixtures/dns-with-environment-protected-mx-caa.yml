@@ -1,0 +1,21 @@
+---
+ttl: 300
+
+domains:
+  grayhaven_systems:
+    name: grayhavensystems.com
+    environment:
+      apex: true
+      web_aliases: true
+    protected_records:
+      mx_primary:
+        type: MX
+        name: "@"
+        value: mail.example.com.
+        priority: 10
+      caa_letsencrypt:
+        type: CAA
+        name: "@"
+        flags: 0
+        tag: issue
+        value: letsencrypt.org.

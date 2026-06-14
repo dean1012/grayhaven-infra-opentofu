@@ -1,0 +1,65 @@
+# Infrastructure Naming & Tagging Conventions
+
+Grayhaven Systems LLC infrastructure uses consistent names and DigitalOcean tags
+so resources are easy to audit, filter, and operate during routine changes.
+
+## Table of Contents
+
+- [Naming](#naming)
+- [DigitalOcean Tags](#digitalocean-tags)
+
+## Naming
+
+Resource names use stable, descriptive segments:
+
+```text
+grayhaven-<project>-<environment>-<role-or-service>
+```
+
+Indexed resources add a two-digit instance number:
+
+```text
+grayhaven-<project>-<environment>-<role>-NN
+```
+
+Current project segments are:
+
+- `core`: primary runtime infrastructure such as web hosts, VPCs, and load
+  balancers.
+- `sec`: security and access infrastructure such as bastion hosts.
+
+Examples:
+
+- `grayhaven-core-baseline-vpc`
+- `grayhaven-core-prod-vpc`
+- `grayhaven-core-prod-web-01`
+- `grayhaven-sec-prod-bastion-01`
+- `grayhaven-core-prod-web-fw`
+- `grayhaven-core-prod-web-lb`
+
+[Back to top](#infrastructure-naming--tagging-conventions)
+
+## DigitalOcean Tags
+
+DigitalOcean tags are part of the operational contract for taggable resources.
+They identify ownership, environment, role, firewall scope, TLS mode, and
+Ansible convergence state.
+
+All taggable resources contain one or more of the following common tags as
+appropriate:
+
+- `client-<client>`
+- `env-<environment>`
+- `managed-by-opentofu`
+- `configured-by-ansible`
+- `tls-mode-host` or `tls-mode-load-balancer`
+
+Resources may contain these additional tags as appropriate:
+
+- `project-<project>`
+- `role-<role>`
+- `scope-<scope>`
+- `control-node`
+- `control-capable`
+
+[Back to top](#infrastructure-naming--tagging-conventions)

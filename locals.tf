@@ -13,9 +13,8 @@ locals {
   is_environment         = contains(local.environment_workspaces, local.environment)
   is_prod                = local.environment == "prod"
 
-  config_repo_ref  = local.is_prod ? "main" : var.grayhaven_config_repo_ref
-  infra_policy_ref = local.is_prod ? "main" : var.grayhaven_infra_policy_repo_ref
-  vault_repo_ref   = local.is_prod ? "main" : "staging"
+  config_repo_ref = local.is_prod ? "main" : var.grayhaven_config_repo_ref
+  vault_repo_ref  = local.is_prod ? "main" : "staging"
 
   state_encryption_passphrase = (
     local.environment == "baseline" ? var.state_encryption_passphrase_baseline :
@@ -43,6 +42,8 @@ locals {
   # Shared selectors and committed policy
   #############################################################################
 
+  policy_workspace = contains(local.supported_workspaces, local.environment) ? local.environment : "baseline"
+  policy_directory = "${path.module}/policy/${local.policy_workspace}"
   common_tags = [
     "client-${local.client_name}",
     "env-${local.environment}",
@@ -51,7 +52,7 @@ locals {
     "tls-mode-${replace(local.effective_tls_mode, "_", "-")}"
   ]
 
-  compute_policy_path = coalesce(var.grayhaven_test_compute_policy_path, "${path.module}/policy/compute.yml")
+  compute_policy_path = coalesce(var.grayhaven_test_compute_policy_path, "${local.policy_directory}/compute.yml")
 
   compute_policy = (
     local.is_environment
@@ -68,10 +69,6 @@ locals {
     }
   )
 
-  firewall_policy_workspace = local.is_environment ? local.environment : "staging"
-  firewall_policy_path      = "${path.module}/policy/firewall/${local.firewall_policy_workspace}.yml"
-  firewall_policy           = yamldecode(file(local.firewall_policy_path))
-
   vault_checkout_path = coalesce(
     var.grayhaven_vault_checkout_path,
     abspath("${path.module}/../grayhaven-vault"),
@@ -79,11 +76,19 @@ locals {
 
   # Environment workspaces read config.yml from the intended vault Git ref, not
   # from whichever branch is checked out in the local vault working tree.
-  vault_config = (
+  vault_config_yaml = (
     local.is_environment
-    ? yamldecode(data.external.vault_config[0].result.config_yml)
-    : yamldecode(file("${path.module}/policy/default-vault-config.yml"))
+    ? data.external.vault_config[0].result.config_yml
+    : "{}\n"
   )
+  vault_config = yamldecode(local.vault_config_yaml)
+
+  firewall_policy_yaml = (
+    local.is_environment
+    ? data.external.vault_config[0].result.firewall_yml
+    : "firewalls: {}\n"
+  )
+  firewall_policy = yamldecode(local.firewall_policy_yaml)
 
   vault_password = !local.is_environment ? null : (
     local.is_prod
@@ -93,7 +98,6 @@ locals {
   certificate_env_auto = local.is_prod ? "production" : "staging"
 
   certificate_environment = local.is_environment ? coalesce(
-    var.grayhaven_certificate_environment,
     try(local.vault_config.certificate_environment, null),
     local.certificate_env_auto
   ) : "staging"
@@ -181,7 +185,6 @@ locals {
       grayhaven_is_control_node            = host.is_control_node
       grayhaven_control_bastion_key        = local.control_bastion_key
       grayhaven_config_repo_ref            = local.config_repo_ref
-      grayhaven_infra_policy_repo_ref      = local.infra_policy_ref
       grayhaven_vault_repo_url             = var.grayhaven_vault_repo_url
       grayhaven_vault_repo_ref             = local.vault_repo_ref
       grayhaven_vault_password             = local.vault_password
@@ -198,7 +201,6 @@ locals {
       grayhaven_environment               = local.environment
       grayhaven_role                      = "web"
       grayhaven_config_repo_ref           = local.config_repo_ref
-      grayhaven_infra_policy_repo_ref     = local.infra_policy_ref
       grayhaven_control_bastion_key       = local.control_bastion_key
       grayhaven_ansible_deploy_public_key = var.grayhaven_ansible_deploy_public_key
       grayhaven_certificate_environment   = local.certificate_environment

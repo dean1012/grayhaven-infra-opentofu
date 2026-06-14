@@ -92,7 +92,7 @@ mock_provider "external" {
   mock_data "external" {
     defaults = {
       result = {
-        config_yml = <<-EOT
+        config_yml   = <<-EOT
           certificate_environment: production
           discord_webhook: production
           backup:
@@ -108,8 +108,52 @@ mock_provider "external" {
               - /var/log
             exclude: []
         EOT
+        firewall_yml = <<-EOT
+          firewalls:
+            bastion:
+              inbound:
+                - protocol: tcp
+                  port_range: "22"
+                  source_addresses:
+                    - 0.0.0.0/0
+              outbound:
+                - protocol: tcp
+                  port_range: "22"
+                  destination_tags:
+                    - bastion
+                    - web
+            web:
+              inbound:
+                - protocol: tcp
+                  port_range: "22"
+                  source_tags:
+                    - bastion
+              outbound:
+                - protocol: tcp
+                  port_range: "443"
+                  destination_addresses:
+                    - 0.0.0.0/0
+        EOT
       }
     }
+  }
+}
+
+run "prod_committed_policy_plan" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  assert {
+    condition     = output.workspace == "prod"
+    error_message = "The committed production policy must plan in the prod workspace."
   }
 }
 
@@ -260,6 +304,73 @@ run "prod_apex_only_dns_plan" {
     condition     = jsonencode(output.web_certificate_domain_names) == jsonencode(["grayhavensystems.com"])
     error_message = "Production apex-only DNS must request only the apex certificate name."
   }
+}
+
+run "prod_explicit_dns_record_plan" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path = "tests/fixtures/compute-1x1-auto.yml"
+    grayhaven_test_dns_policy_path     = "tests/fixtures/dns-with-environment-records.yml"
+  }
+
+  assert {
+    condition = (
+      length(digitalocean_record.environment_a) +
+      length(digitalocean_record.environment_cname) +
+      length(digitalocean_record.environment_txt)
+    ) == 3
+    error_message = "Production must plan explicit unprotected DNS records from environment DNS policy."
+  }
+
+  assert {
+    condition = (
+      digitalocean_record.environment_a["grayhaven_systems.infrastructure_notice_a"].type == "A" &&
+      digitalocean_record.environment_cname["grayhaven_systems.infrastructure_notice_cname"].type == "CNAME" &&
+      digitalocean_record.environment_txt["grayhaven_systems.infrastructure_notice_txt"].type == "TXT"
+    )
+    error_message = "Production environment DNS records must support A, CNAME, and TXT records."
+  }
+
+  assert {
+    condition = (
+      length(digitalocean_record.environment_protected_a) == 1 &&
+      length(digitalocean_record.environment_protected_cname) == 1 &&
+      length(digitalocean_record.environment_protected_txt) == 1
+    )
+    error_message = "Production must plan explicit protected DNS records from environment DNS policy."
+  }
+}
+
+run "prod_environment_protected_mx_caa_rejected" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path = "tests/fixtures/compute-1x1-auto.yml"
+    grayhaven_test_dns_policy_path     = "tests/fixtures/dns-with-environment-protected-mx-caa.yml"
+  }
+
+  expect_failures = [
+    terraform_data.dns_policy_guard,
+  ]
 }
 
 run "prod_3x3_explicit_load_balancer_plan" {

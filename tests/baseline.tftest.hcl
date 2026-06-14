@@ -93,7 +93,7 @@ run "baseline_plan" {
   }
 
   assert {
-    condition     = digitalocean_ssh_key.admin["jsmith"].name == "jsmith@grayhavensystems.com"
+    condition     = digitalocean_ssh_key.admin["bf2b518624d262ba"].name == "jsmith@grayhavensystems.com"
     error_message = "The baseline plan must manage the configured admin SSH key."
   }
 }

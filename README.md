@@ -1,4 +1,4 @@
-# Grayhaven Infrastructure (OpenTofu)
+# Grayhaven Systems LLC Infrastructure (OpenTofu)
 
 [![CI](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/ci.yml/badge.svg)](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/ci.yml)
 [![OpenTofu Plan Tests](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/tofu-tests.yml/badge.svg)](https://github.com/dean1012/grayhaven-infra-opentofu/actions/workflows/tofu-tests.yml)
@@ -24,41 +24,31 @@ private SSH keys, secrets, generated state, or other private operational data.
 
 - Manage shared baseline resources and separate staging/production runtime
   environments.
-- Provision DigitalOcean VPCs, droplets, hardware firewalls, load balancers,
-  DNS records, SSH keys, and project assignments.
-- Define compute, DNS, firewall, and SSH key behavior through committed policy
-  files.
+- Provision DigitalOcean VPCs, droplets, cloud firewalls, load balancers, DNS
+  records, SSH keys, and projects based on vault, environment, and policy
+  configuration files.
+- Manage resource project assignment and tagging for supported resources.
 - Bootstrap hosts into
   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-  for ongoing convergence.
-- Read operational selectors from a local checkout of the private
-  `grayhaven-vault` repository.
-- Keep OpenTofu state encrypted locally.
+  for first-boot configuration and setup for automated full Ansible
+  convergence.
+- Interface with a
+  [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+  based private configuration repository with separate configuration supported
+  for staging and production environments.
+- Maintain local encrypted OpenTofu state.
 
 This repository is not a general-purpose deployment template. Deploying similar
 automation for another organization requires review and adaptation.
 
-[Back to top](#grayhaven-infrastructure-opentofu)
+[Back to top](#grayhaven-systems-llc-infrastructure-opentofu)
 
 ## Requirements
 
-Before planning or applying this repository, prepare OpenTofu, DigitalOcean
-access, the private vault repository, deployment key material, and the required
-environment variables. The full first-time setup sequence is documented in
-[Setup](docs/setup.md).
+This repository must be initialized and configured before use. This process is
+documented in [Setup](docs/setup.md).
 
-At a high level, operators need:
-
-- OpenTofu.
-- DigitalOcean account and scoped API token.
-- Local checkout of the private `grayhaven-vault` repository with the required
-  environment refs fetched.
-- Workspace-specific OpenTofu state encryption passphrases.
-- Environment-specific Ansible Vault passphrases.
-- Ansible deploy/control key material for bastion bootstrap.
-- Admin public SSH keys defined in `policy/ssh-keys.yml`.
-
-[Back to top](#grayhaven-infrastructure-opentofu)
+[Back to top](#grayhaven-systems-llc-infrastructure-opentofu)
 
 ## Deployment Quick Reference
 
@@ -96,31 +86,39 @@ cloud-init, bootstraps hosts into
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
 and starts full Ansible convergence from the active control bastion.
 
-See [Operations](docs/operations.md) for plan/apply safety, destroy procedures,
-control-node changes, TLS-mode changes, secret rotation, and state safety.
+See [Operations](docs/operations.md) for routine plan/apply workflows, destroy
+procedures, control-node changes, and TLS-mode changes. See
+[Safety](docs/safety.md) for secret, state, and destructive-action guardrails.
 
-[Back to top](#grayhaven-infrastructure-opentofu)
+[Back to top](#grayhaven-systems-llc-infrastructure-opentofu)
 
 ## Other Documentation
 
-- [Setup](docs/setup.md)
-- [Workspaces](docs/workspaces.md)
-- [Policy Files](docs/policy.md)
-- [Operations](docs/operations.md)
-- [Infrastructure Conventions](docs/conventions.md)
-- [Troubleshooting](docs/troubleshooting.md)
+- Setup & Configuration
+  - [Setup](docs/setup.md)
+  - [Policy Files](docs/policy.md)
+- Operations & Safety
+  - [Workspaces](docs/workspaces.md)
+  - [Operations](docs/operations.md)
+  - [Safety](docs/safety.md)
+  - [Troubleshooting](docs/troubleshooting.md)
+- Architecture & Standards
+  - [Runtime Architecture](docs/runtime-architecture.md)
+  - [Infrastructure Naming & Tagging Conventions](docs/naming-tagging-conventions.md)
+  - [DNS Architecture](docs/dns-architecture.md)
+  - [OpenTofu Test Suite](docs/opentofu-test-suite.md)
 
-[Back to top](#grayhaven-infrastructure-opentofu)
+[Back to top](#grayhaven-systems-llc-infrastructure-opentofu)
 
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for validation commands and contribution
 guidelines.
 
-[Back to top](#grayhaven-infrastructure-opentofu)
+[Back to top](#grayhaven-systems-llc-infrastructure-opentofu)
 
 ## License
 
-MIT
+[MIT](LICENSE)
 
-[Back to top](#grayhaven-infrastructure-opentofu)
+[Back to top](#grayhaven-systems-llc-infrastructure-opentofu)

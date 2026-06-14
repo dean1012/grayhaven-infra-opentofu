@@ -1,46 +1,67 @@
 # Contributing
 
-Thank you for your interest in improving `grayhaven-infra-opentofu`.
+This document is intended for Grayhaven Systems LLC employees and assumes that
+this repository has been [initialized and configured](docs/setup.md)
+appropriately.
+
+If you are not a Grayhaven Systems LLC employee, we still welcome your support
+and contribution.
 
 ## Table of Contents
 
 - [Development Setup](#development-setup)
-- [Validation](#validation)
+- [Workflow](#workflow)
+- [Local Validation](#local-validation)
 - [Pull Requests](#pull-requests)
 - [Documentation Guidelines](#documentation-guidelines)
 
 ## Development Setup
 
-Install OpenTofu and the validation tools used by CI:
+Install verification dependencies:
 
 ```bash
-python3 -m pip install --upgrade pip
-python3 -m pip install yamllint
+sudo dnf install ShellCheck npm
+python3 -m pip install actionlint-py
+npm config set prefix "$HOME/.local"
 npm install --global markdownlint-cli2
+printf '%s\n' "$PATH" | grep -qE "(^|:)$HOME/\\.local/bin(:|$)" || \
+  printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
+source "$HOME/.bashrc"
 ```
-
-Do not run `tofu init -backend=false` directly in the operational checkout
-before real plan/apply work. Backend-disabled initialization is safe in CI's
-ephemeral checkout, but local validation should use a temporary state-free copy
-so the real `.terraform/` directory and encrypted local state context are not
-disturbed.
-
-The validation section includes a local temp-copy workflow.
 
 [Back to top](#contributing)
 
-## Validation
+## Workflow
 
-Run static checks from the repository root:
+1. Create a GitHub issue.
+2. Create a feature branch for the issue.
+3. Sign all commits and reference the issue number.
+4. Validate changes locally.
+5. Create a pull request to the `main` branch.
+6. Reference or close the issue number in the pull request as appropriate for
+   code review and merge.
+
+[Back to top](#contributing)
+
+## Local Validation
+
+Validate formatting and syntax from the repository root:
 
 ```bash
 tofu fmt -check -recursive
 shellcheck scripts/read-vault-config
-git ls-files '*.yml' '*.yaml' | xargs -r yamllint
+yamllint .
 markdownlint-cli2 "**/*.md" "!.terraform/**"
 ```
 
-Run OpenTofu validation and offline plan tests from a temporary state-free copy:
+If GitHub Actions are changed, validate with:
+
+```bash
+actionlint
+```
+
+Run the OpenTofu test suite locally from a temporary state-free copy of this
+repository:
 
 ```bash
 tmpdir="$(mktemp -d /tmp/grayhaven-infra-validate.XXXXXX)"
@@ -80,14 +101,8 @@ tofu workspace new prod
 tofu test -filter=tests/prod.tftest.hcl -no-color
 ```
 
-The `tofu test` suite is offline plan-shape validation. It uses mocked
-providers, fake sensitive values, and refresh-disabled plans. It does not
-deploy resources, validate live DigitalOcean behavior, check drift, or prove
-destroy behavior.
-
-The DNS tests include a test-only DNS policy fixture through
-`grayhaven_test_dns_policy_path`. Leave that variable unset for operational
-deployments.
+The [OpenTofu test suite documentation](docs/opentofu-test-suite.md) details
+how the test suite is designed and operates.
 
 Before committing changes, also check the current diff for whitespace errors:
 
@@ -99,20 +114,13 @@ git diff --check
 
 ## Pull Requests
 
-Create a focused feature branch for each change. Reference the related issue in
-each commit and include `Closes #<issue-number>` in the pull request
-description when the pull request should close an issue after merging.
+Pull requests must meet all of these requirements to be merged:
 
-Sign each commit so GitHub can verify its authorship. The `main` branch ruleset
-requires signed commits before merging:
-
-```bash
-git commit -S -m "<message> (Refs #<issue-number>)"
-```
-
-CI and OpenTofu plan tests run on pushes, pull requests, and manual workflow
-dispatches. Pull requests are squash merged after the `Validate` and `Offline
-Plan Tests` checks pass and review conversations are resolved.
+- Reference or close a GitHub issue as appropriate.
+- Contain signed commits.
+- Have no open review conversations.
+- Pass all CI checks.
+- Document all changes appropriately.
 
 [Back to top](#contributing)
 

@@ -19,9 +19,28 @@ if [[ -z "$vault_ref" ]]; then
   exit 1
 fi
 
-git -C "$vault_checkout_path" show "${vault_ref}:config.yml" | python3 -c '
+python3 - "$vault_checkout_path" "$vault_ref" <<'PY'
 import json
+import subprocess
 import sys
 
-print(json.dumps({"config_yml": sys.stdin.read()}))
-'
+vault_checkout_path = sys.argv[1]
+vault_ref = sys.argv[2]
+
+
+def read_ref_file(path):
+    return subprocess.check_output(
+        ["git", "-C", vault_checkout_path, "show", f"{vault_ref}:{path}"],
+        text=True,
+    )
+
+
+print(
+    json.dumps(
+        {
+            "config_yml": read_ref_file("config.yml"),
+            "firewall_yml": read_ref_file("firewall.yml"),
+        }
+    )
+)
+PY
