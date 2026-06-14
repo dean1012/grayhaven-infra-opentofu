@@ -268,13 +268,13 @@ git status --short
 No files should be listed. At this point, all intended setup changes should be
 staged and committed.
 
-Check OpenTofu formatting in the infra checkout:
+Check OpenTofu formatting in the repository checkout:
 
 ```bash
 tofu fmt -check -recursive
 ```
 
-Run Yamllint on YAML files in the infra checkout:
+Run Yamllint on YAML files in the repository checkout:
 
 ```bash
 yamllint .

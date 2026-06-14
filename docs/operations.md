@@ -354,7 +354,7 @@ To switch the active control bastion:
 3. Select the target workspace and run `tofu plan`.
 4. Confirm the plan only changes the expected DNS/tag relationships.
 5. Run `tofu apply`.
-6. SSH to the new `bastion.*` target and start a manual config run:
+6. SSH to the new `bastion.*` target and start a manual configuration run:
 
 ```bash
 sudo systemctl start grayhaven-ansible-runner.service
