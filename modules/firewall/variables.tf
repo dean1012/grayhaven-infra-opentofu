@@ -11,10 +11,11 @@ variable "target_tags" {
 variable "inbound_rules" {
   description = "Inbound firewall rules"
   type = list(object({
-    protocol         = string
-    port_range       = string
-    source_addresses = optional(list(string), [])
-    source_tags      = optional(list(string), [])
+    protocol                  = string
+    port_range                = string
+    source_addresses          = optional(list(string), [])
+    source_load_balancer_uids = optional(list(string), [])
+    source_tags               = optional(list(string), [])
   }))
 }
 

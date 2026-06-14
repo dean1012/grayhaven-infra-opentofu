@@ -6,10 +6,11 @@ resource "digitalocean_firewall" "this" {
     for_each = var.inbound_rules
 
     content {
-      protocol         = inbound_rule.value.protocol
-      port_range       = inbound_rule.value.port_range
-      source_addresses = inbound_rule.value.source_addresses
-      source_tags      = inbound_rule.value.source_tags
+      protocol                  = inbound_rule.value.protocol
+      port_range                = inbound_rule.value.port_range
+      source_addresses          = inbound_rule.value.source_addresses
+      source_load_balancer_uids = inbound_rule.value.source_load_balancer_uids
+      source_tags               = inbound_rule.value.source_tags
     }
   }
 

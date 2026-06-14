@@ -79,6 +79,12 @@ OpenTofu reads this file from the local vault checkout during plan and apply.
 reads the same file from the vault checkout on the active control bastion
 during convergence.
 
+When an environment uses load-balancer TLS, OpenTofu transforms the web cloud
+firewall so origin HTTP accepts traffic from the DigitalOcean load balancer and
+direct origin HTTPS is not exposed. The vault firewall policy remains the shared
+cloud and host firewall input, while the runtime TLS mode determines the
+effective web origin firewall shape.
+
 [Back to top](#runtime-architecture)
 
 ## Configuration Handoff

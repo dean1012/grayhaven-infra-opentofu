@@ -36,6 +36,11 @@ output "web_certificate_domain_names" {
   value       = local.web_domain_names
 }
 
+output "web_firewall_inbound_rules" {
+  description = "Effective inbound firewall rules for web hosts"
+  value       = local.is_environment ? try(module.web_firewall[0].inbound_rules, []) : []
+}
+
 output "workspace" {
   description = "Active OpenTofu workspace"
   value       = terraform.workspace

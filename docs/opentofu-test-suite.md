@@ -95,6 +95,7 @@ workspaces, plus fixed scenario fixtures:
 - apex-only DNS behavior when aliases are disabled;
 - validation that web aliases require an apex record;
 - load-balancer certificate domain name ordering;
+- load-balancer TLS web firewall behavior;
 - admin SSH key lookup and droplet attachment.
 
 Environment tests also verify that staging and production do not plan baseline

@@ -128,7 +128,19 @@ mock_provider "external" {
                   port_range: "22"
                   source_tags:
                     - bastion
+                - protocol: tcp
+                  port_range: "80"
+                  source_addresses:
+                    - 0.0.0.0/0
+                - protocol: tcp
+                  port_range: "443"
+                  source_addresses:
+                    - 0.0.0.0/0
               outbound:
+                - protocol: tcp
+                  port_range: "80"
+                  destination_addresses:
+                    - 0.0.0.0/0
                 - protocol: tcp
                   port_range: "443"
                   destination_addresses:
@@ -258,6 +270,30 @@ run "staging_2x2_auto_load_balancer_plan" {
   assert {
     condition     = length(digitalocean_loadbalancer.web) == 1 && length(digitalocean_certificate.web_lb_staging) == 1
     error_message = "A 2/2 staging load-balancer plan must include a load balancer and staging certificate."
+  }
+
+  assert {
+    condition = (
+      length([
+        for rule in output.web_firewall_inbound_rules :
+        rule if rule.protocol == "tcp" && rule.port_range == "80"
+      ]) == 1 &&
+      alltrue([
+        for rule in output.web_firewall_inbound_rules :
+        length(rule.source_load_balancer_uids) == 1
+        if rule.protocol == "tcp" && rule.port_range == "80"
+      ])
+    )
+    error_message = "Staging load-balancer TLS must restrict web HTTP origin traffic to the load balancer."
+  }
+
+  assert {
+    condition = !contains([
+      for rule in output.web_firewall_inbound_rules :
+      rule.port_range
+      if rule.protocol == "tcp"
+    ], "443")
+    error_message = "Staging load-balancer TLS must not expose direct web HTTPS origin traffic."
   }
 
   assert {
