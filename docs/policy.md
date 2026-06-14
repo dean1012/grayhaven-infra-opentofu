@@ -142,11 +142,6 @@ domains:
     environment:
       apex: true
       web_aliases: true
-  service_example:
-    name: service.example.com
-    environment:
-      apex: true
-      web_aliases: false
 ```
 
 [Back to top](#policy-files)
