@@ -29,7 +29,7 @@ configuration.
 
 DNS zones and records are handled by DNS policy files and through computed,
 automatic DNS records set up by OpenTofu and DigitalOcean. For more information
-on automatic records, please see the [DNS architecture documentation](dns.md).
+on automatic records, please see the [DNS architecture documentation](dns-architecture.md).
 
 ### DNS Policy Schema
 

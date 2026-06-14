@@ -1,4 +1,4 @@
-# DNS
+# DNS Architecture
 
 This document summarizes how this repository manages DNS behavior. DNS policy
 file formats are documented in [Policy Files](policy.md).
@@ -30,4 +30,4 @@ transaction contention:
 Hosted web domains should stay aligned between DNS policy and the
 [`grayhaven-vault-example` hosted domain documentation](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/schema.md#hosted-domain-dns-coordination).
 
-[Back to top](#dns)
+[Back to top](#dns-architecture)
