@@ -72,7 +72,10 @@ To provision or update infrastructure:
    or more web hosts, from two or more web hosts to one web host, or explicitly
    changing `tls_mode`, manually start the runner from the active control node
    using the
-   [`grayhaven-config-ansible` manual runner invocation instructions](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#manual-runner-invocation).
+   [manual runner invocation instructions](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#manual-runner-invocation)
+   in the
+   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+   repository.
 
 It is recommended that all changes to this repository be tested in a `staging`
 workspace environment deployment before updating the `prod` workspace

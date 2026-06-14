@@ -29,7 +29,11 @@ transaction contention. The sequence depends on the active workspace:
 - environment workspaces: unprotected `records` are created as A, CNAME, then
   TXT.
 
-Hosted web domains should stay aligned between DNS policy and the
-[`grayhaven-vault-example` hosted domain documentation](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/schema.md#hosted-domain-dns-coordination).
+Please see the
+[hosted domain documentation](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/schema.md#hosted-domain-dns-coordination)
+in the
+[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+repository for information on how to keep hosted web domains aligned with DNS
+policy.
 
 [Back to top](#dns-architecture)
