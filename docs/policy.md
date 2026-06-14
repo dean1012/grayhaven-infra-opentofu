@@ -152,8 +152,17 @@ domains:
 
 ## Admin SSH Key Policy
 
-`policy/baseline/ssh-keys.yml` defines admin SSH public keys under
-`admin_ssh_keys`.
+The `policy/baseline/ssh-keys.yml` policy configuration file defines public SSH
+keys that are used to deploy new servers. Each public SSH key configured in this
+file is added to `~almalinux/.ssh/authorized_keys` during first boot. It is
+removed by
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+during convergence.
+
+These keys are only useful for first-boot access and configuration. If you are
+looking to manage user SSH access to a server, please refer to the
+[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+documentation and modify `grayhaven-vault` appropriately.
 
 Each entry uses a stable internal key and supports:
 

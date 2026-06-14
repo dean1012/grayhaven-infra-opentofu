@@ -16,7 +16,6 @@ infrastructure.
 - [grayhaven-vault Deployment SSH Keypair Rotation](#grayhaven-vault-deployment-ssh-keypair-rotation)
 - [Bastion Failover](#bastion-failover)
 - [Updating Workspace Environment TLS Mode](#updating-workspace-environment-tls-mode)
-- [Managing Admin SSH Keys](#managing-admin-ssh-keys)
 
 ## List Available Workspaces
 
@@ -382,20 +381,5 @@ tofu apply
 ```
 
 Policy documentation details [supported TLS modes](policy.md#compute-policy).
-
-[Back to top](#operations)
-
-## Managing Admin SSH Keys
-
-Admin SSH public keys defined in this repository are temporary and used only
-for first-boot access and configuration of new servers. They are removed from
-each server during Ansible convergence.
-
-To add or remove admin SSH public keys, edit `policy/baseline/ssh-keys.yml`.
-See [Policy](policy.md#admin-ssh-key-policy) documentation for details.
-
-If you are looking to manage user SSH access to a server, please see the
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/operations.md#managing-users)
-documentation.
 
 [Back to top](#operations)
