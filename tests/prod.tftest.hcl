@@ -306,6 +306,47 @@ run "prod_apex_only_dns_plan" {
   }
 }
 
+run "prod_explicit_dns_record_plan" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path = "tests/fixtures/compute-1x1-auto.yml"
+    grayhaven_test_dns_policy_path     = "tests/fixtures/dns-with-unprotected-records.yml"
+  }
+
+  assert {
+    condition = (
+      length(digitalocean_record.environment_a) +
+      length(digitalocean_record.environment_cname) +
+      length(digitalocean_record.environment_txt)
+    ) == 3
+    error_message = "Production must plan explicit unprotected DNS records from environment DNS policy."
+  }
+
+  assert {
+    condition = (
+      digitalocean_record.environment_a["grayhaven_systems.infrastructure_notice_a"].type == "A" &&
+      digitalocean_record.environment_cname["grayhaven_systems.infrastructure_notice_cname"].type == "CNAME" &&
+      digitalocean_record.environment_txt["grayhaven_systems.infrastructure_notice_txt"].type == "TXT"
+    )
+    error_message = "Production environment DNS records must support A, CNAME, and TXT records."
+  }
+
+  assert {
+    condition     = length(digitalocean_record.environment_protected_a) == 1 && length(digitalocean_record.environment_protected_mx) == 2
+    error_message = "Production must plan explicit protected DNS records from environment DNS policy."
+  }
+}
+
 run "prod_3x3_explicit_load_balancer_plan" {
   command = plan
 

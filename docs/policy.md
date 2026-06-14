@@ -33,8 +33,6 @@ on automatic records, please see the [DNS architecture documentation](dns.md).
 
 ### DNS Policy Schema
 
-`policy/baseline/dns.yml` defines shared DNS zones and baseline records.
-
 Supported top-level keys:
 
 - `ttl`: default TTL for managed DNS records.
@@ -43,9 +41,9 @@ Supported top-level keys:
 Supported domain keys:
 
 - `domains.<domain_key>.name`: public domain name.
-- `domains.<domain_key>.protected_records`: baseline records with OpenTofu
+- `domains.<domain_key>.protected_records`: Optional. DNS records with OpenTofu
   destroy protection.
-- `domains.<domain_key>.records`: baseline records without OpenTofu destroy
+- `domains.<domain_key>.records`: Optional. DNS records without OpenTofu destroy
   protection.
 
 `protected_records` supports these DNS record types:
@@ -122,15 +120,16 @@ Environment-specific records are created in `policy/<workspace>/dns.yml` and use
 the same format with the addition of an `environment` domain key:
 
 - `domains.<domain_key>.environment.apex`: automatically creates an A record for
-  the environment apex. Defaults to false.
+  the environment apex. Optional. Defaults to false.
 - `domains.<domain_key>.environment.web_aliases`: automatically creates `www`
-  and `dev` CNAME aliases to the environment apex. Defaults to false.
+  and `dev` CNAME aliases to the environment apex. Optional. Defaults to false.
 
 Setting `environment.web_aliases` to true requires that `environment.apex` also
 be true. Valid combinations are true/true, true/false, and false/false.
 
-If you have any `hosted_domains` configured in `grayhaven-vault`, you should
-probably set `environment.web_aliases` and `environment.apex` to true.
+If you have any `hosted_domains` configured in `grayhaven-vault`, it is strongly
+recommended that you set `environment.web_aliases` and `environment.apex` to
+true.
 
 Example shape:
 

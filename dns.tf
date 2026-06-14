@@ -332,3 +332,149 @@ resource "digitalocean_record" "grayhaven_bastion_a" {
 
   depends_on = [data.digitalocean_domain.managed]
 }
+
+resource "digitalocean_record" "environment_protected_a" {
+  for_each = local.is_environment ? local.dns_protected_records_by_type["A"] : {}
+
+  domain   = data.digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [
+    digitalocean_record.web_root_a,
+    digitalocean_record.web_www_cname,
+    digitalocean_record.web_dev_cname,
+    digitalocean_record.grayhaven_droplet_a,
+    digitalocean_record.grayhaven_bastion_a,
+  ]
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_record" "environment_protected_cname" {
+  for_each = local.is_environment ? local.dns_protected_records_by_type["CNAME"] : {}
+
+  domain   = data.digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.environment_protected_a]
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_record" "environment_protected_mx" {
+  for_each = local.is_environment ? local.dns_protected_records_by_type["MX"] : {}
+
+  domain   = data.digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.environment_protected_cname]
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_record" "environment_protected_txt" {
+  for_each = local.is_environment ? local.dns_protected_records_by_type["TXT"] : {}
+
+  domain   = data.digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.environment_protected_mx]
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_record" "environment_protected_caa" {
+  for_each = local.is_environment ? local.dns_protected_records_by_type["CAA"] : {}
+
+  domain   = data.digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.environment_protected_txt]
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "digitalocean_record" "environment_a" {
+  for_each = local.is_environment ? local.dns_records_by_type["A"] : {}
+
+  domain   = data.digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.environment_protected_caa]
+}
+
+resource "digitalocean_record" "environment_cname" {
+  for_each = local.is_environment ? local.dns_records_by_type["CNAME"] : {}
+
+  domain   = data.digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.environment_a]
+}
+
+resource "digitalocean_record" "environment_txt" {
+  for_each = local.is_environment ? local.dns_records_by_type["TXT"] : {}
+
+  domain   = data.digitalocean_domain.managed[each.value.domain_key].name
+  type     = each.value.record.type
+  name     = each.value.record.name
+  value    = each.value.record.value
+  priority = try(each.value.record.priority, null)
+  flags    = try(each.value.record.flags, null)
+  tag      = try(each.value.record.tag, null)
+  ttl      = try(each.value.record.ttl, local.dns_ttl)
+
+  depends_on = [digitalocean_record.environment_cname]
+}
