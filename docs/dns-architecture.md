@@ -20,12 +20,14 @@ their DNS policy. `environment.apex: true` creates the environment apex record.
 environment.
 
 DNS records are created in ordered type groups to reduce provider-side DNS
-transaction contention:
+transaction contention. The sequence depends on the active workspace:
 
-- computed environment records: A, then CNAME;
-- baseline DNS policy `protected_records`: A, CNAME, MX, TXT, then CAA;
-- environment DNS policy `protected_records`: A, CNAME, then TXT;
-- DNS policy `records`: A, CNAME, then TXT.
+- `baseline`: `protected_records` are created as A, CNAME, MX, TXT, then CAA;
+- `baseline`: unprotected `records` are created as A, CNAME, then TXT;
+- environment workspaces: computed records are created as A, then CNAME;
+- environment workspaces: `protected_records` are created as A, CNAME, then TXT;
+- environment workspaces: unprotected `records` are created as A, CNAME, then
+  TXT.
 
 Hosted web domains should stay aligned between DNS policy and the
 [`grayhaven-vault-example` hosted domain documentation](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/schema.md#hosted-domain-dns-coordination).
