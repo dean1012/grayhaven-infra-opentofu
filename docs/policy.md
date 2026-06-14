@@ -92,6 +92,10 @@ domains:
   example:
     name: example.com
     protected_records:
+      mail_a:
+        type: A
+        name: mail
+        value: 192.0.2.10
       mx_primary:
         type: MX
         name: "@"
