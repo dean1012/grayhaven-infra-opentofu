@@ -87,6 +87,17 @@ host is bootstrapped into
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
 and receives the environment-specific values needed for convergence.
 
+The cloud-init handoff writes bootstrap variables to
+`/etc/grayhaven/bootstrap/bootstrap-vars.yml` and then runs `ansible-pull`
+against `grayhaven-config-ansible`. All hosts receive their hostname, role,
+environment, config repository ref, active control bastion selector,
+certificate selector, TLS mode, and first-boot deployment public key.
+
+Bastion hosts also receive the private vault repository URL and ref, Ansible
+Vault passphrase, deployment SSH keypair, and control-node flag. Those values
+are used only to prepare the first runner execution. The bootstrap playbook
+removes the handoff file before starting the initial full convergence run.
+
 Environment workspaces read `config.yml` and `firewall.yml` from the intended
 `grayhaven-vault` Git ref instead of whichever branch is checked out locally.
 Production uses the `main` ref and staging uses the `staging` ref.
