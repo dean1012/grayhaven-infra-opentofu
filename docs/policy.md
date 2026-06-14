@@ -164,13 +164,9 @@ looking to manage user SSH access to a server, please refer to the
 [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/operations.md#managing-users)
 documentation and modify `grayhaven-vault` appropriately.
 
-Each entry supports:
+Supported top-level keys:
 
-- Public SSH key material.
-
-The DigitalOcean SSH key name is derived from the public key comment when one is
-present. When no comment is present, the name is generated from the public key
-material.
+- `admin_ssh_keys`: list of managed admin SSH public keys.
 
 Example shape:
 

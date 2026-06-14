@@ -8,6 +8,7 @@ Systems LLC infrastructure. Policy file schemas are documented in
 
 - [Supported Runtime Roles](#supported-runtime-roles)
 - [Control Bastion](#control-bastion)
+- [Admin SSH Keys](#admin-ssh-keys)
 - [Web TLS Modes](#web-tls-modes)
 - [Firewall Policy](#firewall-policy)
 - [Configuration Handoff](#configuration-handoff)
@@ -36,6 +37,14 @@ environment compute policy. The selected bastion receives the easy
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
 uses the control-node tag to identify the host that should run scheduled
 Ansible convergence.
+
+[Back to top](#runtime-architecture)
+
+## Admin SSH Keys
+
+The DigitalOcean SSH key name is derived from the public key comment when one is
+present. When no comment is present, the name is generated from the public key
+material.
 
 [Back to top](#runtime-architecture)
 
