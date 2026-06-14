@@ -37,10 +37,11 @@ used. Resources should not be assigned to this VPC. It exists because
 DigitalOcean does not allow default VPCs to be destroyed and to act as a safety
 net in case a resource is created on accident without explicit VPC assignment.
 
-Baseline resources are protected and cannot be destroyed. To be absolutely
-safe, you should not attempt to destroy the `baseline` workspace. Staging and
-production depend on the shared resources it manages, and destroying the
-`baseline` workspace will cause production outages for mail and HTTPS services.
+Protected baseline resources cannot be destroyed through normal OpenTofu
+operations. To be absolutely safe, you should not attempt to destroy the
+`baseline` workspace. Staging and production depend on the shared resources it
+manages, and destroying the `baseline` workspace will cause production outages
+for mail and HTTPS services.
 
 [Back to top](#workspaces)
 
@@ -58,9 +59,9 @@ Staging owns environment-specific resources such as:
 - staging droplet DNS records;
 - staging load balancers when the compute policy requires them.
 
-Staging reads `config.yml` from the `staging` Git ref in the local
-`grayhaven-vault` checkout. The vault checkout does not need to have `staging`
-checked out, but the ref must be present locally.
+Staging reads `config.yml` and `firewall.yml` from the `staging` Git ref in the
+local `grayhaven-vault` checkout. The vault checkout does not need to have
+`staging` checked out, but the ref must be present locally.
 
 The `staging` workspace is expected to be destroyed after validation unless an
 active test requires it to remain online.
@@ -80,9 +81,9 @@ Production owns environment-specific resources such as:
 - production droplet DNS records;
 - production load balancers when the compute policy requires them.
 
-Production reads `config.yml` from the `main` Git ref in the local
-`grayhaven-vault` checkout. The vault checkout does not need to have `main`
-checked out, but the ref must be present locally.
+Production reads `config.yml` and `firewall.yml` from the `main` Git ref in the
+local `grayhaven-vault` checkout. The vault checkout does not need to have
+`main` checked out, but the ref must be present locally.
 
 Changes to the `prod` workspace should be deliberate and follow Grayhaven
 Systems LLC change control procedures.

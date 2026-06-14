@@ -23,12 +23,11 @@ DNS records are created in ordered type groups to reduce provider-side DNS
 transaction contention:
 
 - computed environment records: A, then CNAME;
-- DNS policy `protected_records`: A, CNAME, then TXT;
 - baseline DNS policy `protected_records`: A, CNAME, MX, TXT, then CAA;
+- environment DNS policy `protected_records`: A, CNAME, then TXT;
 - DNS policy `records`: A, CNAME, then TXT.
 
 Hosted web domains should stay aligned between DNS policy and the
-`hosted_domains` contract documented in
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example).
+[`grayhaven-vault-example` hosted domain documentation](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/schema.md#hosted-domain-dns-coordination).
 
 [Back to top](#dns)

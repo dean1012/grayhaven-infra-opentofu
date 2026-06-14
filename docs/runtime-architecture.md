@@ -87,7 +87,7 @@ host is bootstrapped into
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
 and receives the environment-specific values needed for convergence.
 
-Environment workspaces read `config.yml` from the intended
+Environment workspaces read `config.yml` and `firewall.yml` from the intended
 `grayhaven-vault` Git ref instead of whichever branch is checked out locally.
 Production uses the `main` ref and staging uses the `staging` ref.
 
