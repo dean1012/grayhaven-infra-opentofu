@@ -327,8 +327,8 @@ To rotate the bootstrap deployment SSH keypair:
    source "$HOME/.bashrc.d/grayhaven.env"
    ```
 
-6. Rotate the bootstrap deployment SSH keypair for existing hosts by following
-   the instructions located in
+6. Rotate the retained vault deployment SSH keypair on existing bastions by
+   following the instructions located in
    [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#deploy-key-rotation).
 
 Once the new bootstrap deployment SSH keypair is verified as operational, the
