@@ -168,6 +168,10 @@ When load-balancer TLS is active, OpenTofu derives the effective web cloud
 firewall from `firewall.yml` by allowing web origin HTTP from the DigitalOcean
 load balancer and omitting direct web origin HTTPS.
 
+The web inbound firewall policy must include TCP `80` and TCP `443` rules.
+OpenTofu validates that shape before applying the TLS-mode-specific effective
+firewall.
+
 The public
 [grayhaven-vault-example](https://github.com/dean1012/grayhaven-vault-example)
 repository documents the expected

@@ -364,6 +364,50 @@ run "staging_web_aliases_require_apex" {
   ]
 }
 
+run "staging_firewall_requires_web_http_origin_rule" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path  = "tests/fixtures/compute-1x1-auto.yml"
+    grayhaven_test_firewall_policy_path = "tests/fixtures/firewall-missing-web-http.yml"
+  }
+
+  expect_failures = [
+    terraform_data.environment_policy_guard,
+  ]
+}
+
+run "staging_firewall_requires_web_https_origin_rule" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path  = "tests/fixtures/compute-1x1-auto.yml"
+    grayhaven_test_firewall_policy_path = "tests/fixtures/firewall-missing-web-https.yml"
+  }
+
+  expect_failures = [
+    terraform_data.environment_policy_guard,
+  ]
+}
+
 run "staging_explicit_dns_record_plan" {
   command = plan
 

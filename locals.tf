@@ -85,7 +85,11 @@ locals {
 
   firewall_policy_yaml = (
     local.is_environment
-    ? data.external.vault_config[0].result.firewall_yml
+    ? (
+      var.grayhaven_test_firewall_policy_path != null
+      ? file(var.grayhaven_test_firewall_policy_path)
+      : data.external.vault_config[0].result.firewall_yml
+    )
     : "firewalls: {}\n"
   )
   firewall_policy = yamldecode(local.firewall_policy_yaml)
@@ -242,6 +246,12 @@ locals {
       }
     }
   ) : {}
+
+  firewall_policy_web_inbound_rules = try(local.firewall_policy.firewalls.web.inbound, [])
+  firewall_policy_web_tcp_ports = toset([
+    for rule in local.firewall_policy_web_inbound_rules : rule.port_range
+    if rule.protocol == "tcp"
+  ])
 
   firewall_policy_rules = local.is_environment ? {
     for role, policy in local.firewall_policy.firewalls : role => {

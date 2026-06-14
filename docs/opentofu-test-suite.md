@@ -55,6 +55,7 @@ from `tests/fixtures/`:
 
 - `grayhaven_test_compute_policy_path`
 - `grayhaven_test_dns_policy_path`
+- `grayhaven_test_firewall_policy_path`
 - `grayhaven_test_ssh_keys_policy_path`
 
 These variables exist only for offline plan tests and disposable validation
@@ -96,6 +97,8 @@ workspaces, plus fixed scenario fixtures:
 - validation that web aliases require an apex record;
 - load-balancer certificate domain name ordering;
 - load-balancer TLS web firewall behavior;
+- rejection of web firewall policy that omits required HTTP or HTTPS origin
+  rules;
 - admin SSH key lookup and droplet attachment.
 
 Environment tests also verify that staging and production do not plan baseline
