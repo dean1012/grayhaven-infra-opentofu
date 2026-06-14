@@ -164,77 +164,88 @@ please update the documented
 ## OpenTofu State Encryption Passphrase Rotation
 
 To rotate the OpenTofu state encryption passphrase for a given workspace
-environment:
+environment, follow each section in order.
 
-1. Temporarily back up the target workspace environment state and keep the
-   backup private.
+### Back Up State
 
-   From the repository root, replace `<workspace>` appropriately and run:
+Temporarily back up the target workspace environment state and keep the backup
+private.
 
-   ```bash
-   workspace="<workspace>"
-   backup_dir="$HOME/backups"
-   timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+From the repository root, replace `<workspace>` appropriately and run:
 
-   mkdir -p "$backup_dir"
-   chmod 0700 "$backup_dir"
-   tar -czf \
-     "$backup_dir/grayhaven-infra-opentofu-${workspace}-state-${timestamp}.tar.gz" \
-     "terraform.tfstate.d/${workspace}"
-   chmod 0600 \
-     "$backup_dir/grayhaven-infra-opentofu-${workspace}-state-${timestamp}.tar.gz"
-   ```
+```bash
+workspace="<workspace>"
+backup_dir="$HOME/backups"
+timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 
-2. Update `$HOME/.bashrc.d/grayhaven.env`, renaming
-   `TF_VAR_state_encryption_passphrase_<workspace>` to
-   `TF_VAR_state_encryption_previous_passphrase_<workspace>`.
-3. Update `$HOME/.bashrc.d/grayhaven.env`, adding
-   `TF_VAR_state_encryption_passphrase_<workspace>` with the new encryption
-   passphrase.
-4. Reload `grayhaven.env`:
+mkdir -p "$backup_dir"
+chmod 0700 "$backup_dir"
+tar -czf \
+  "$backup_dir/grayhaven-infra-opentofu-${workspace}-state-${timestamp}.tar.gz" \
+  "terraform.tfstate.d/${workspace}"
+chmod 0600 \
+  "$backup_dir/grayhaven-infra-opentofu-${workspace}-state-${timestamp}.tar.gz"
+```
 
-   ```bash
-   source "$HOME/.bashrc.d/grayhaven.env"
-   ```
+### Configure Passphrase Variables
 
-5. Validate both variables are present by replacing `<workspace>`
-   appropriately and running this command:
+Update `$HOME/.bashrc.d/grayhaven.env`, renaming
+`TF_VAR_state_encryption_passphrase_<workspace>` to
+`TF_VAR_state_encryption_previous_passphrase_<workspace>`.
 
-   ```bash
-   workspace="<workspace>"
-   current_var="TF_VAR_state_encryption_passphrase_${workspace}"
-   previous_var="TF_VAR_state_encryption_previous_passphrase_${workspace}"
+Add `TF_VAR_state_encryption_passphrase_<workspace>` with the new encryption
+passphrase, then reload `grayhaven.env`:
 
-   for var_name in "$current_var" "$previous_var"; do
-     if [ -n "${!var_name:-}" ]; then
-       printf '\033[32m%s=defined\033[0m\n' "$var_name"
-     else
-       printf '\033[31m%s=missing\033[0m\n' "$var_name"
-     fi
-   done
-   ```
+```bash
+source "$HOME/.bashrc.d/grayhaven.env"
+```
 
-6. Select the target workspace:
+Validate both variables are present by replacing `<workspace>` appropriately and
+running this command:
 
-   ```bash
-   tofu workspace select <workspace>
-   ```
+```bash
+workspace="<workspace>"
+current_var="TF_VAR_state_encryption_passphrase_${workspace}"
+previous_var="TF_VAR_state_encryption_previous_passphrase_${workspace}"
 
-7. Run `tofu plan` to confirm that OpenTofu can read the workspace
-   environment state with the previous passphrase.
-8. Run `tofu apply` to rotate the state encryption passphrase.
-9. Update `$HOME/.bashrc.d/grayhaven.env`, removing
-   `TF_VAR_state_encryption_previous_passphrase_<workspace>`.
-10. Unset `TF_VAR_state_encryption_previous_passphrase_<workspace>` in your
-    local shell environment:
+for var_name in "$current_var" "$previous_var"; do
+  if [ -n "${!var_name:-}" ]; then
+    printf '\033[32m%s=defined\033[0m\n' "$var_name"
+  else
+    printf '\033[31m%s=missing\033[0m\n' "$var_name"
+  fi
+done
+```
 
-    ```bash
-    workspace="<workspace>"
-    unset "TF_VAR_state_encryption_previous_passphrase_${workspace}"
-    ```
+### Rotate State
 
-11. Run `tofu plan` again to confirm that OpenTofu can read the workspace
-    environment state with the new passphrase.
+Select the target workspace:
+
+```bash
+tofu workspace select <workspace>
+```
+
+Run `tofu plan` to confirm that OpenTofu can read the workspace environment
+state with the previous passphrase, then run `tofu apply` to rotate the state
+encryption passphrase.
+
+### Remove the Previous Passphrase
+
+Update `$HOME/.bashrc.d/grayhaven.env`, removing
+`TF_VAR_state_encryption_previous_passphrase_<workspace>`.
+
+Unset `TF_VAR_state_encryption_previous_passphrase_<workspace>` in your local
+shell environment:
+
+```bash
+workspace="<workspace>"
+unset "TF_VAR_state_encryption_previous_passphrase_${workspace}"
+```
+
+Run `tofu plan` again to confirm that OpenTofu can read the workspace
+environment state with the new passphrase.
+
+### Rollback
 
 If anything goes wrong with the above steps, rollback by first ensuring that
 `TF_VAR_state_encryption_passphrase_<workspace>` in
@@ -252,8 +263,10 @@ tofu workspace select "$workspace"
 tofu plan
 ```
 
+### Cleanup
+
 Once the state encryption passphrase has been successfully rotated, the
-temporary state backup taken in step 1 above can be safely removed.
+temporary state backup can be safely removed.
 
 [Back to top](#operations)
 
