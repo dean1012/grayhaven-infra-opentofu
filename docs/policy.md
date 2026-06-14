@@ -133,7 +133,7 @@ Setting `environment.web_aliases` to true requires that `environment.apex` also
 be true. Valid combinations are true/true, true/false, and false/false.
 
 If you have any `hosted_domains` configured in
-[`grayhaven-vault`](https://github.com/dean1012/grayhaven-vault), it is
+`grayhaven-vault`, it is
 strongly recommended that you set `environment.web_aliases` and
 `environment.apex` to true.
 
@@ -155,7 +155,7 @@ domains:
 ## Firewall Policy
 
 Firewall policy is managed through `firewall.yml` in the private
-[`grayhaven-vault`](https://github.com/dean1012/grayhaven-vault) repository.
+`grayhaven-vault` repository.
 This keeps DigitalOcean cloud firewall policy and host firewalld policy tied to
 the same environment-specific configuration.
 
@@ -185,7 +185,7 @@ looking to manage user SSH access to a server, please refer to the
 in the
 [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
 repository and modify
-[`grayhaven-vault`](https://github.com/dean1012/grayhaven-vault) appropriately.
+`grayhaven-vault` appropriately.
 
 Supported top-level keys:
 

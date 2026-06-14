@@ -52,7 +52,7 @@ To provision or update infrastructure:
 2. Make changes to this repository and/or adjust configuration. Make any
    relevant adjustments to
    [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-   and [`grayhaven-vault`](https://github.com/dean1012/grayhaven-vault) as
+   and `grayhaven-vault` as
    well. Refer to
    [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
    for additional information as needed.
@@ -324,7 +324,7 @@ To rotate the bootstrap deployment SSH keypair:
 
 2. [Generate a new keypair](setup.md#generate-a-bootstrap-deployment-ssh-keypair-for-vault-repository-access).
 3. Add the new deploy public key generated in step 2 as a read-only deploy key
-   on the [`grayhaven-vault`](https://github.com/dean1012/grayhaven-vault)
+   on the `grayhaven-vault`
    repository through GitHub's website.
 4. Update `$HOME/.bashrc.d/grayhaven.env`, ensuring that
    `TF_VAR_grayhaven_ansible_deploy_public_key` and

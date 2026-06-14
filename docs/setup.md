@@ -120,7 +120,7 @@ location under `$HOME` with restrictive ownership and permissions.
 
 OpenTofu passes this keypair to first-boot bootstrap so the active control
 bastion can fetch
-[`grayhaven-vault`](https://github.com/dean1012/grayhaven-vault) and start
+`grayhaven-vault` and start
 initial Ansible convergence. Full convergence then replaces the temporary
 first-boot control key with the vault-sourced Ansible control key.
 
