@@ -212,6 +212,16 @@ Supported web keys:
 environment compute policy must define at least one bastion and one web host.
 `web.tls_mode` defaults to `auto` when omitted.
 
+Supported TLS modes:
+
+- `auto`: uses host TLS when the environment has one web host and load-balancer
+  TLS when the environment has two or more web hosts.
+- `load_balancer`: always uses DigitalOcean load-balancer TLS.
+
+Host TLS points web DNS at the primary web host. Load-balancer TLS creates a
+DigitalOcean load balancer, points web DNS at the load balancer, and configures
+web hosts as HTTP backends for load-balanced traffic.
+
 Example shape:
 
 ```yaml
