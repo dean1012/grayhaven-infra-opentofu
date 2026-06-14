@@ -11,6 +11,7 @@ schemas.
   - [DNS Policy Schema](#dns-policy-schema)
   - [Baseline DNS Policy](#baseline-dns-policy)
   - [Environment DNS Policy](#environment-dns-policy)
+- [Firewall Policy](#firewall-policy)
 - [Admin SSH Key Policy](#admin-ssh-key-policy)
 - [Compute Policy](#compute-policy)
 
@@ -147,6 +148,24 @@ domains:
       apex: true
       web_aliases: true
 ```
+
+[Back to top](#policy-files)
+
+## Firewall Policy
+
+Firewall policy is managed through `firewall.yml` in the private
+`grayhaven-vault` repository. This keeps DigitalOcean cloud firewall policy and
+host firewalld policy tied to the same environment-specific configuration.
+
+OpenTofu reads `firewall.yml` from the local vault checkout during plan and
+apply. [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+reads the same file from the vault checkout on the active control bastion during
+convergence.
+
+The public
+[grayhaven-vault-example](https://github.com/dean1012/grayhaven-vault-example)
+repository documents the expected
+[firewall.yml schema](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/schema.md#firewallyml).
 
 [Back to top](#policy-files)
 
