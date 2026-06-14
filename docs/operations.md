@@ -13,7 +13,7 @@ infrastructure.
 - [DigitalOcean API Token Rotation](#digitalocean-api-token-rotation)
 - [OpenTofu State Encryption Passphrase Rotation](#opentofu-state-encryption-passphrase-rotation)
 - [Ansible Vault Passphrase Rotation](#ansible-vault-passphrase-rotation)
-- [grayhaven-vault Deployment SSH Keypair Rotation](#grayhaven-vault-deployment-ssh-keypair-rotation)
+- [Bootstrap Deployment SSH Keypair Rotation](#bootstrap-deployment-ssh-keypair-rotation)
 - [Bastion Failover](#bastion-failover)
 - [Updating Workspace Environment TLS Mode](#updating-workspace-environment-tls-mode)
 
@@ -277,12 +277,12 @@ successfully completed the passphrase rotation procedure.
 
 [Back to top](#operations)
 
-## grayhaven-vault Deployment SSH Keypair Rotation
+## Bootstrap Deployment SSH Keypair Rotation
 
-To rotate the `grayhaven-vault` deployment SSH keypair:
+To rotate the bootstrap deployment SSH keypair:
 
-1. Temporarily back up your existing deployment SSH keypair and keep the
-   backup private.
+1. Temporarily back up your existing bootstrap deployment SSH keypair and keep
+   the backup private.
 
    Replace the key paths appropriately and run:
 
@@ -302,7 +302,7 @@ To rotate the `grayhaven-vault` deployment SSH keypair:
      "$backup_dir/grayhaven-vault-deployment-ssh-keypair-${timestamp}.tar.gz"
    ```
 
-2. [Generate a new keypair](setup.md#generate-a-deployment-ssh-keypair-for-read-only-access-to-vault-repository).
+2. [Generate a new keypair](setup.md#generate-a-bootstrap-deployment-ssh-keypair-for-vault-repository-access).
 3. Add the new deploy public key generated in step 2 as a read-only deploy key
    on the `grayhaven-vault` repository through GitHub's website.
 4. Update `$HOME/.bashrc.d/grayhaven.env`, ensuring that
@@ -314,13 +314,13 @@ To rotate the `grayhaven-vault` deployment SSH keypair:
    source "$HOME/.bashrc.d/grayhaven.env"
    ```
 
-6. Rotate the `grayhaven-vault` deployment SSH keypair for existing bastions
-   by following the instructions located in
+6. Rotate the bootstrap deployment SSH keypair for existing hosts by following
+   the instructions located in
    [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#deploy-key-rotation).
 
-Once the new deployment SSH keypair is verified as operational, the temporary
-key backup taken in step 1 above and the original keypair can be safely
-removed.
+Once the new bootstrap deployment SSH keypair is verified as operational, the
+temporary key backup taken in step 1 above and the original keypair can be
+safely removed.
 
 [Back to top](#operations)
 

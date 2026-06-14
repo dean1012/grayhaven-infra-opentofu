@@ -153,9 +153,8 @@ domains:
 ## Admin SSH Key Policy
 
 The `policy/baseline/ssh-keys.yml` policy configuration file defines public SSH
-keys that are used to deploy new servers. Each public SSH key configured in this
-file is added to `~almalinux/.ssh/authorized_keys` during first boot. It is
-removed by
+keys that are provided to DigitalOcean for first-boot SSH access to new servers.
+The bootstrap account is removed by
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
 during convergence.
 

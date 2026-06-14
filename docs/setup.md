@@ -9,7 +9,7 @@ completed before operating within this repository.
 - [Generate Passphrases](#generate-passphrases)
 - [Create a DigitalOcean API Token](#create-a-digitalocean-api-token)
 - [Generate an Admin SSH Keypair for First-Boot SSH Access](#generate-an-admin-ssh-keypair-for-first-boot-ssh-access)
-- [Generate a Deployment SSH Keypair for Read-only Access to Vault Repository](#generate-a-deployment-ssh-keypair-for-read-only-access-to-vault-repository)
+- [Generate a Bootstrap Deployment SSH Keypair for Vault Repository Access](#generate-a-bootstrap-deployment-ssh-keypair-for-vault-repository-access)
 - [Set Up the Vault Repository](#set-up-the-vault-repository)
 - [Set Up the Environment](#set-up-the-environment)
 - [Edit Policy Files](#edit-policy-files)
@@ -112,11 +112,15 @@ Do not commit or print the private key.
 
 [Back to top](#setup)
 
-## Generate a Deployment SSH Keypair for Read-only Access to Vault Repository
+## Generate a Bootstrap Deployment SSH Keypair for Vault Repository Access
 
-Generate a new deployment SSH keypair for read-only access to the private vault
-repository and store the private key in a safe location under `$HOME` with
-restrictive ownership and permissions:
+Generate a new deployment SSH keypair for bootstrap automation and read-only
+access to the private vault repository. Store the private key in a safe
+location under `$HOME` with restrictive ownership and permissions.
+
+OpenTofu passes this keypair to first-boot bootstrap so the active control
+bastion can fetch `grayhaven-vault` and start initial Ansible convergence before
+the vault-sourced Ansible control key has been rotated into place.
 
 ```bash
 mkdir -p "$HOME/<safe-key-directory>"

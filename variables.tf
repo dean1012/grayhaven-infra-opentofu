@@ -109,7 +109,7 @@ variable "grayhaven_vault_repo_url" {
 }
 
 variable "grayhaven_vault_checkout_path" {
-  description = "Local checkout path for grayhaven-vault. OpenTofu reads config.yml from this checkout."
+  description = "Local checkout path for grayhaven-vault. OpenTofu reads config.yml and firewall.yml from this checkout."
   type        = string
   default     = null
   nullable    = true
@@ -132,13 +132,13 @@ variable "grayhaven_vault_password_prod" {
 }
 
 variable "grayhaven_ansible_deploy_public_key" {
-  description = "Public half of the dual-purpose Ansible control and GitHub deploy key."
+  description = "Public half of the bootstrap deployment key used for first-boot automation and GitHub deploy access."
   type        = string
   sensitive   = true
 }
 
 variable "grayhaven_ansible_deploy_private_key" {
-  description = "Private half of the dual-purpose Ansible control and GitHub deploy key, installed only on bastion hosts."
+  description = "Private half of the bootstrap deployment key used for first-boot automation and GitHub deploy access, installed only on bastion hosts."
   type        = string
   sensitive   = true
 }
