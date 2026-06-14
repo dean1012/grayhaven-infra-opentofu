@@ -71,7 +71,8 @@ Ansible backend configuration converge.
 ## Firewall Policy
 
 Cloud firewalls and host firewalld policy are both derived from the
-environment-specific `firewall.yml` file in `grayhaven-vault`.
+environment-specific `firewall.yml` file in
+[`grayhaven-vault`](https://github.com/dean1012/grayhaven-vault).
 
 OpenTofu reads this file from the local vault checkout during plan and apply.
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
@@ -90,7 +91,7 @@ and receives the environment-specific values needed for convergence.
 The cloud-init handoff writes bootstrap variables to
 `/etc/grayhaven/bootstrap/bootstrap-vars.yml` and then runs `ansible-pull`
 against
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible).
+`grayhaven-config-ansible`.
 All hosts receive their hostname, role, environment, configuration repository
 ref, active control bastion selector, certificate selector, TLS mode, and
 first-boot deployment public key.
@@ -101,7 +102,8 @@ are used only to prepare the first runner execution. The bootstrap playbook
 removes the handoff file before starting the initial full convergence run.
 
 Environment workspaces read `config.yml` and `firewall.yml` from the intended
-`grayhaven-vault` Git ref instead of whichever branch is checked out locally.
-Production uses the `main` ref and staging uses the `staging` ref.
+[`grayhaven-vault`](https://github.com/dean1012/grayhaven-vault) Git ref
+instead of whichever branch is checked out locally. Production uses the `main`
+ref and staging uses the `staging` ref.
 
 [Back to top](#runtime-architecture)

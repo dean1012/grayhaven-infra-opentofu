@@ -52,7 +52,8 @@ To provision or update infrastructure:
 2. Make changes to this repository and/or adjust configuration. Make any
    relevant adjustments to
    [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-   and `grayhaven-vault` as well. Refer to
+   and [`grayhaven-vault`](https://github.com/dean1012/grayhaven-vault) as
+   well. Refer to
    [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
    for additional information as needed.
 
@@ -73,9 +74,7 @@ To provision or update infrastructure:
    changing `tls_mode`, manually start the runner from the active control node
    using the
    [manual runner invocation instructions](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#manual-runner-invocation)
-   in the
-   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-   repository.
+   in the `grayhaven-config-ansible` repository.
 
 It is recommended that all changes to this repository be tested in a `staging`
 workspace environment deployment before updating the `prod` workspace
@@ -282,11 +281,16 @@ environment:
    `TF_VAR_grayhaven_vault_password_<workspace>` with the new encryption
    passphrase.
 2. Rotate the configuration Ansible Vault passphrase for the correct workspace
-   environment by following the instructions located in
-   [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/operations.md#vault-password-rotation).
+   environment by following the
+   [vault password rotation documentation](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/operations.md#vault-password-rotation)
+   in the
+   [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+   repository.
 3. Rotate the Ansible Vault passphrase for existing resources by following the
-   instructions located in
-   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#vault-password-rotation).
+   [vault password rotation documentation](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#vault-password-rotation)
+   in the
+   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+   repository.
 
 Do not discard your original Ansible Vault passphrase until you have
 successfully completed the passphrase rotation procedure.
@@ -320,7 +324,8 @@ To rotate the bootstrap deployment SSH keypair:
 
 2. [Generate a new keypair](setup.md#generate-a-bootstrap-deployment-ssh-keypair-for-vault-repository-access).
 3. Add the new deploy public key generated in step 2 as a read-only deploy key
-   on the `grayhaven-vault` repository through GitHub's website.
+   on the [`grayhaven-vault`](https://github.com/dean1012/grayhaven-vault)
+   repository through GitHub's website.
 4. Update `$HOME/.bashrc.d/grayhaven.env`, ensuring that
    `TF_VAR_grayhaven_ansible_deploy_public_key` and
    `TF_VAR_grayhaven_ansible_deploy_private_key` point to the new keypair.
@@ -331,8 +336,11 @@ To rotate the bootstrap deployment SSH keypair:
    ```
 
 6. Rotate the retained vault deployment SSH keypair on existing bastions by
-   following the instructions located in
-   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#deploy-key-rotation).
+   following the
+   [deploy key rotation documentation](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#deploy-key-rotation)
+   in the
+   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+   repository.
 
 Once the new bootstrap deployment SSH keypair is verified as operational, the
 temporary key backup taken in step 1 above and the original keypair can be

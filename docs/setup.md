@@ -119,9 +119,10 @@ access to the private vault repository. Store the private key in a safe
 location under `$HOME` with restrictive ownership and permissions.
 
 OpenTofu passes this keypair to first-boot bootstrap so the active control
-bastion can fetch `grayhaven-vault` and start initial Ansible convergence.
-Full convergence then replaces the temporary first-boot control key with the
-vault-sourced Ansible control key.
+bastion can fetch
+[`grayhaven-vault`](https://github.com/dean1012/grayhaven-vault) and start
+initial Ansible convergence. Full convergence then replaces the temporary
+first-boot control key with the vault-sourced Ansible control key.
 
 ```bash
 mkdir -p "$HOME/<safe-key-directory>"

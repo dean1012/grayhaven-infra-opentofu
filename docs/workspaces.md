@@ -60,8 +60,9 @@ Staging owns environment-specific resources such as:
 - staging load balancers when the compute policy requires them.
 
 Staging reads `config.yml` and `firewall.yml` from the `staging` Git ref in the
-local `grayhaven-vault` checkout. The vault checkout does not need to have
-`staging` checked out, but the ref must be present locally.
+local [`grayhaven-vault`](https://github.com/dean1012/grayhaven-vault)
+checkout. The vault checkout does not need to have `staging` checked out, but
+the ref must be present locally.
 
 The `staging` workspace is expected to be destroyed after validation unless an
 active test requires it to remain online.
@@ -82,8 +83,9 @@ Production owns environment-specific resources such as:
 - production load balancers when the compute policy requires them.
 
 Production reads `config.yml` and `firewall.yml` from the `main` Git ref in the
-local `grayhaven-vault` checkout. The vault checkout does not need to have
-`main` checked out, but the ref must be present locally.
+local [`grayhaven-vault`](https://github.com/dean1012/grayhaven-vault)
+checkout. The vault checkout does not need to have `main` checked out, but the
+ref must be present locally.
 
 Changes to the `prod` workspace should follow Grayhaven Systems LLC change
 control procedures.
