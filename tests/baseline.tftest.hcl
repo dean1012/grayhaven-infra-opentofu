@@ -25,7 +25,7 @@ mock_provider "digitalocean" {
   }
 }
 
-run "baseline_plan" {
+run "baseline_committed_policy_plan" {
   command = plan
 
   plan_options {
@@ -39,6 +39,7 @@ run "baseline_plan" {
   variables {
     state_encryption_passphrase_baseline = "offline-test-baseline-state-passphrase"
     do_token                             = "offline-test-token"
+    grayhaven_test_ssh_keys_policy_path  = "tests/fixtures/ssh-keys-admin.yml"
     grayhaven_ansible_deploy_public_key  = "ssh-ed25519 AAAAoffline offline@example"
     grayhaven_ansible_deploy_private_key = <<-EOT
       -----BEGIN OPENSSH PRIVATE KEY-----
@@ -49,7 +50,32 @@ run "baseline_plan" {
 
   assert {
     condition     = output.workspace == "baseline"
-    error_message = "The baseline test must run in the baseline workspace."
+    error_message = "The committed baseline policy must plan in the baseline workspace."
+  }
+}
+
+run "baseline_fixture_plan" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+  }
+
+  variables {
+    state_encryption_passphrase_baseline = "offline-test-baseline-state-passphrase"
+    do_token                             = "offline-test-token"
+    grayhaven_test_dns_policy_path       = "tests/fixtures/dns-baseline-shared-records.yml"
+    grayhaven_test_ssh_keys_policy_path  = "tests/fixtures/ssh-keys-admin.yml"
+    grayhaven_ansible_deploy_public_key  = "ssh-ed25519 AAAAoffline offline@example"
+    grayhaven_ansible_deploy_private_key = <<-EOT
+      -----BEGIN OPENSSH PRIVATE KEY-----
+      offline-test-private-key
+      -----END OPENSSH PRIVATE KEY-----
+    EOT
   }
 
   assert {
@@ -58,8 +84,8 @@ run "baseline_plan" {
   }
 
   assert {
-    condition     = digitalocean_domain.managed["grayhaven_systems"].name == "grayhavensystems.com" && digitalocean_domain.managed["jerry_smith"].name == "jerry-smith.net"
-    error_message = "The baseline plan must include both managed DNS zones."
+    condition     = digitalocean_domain.managed["example_primary"].name == "example.com" && digitalocean_domain.managed["example_secondary"].name == "example.net"
+    error_message = "The baseline fixture plan must include both managed DNS zones."
   }
 
   assert {
@@ -69,8 +95,8 @@ run "baseline_plan" {
       length(digitalocean_record.baseline_protected_mx) +
       length(digitalocean_record.baseline_protected_txt) +
       length(digitalocean_record.baseline_protected_caa)
-    ) == 20
-    error_message = "The baseline plan must include all protected shared DNS records."
+    ) == 6
+    error_message = "The baseline fixture plan must include all protected shared DNS records."
   }
 
   assert {
@@ -83,8 +109,8 @@ run "baseline_plan" {
   }
 
   assert {
-    condition     = digitalocean_record.baseline_protected_mx["grayhaven_systems.mx_primary"].type == "MX" && digitalocean_record.baseline_protected_mx["jerry_smith.mx_primary"].type == "MX"
-    error_message = "The baseline plan must retain mail DNS records under baseline ownership."
+    condition     = digitalocean_record.baseline_protected_mx["example_primary.mx_primary"].type == "MX" && digitalocean_record.baseline_protected_mx["example_secondary.mx_primary"].type == "MX"
+    error_message = "The baseline fixture plan must retain mail DNS records under baseline ownership."
   }
 
   assert {
@@ -93,8 +119,8 @@ run "baseline_plan" {
   }
 
   assert {
-    condition     = digitalocean_ssh_key.admin["bf2b518624d262ba"].name == "jsmith@grayhavensystems.com"
-    error_message = "The baseline plan must manage the configured admin SSH key."
+    condition     = length(digitalocean_ssh_key.admin) == 1 && contains([for key in keys(digitalocean_ssh_key.admin) : digitalocean_ssh_key.admin[key].name], "admin@example.com")
+    error_message = "The baseline plan must manage the admin SSH key from the test fixture."
   }
 }
 
@@ -112,6 +138,7 @@ run "baseline_unprotected_dns_record_plan" {
   variables {
     state_encryption_passphrase_baseline = "offline-test-baseline-state-passphrase"
     do_token                             = "offline-test-token"
+    grayhaven_test_ssh_keys_policy_path  = "tests/fixtures/ssh-keys-admin.yml"
     grayhaven_ansible_deploy_public_key  = "ssh-ed25519 AAAAoffline offline@example"
     grayhaven_ansible_deploy_private_key = <<-EOT
       -----BEGIN OPENSSH PRIVATE KEY-----
@@ -159,6 +186,7 @@ run "baseline_unsupported_dns_record_type_rejected" {
   variables {
     state_encryption_passphrase_baseline = "offline-test-baseline-state-passphrase"
     do_token                             = "offline-test-token"
+    grayhaven_test_ssh_keys_policy_path  = "tests/fixtures/ssh-keys-admin.yml"
     grayhaven_ansible_deploy_public_key  = "ssh-ed25519 AAAAoffline offline@example"
     grayhaven_ansible_deploy_private_key = <<-EOT
       -----BEGIN OPENSSH PRIVATE KEY-----

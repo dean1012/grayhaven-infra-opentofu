@@ -1,0 +1,39 @@
+---
+ttl: 300
+
+domains:
+  example_primary:
+    name: example.com
+    protected_records:
+      mail_a:
+        type: A
+        name: mail
+        value: 192.0.2.10
+      mail_cname:
+        type: CNAME
+        name: mail-alias
+        value: mail.example.com.
+      mx_primary:
+        type: MX
+        name: "@"
+        value: mail.example.com.
+        priority: 10
+      spf_txt:
+        type: TXT
+        name: "@"
+        value: "v=spf1 include:example.com ~all"
+      caa_letsencrypt:
+        type: CAA
+        name: "@"
+        flags: 0
+        tag: issue
+        value: letsencrypt.org.
+
+  example_secondary:
+    name: example.net
+    protected_records:
+      mx_primary:
+        type: MX
+        name: "@"
+        value: mail.example.net.
+        priority: 10
