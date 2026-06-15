@@ -47,6 +47,11 @@ resource "terraform_data" "environment_policy_guard" {
       condition     = local.vault_password != null && local.vault_password != ""
       error_message = "A vault password is required for staging and prod workspaces."
     }
+
+    precondition {
+      condition     = local.is_environment ? contains(local.firewall_policy_web_tcp_ports, "80") && contains(local.firewall_policy_web_tcp_ports, "443") : true
+      error_message = "The web inbound firewall policy must include tcp port_range \"80\" and tcp port_range \"443\"."
+    }
   }
 }
 

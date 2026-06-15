@@ -85,7 +85,11 @@ locals {
 
   firewall_policy_yaml = (
     local.is_environment
-    ? data.external.vault_config[0].result.firewall_yml
+    ? (
+      var.grayhaven_test_firewall_policy_path != null
+      ? file(var.grayhaven_test_firewall_policy_path)
+      : data.external.vault_config[0].result.firewall_yml
+    )
     : "firewalls: {}\n"
   )
   firewall_policy = yamldecode(local.firewall_policy_yaml)
@@ -243,14 +247,21 @@ locals {
     }
   ) : {}
 
-  firewall_rules = local.is_environment ? {
+  firewall_policy_web_inbound_rules = try(local.firewall_policy.firewalls.web.inbound, [])
+  firewall_policy_web_tcp_ports = toset([
+    for rule in local.firewall_policy_web_inbound_rules : rule.port_range
+    if rule.protocol == "tcp"
+  ])
+
+  firewall_policy_rules = local.is_environment ? {
     for role, policy in local.firewall_policy.firewalls : role => {
       inbound = [
         for rule in try(policy.inbound, []) : {
-          protocol         = rule.protocol
-          port_range       = rule.port_range
-          source_addresses = try(rule.source_addresses, [])
-          source_tags      = [for tag in try(rule.source_tags, []) : local.firewall_tag_names[tag]]
+          protocol                  = rule.protocol
+          port_range                = rule.port_range
+          source_addresses          = try(rule.source_addresses, [])
+          source_load_balancer_uids = []
+          source_tags               = [for tag in try(rule.source_tags, []) : local.firewall_tag_names[tag]]
         }
       ]
       outbound = [
@@ -263,4 +274,35 @@ locals {
       ]
     }
   } : {}
+
+  web_load_balancer_origin_ports = toset(["80"])
+  web_direct_origin_tls_ports    = toset(["443"])
+
+  web_firewall_inbound_rules = local.is_environment ? [
+    for rule in try(local.firewall_policy_rules.web.inbound, []) : merge(rule, (
+      local.use_load_balancer &&
+      rule.protocol == "tcp" &&
+      contains(local.web_load_balancer_origin_ports, rule.port_range)
+      ? {
+        source_addresses          = []
+        source_load_balancer_uids = [digitalocean_loadbalancer.web[0].id]
+        source_tags               = []
+      }
+      : {}
+    ))
+    if !(
+      local.use_load_balancer &&
+      rule.protocol == "tcp" &&
+      contains(local.web_direct_origin_tls_ports, rule.port_range)
+    )
+  ] : []
+
+  firewall_rules = local.is_environment ? merge(
+    local.firewall_policy_rules,
+    {
+      web = merge(try(local.firewall_policy_rules.web, { inbound = [], outbound = [] }), {
+        inbound = local.web_firewall_inbound_rules
+      })
+    }
+  ) : {}
 }

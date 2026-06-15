@@ -128,7 +128,19 @@ mock_provider "external" {
                   port_range: "22"
                   source_tags:
                     - bastion
+                - protocol: tcp
+                  port_range: "80"
+                  source_addresses:
+                    - 0.0.0.0/0
+                - protocol: tcp
+                  port_range: "443"
+                  source_addresses:
+                    - 0.0.0.0/0
               outbound:
+                - protocol: tcp
+                  port_range: "80"
+                  destination_addresses:
+                    - 0.0.0.0/0
                 - protocol: tcp
                   port_range: "443"
                   destination_addresses:
@@ -261,6 +273,30 @@ run "prod_2x2_auto_load_balancer_plan" {
   }
 
   assert {
+    condition = (
+      length([
+        for rule in output.web_firewall_inbound_rules :
+        rule if rule.protocol == "tcp" && rule.port_range == "80"
+      ]) == 1 &&
+      alltrue([
+        for rule in output.web_firewall_inbound_rules :
+        length(rule.source_load_balancer_uids) == 1
+        if rule.protocol == "tcp" && rule.port_range == "80"
+      ])
+    )
+    error_message = "Production load-balancer TLS must restrict web HTTP origin traffic to the load balancer."
+  }
+
+  assert {
+    condition = !contains([
+      for rule in output.web_firewall_inbound_rules :
+      rule.port_range
+      if rule.protocol == "tcp"
+    ], "443")
+    error_message = "Production load-balancer TLS must not expose direct web HTTPS origin traffic."
+  }
+
+  assert {
     condition = jsonencode(output.web_certificate_domain_names) == jsonencode([
       "grayhavensystems.com",
       "www.grayhavensystems.com",
@@ -304,6 +340,50 @@ run "prod_apex_only_dns_plan" {
     condition     = jsonencode(output.web_certificate_domain_names) == jsonencode(["grayhavensystems.com"])
     error_message = "Production apex-only DNS must request only the apex certificate name."
   }
+}
+
+run "prod_firewall_requires_web_http_origin_rule" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path  = "tests/fixtures/compute-1x1-auto.yml"
+    grayhaven_test_firewall_policy_path = "tests/fixtures/firewall-missing-web-http.yml"
+  }
+
+  expect_failures = [
+    terraform_data.environment_policy_guard,
+  ]
+}
+
+run "prod_firewall_requires_web_https_origin_rule" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path  = "tests/fixtures/compute-1x1-auto.yml"
+    grayhaven_test_firewall_policy_path = "tests/fixtures/firewall-missing-web-https.yml"
+  }
+
+  expect_failures = [
+    terraform_data.environment_policy_guard,
+  ]
 }
 
 run "prod_explicit_dns_record_plan" {
