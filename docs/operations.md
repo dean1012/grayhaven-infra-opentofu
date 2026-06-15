@@ -168,6 +168,52 @@ please update the documented
 To rotate the OpenTofu state encryption passphrase for a given workspace
 environment, follow each section in order.
 
+This procedure rotates legacy local state into the managed
+`grayhaven_state_v1` metadata alias configured in `state.tf`. OpenTofu requires
+metadata aliases to be literal values, so any later passphrase rotation after a
+workspace has already been rewritten to `grayhaven_state_v1` must update the
+metadata aliases in `state.tf` as part of a reviewed infrastructure change.
+
+### Prepare Metadata Alias Rollover
+
+For the first rotation into `grayhaven_state_v1`, use the `state.tf` aliases as
+committed:
+
+```hcl
+key_provider "pbkdf2" "local" {
+  passphrase               = local.state_encryption_passphrase
+  encrypted_metadata_alias = "grayhaven_state_v1"
+}
+
+key_provider "pbkdf2" "previous" {
+  passphrase               = local.state_encryption_previous_passphrase
+  encrypted_metadata_alias = "key_provider.pbkdf2.local"
+}
+```
+
+For future rotations after all workspace environments have been rewritten to
+`grayhaven_state_v1`, update `state.tf` before changing passphrase variables.
+Increment the current alias and point the previous-key fallback at the old
+current alias:
+
+```hcl
+key_provider "pbkdf2" "local" {
+  passphrase               = local.state_encryption_passphrase
+  encrypted_metadata_alias = "grayhaven_state_v2"
+}
+
+key_provider "pbkdf2" "previous" {
+  passphrase               = local.state_encryption_previous_passphrase
+  encrypted_metadata_alias = "grayhaven_state_v1"
+}
+```
+
+Commit, review, and merge the `state.tf` alias update before starting the
+passphrase rotation. Do not reuse an alias for both key providers in the same
+configuration. Do not advance the alias generation until every workspace
+environment that needs to remain readable has been rewritten to the current
+alias.
+
 ### Back Up State
 
 Temporarily back up the target workspace environment state and keep the backup
@@ -229,7 +275,9 @@ tofu workspace select <workspace>
 
 Run `tofu plan` to confirm that OpenTofu can read the workspace environment
 state with the previous passphrase, then run `tofu apply` to rotate the state
-encryption passphrase.
+encryption passphrase. Run `tofu apply` even if the plan reports no
+infrastructure changes; OpenTofu rewrites the local state with the current
+encryption method during apply.
 
 ### Remove the Previous Passphrase
 
