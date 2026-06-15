@@ -301,6 +301,11 @@ successfully completed the passphrase rotation procedure.
 
 To rotate the bootstrap deployment SSH keypair:
 
+The bootstrap deployment SSH keypair is shared by all workspace environments.
+When rotating it, update the OpenTofu environment variables once, then rotate
+the retained vault deployment SSH keypair on every deployed environment that has
+existing bastions.
+
 1. Temporarily back up your existing bootstrap deployment SSH keypair and keep
    the backup private.
 
@@ -335,8 +340,8 @@ To rotate the bootstrap deployment SSH keypair:
    source "$HOME/.bashrc.d/grayhaven.env"
    ```
 
-6. Rotate the retained vault deployment SSH keypair on existing bastions by
-   following the
+6. Rotate the retained vault deployment SSH keypair on existing bastions in
+   every deployed workspace environment by following the
    [deploy key rotation documentation](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#deploy-key-rotation)
    in the
    [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
