@@ -2,5 +2,5 @@
 admin_ssh_keys:
   - >-
     ssh-ed25519
-    AAAAC3NzaC1lZDI1NTE5AAAAINjlDXayEv2Jg0zwkRHC9LxiJ8ztunzp3N/1Qy5+Ivha
+    AAAAC3NzaC1lZDI1NTE5AAAAIIhsukNxhOk9vBbffPToO9GQVuBnYKoFrkn3AqhiEzbj
     jsmith@grayhavensystems.com
