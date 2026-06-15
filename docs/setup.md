@@ -79,12 +79,12 @@ scope for this automation.
 | actions       | read                                |
 | certificate   | create, read, delete                |
 | domain        | create, read, update, delete        |
-| droplet       | create, read, update, delete, admin |
+| droplet       | create, read, update, delete        |
 | firewall      | create, read, update, delete        |
 | image         | read                                |
 | load_balancer | create, read, update, delete        |
 | monitoring    | create, read, update, delete        |
-| project       | create, read, update, delete        |
+| project       | create, read, update                |
 | regions       | read                                |
 | sizes         | read                                |
 | snapshot      | read                                |
