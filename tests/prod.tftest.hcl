@@ -237,6 +237,62 @@ run "prod_1x1_auto_host_plan" {
   }
 }
 
+run "prod_grafana_cloud_observability_tags" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path = "tests/fixtures/compute-1x1-auto.yml"
+    grayhaven_test_vault_config_path   = "tests/fixtures/vault-config-grafana-enabled.yml"
+  }
+
+  assert {
+    condition = alltrue([
+      for _, tags in output.bastion_tags :
+      contains(tags, "alerts-in-grafana-cloud") && contains(tags, "logs-to-grafana-cloud")
+    ])
+    error_message = "Production bastion hosts must receive Grafana Cloud observability tags when enabled."
+  }
+
+  assert {
+    condition = alltrue([
+      for _, tags in output.web_tags :
+      contains(tags, "alerts-in-grafana-cloud") && contains(tags, "logs-to-grafana-cloud")
+    ])
+    error_message = "Production web hosts must receive Grafana Cloud observability tags when enabled."
+  }
+}
+
+run "prod_grafana_cloud_logs_require_enabled" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path = "tests/fixtures/compute-1x1-auto.yml"
+    grayhaven_test_vault_config_path   = "tests/fixtures/vault-config-grafana-logs-without-enabled.yml"
+  }
+
+  expect_failures = [
+    terraform_data.environment_policy_guard,
+  ]
+}
+
 run "prod_2x2_auto_load_balancer_plan" {
   command = plan
 

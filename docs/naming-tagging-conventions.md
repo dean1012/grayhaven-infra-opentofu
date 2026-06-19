@@ -61,5 +61,7 @@ Resources may contain these additional tags as appropriate:
 - `scope-<scope>`
 - `control-node`
 - `control-capable`
+- `alerts-in-grafana-cloud`
+- `logs-to-grafana-cloud`
 
 [Back to top](#infrastructure-naming--tagging-conventions)

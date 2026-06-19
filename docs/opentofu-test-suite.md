@@ -57,6 +57,7 @@ from `tests/fixtures/`:
 - `grayhaven_test_dns_policy_path`
 - `grayhaven_test_firewall_policy_path`
 - `grayhaven_test_ssh_keys_policy_path`
+- `grayhaven_test_vault_config_path`
 
 These variables exist only for offline plan tests and disposable validation
 checkouts. Leave them unset for operational deployments.
@@ -99,6 +100,10 @@ workspaces, plus fixed scenario fixtures:
 - load-balancer TLS web firewall behavior;
 - rejection of web firewall policy that omits required HTTP or HTTPS origin
   rules;
+- rejection of Grafana Cloud observability outside production;
+- production-only Grafana Cloud observability tags;
+- validation that Grafana Cloud log shipping requires the main Grafana Cloud
+  observability switch;
 - admin SSH key lookup and droplet attachment.
 
 Environment tests also verify that staging and production do not plan baseline

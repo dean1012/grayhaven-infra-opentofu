@@ -31,6 +31,16 @@ output "web_tls_mode" {
   value       = local.is_environment ? local.effective_tls_mode : null
 }
 
+output "bastion_tags" {
+  description = "DigitalOcean tags assigned to bastion hosts by policy key"
+  value       = local.is_environment ? { for key, host in local.bastion_hosts : key => host.tags } : {}
+}
+
+output "web_tags" {
+  description = "DigitalOcean tags assigned to web hosts by policy key"
+  value       = local.is_environment ? { for key, host in local.web_hosts : key => host.tags } : {}
+}
+
 output "web_certificate_domain_names" {
   description = "Domain names requested for environment web certificates"
   value       = local.web_domain_names
