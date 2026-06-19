@@ -83,7 +83,6 @@ scope for this automation.
 | firewall      | create, read, update, delete        |
 | image         | read                                |
 | load_balancer | create, read, update, delete        |
-| monitoring    | create, read, update, delete        |
 | project       | create, read, update                |
 | regions       | read                                |
 | sizes         | read                                |
