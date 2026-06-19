@@ -114,7 +114,7 @@ Do not commit or print the private key.
 ## Generate a Bootstrap Deployment SSH Keypair for Vault Repository Access
 
 Generate a new deployment SSH keypair for bootstrap automation and read-only
-access to the private vault repository. Store the private key in a safe
+access to `grayhaven-vault`. Store the private key in a safe
 location under `$HOME` with restrictive ownership and permissions.
 
 OpenTofu passes this keypair to first-boot bootstrap so the active control

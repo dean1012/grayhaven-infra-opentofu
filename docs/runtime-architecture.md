@@ -117,7 +117,7 @@ All hosts receive their hostname, role, environment, configuration repository
 ref, active control bastion selector, certificate selector, TLS mode, and
 first-boot deployment public key.
 
-Bastion hosts also receive the private vault repository URL and ref, Ansible
+Bastion hosts also receive the `grayhaven-vault` repository URL and ref, Ansible
 Vault passphrase, deployment SSH keypair, and control-node flag. Those values
 are used only to prepare the first runner execution. The bootstrap playbook
 removes the handoff file before starting the initial full convergence run.
