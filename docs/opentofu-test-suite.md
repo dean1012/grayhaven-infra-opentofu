@@ -42,7 +42,7 @@ test file:
 
 The test files use mocked providers, fake sensitive values, and
 `refresh = false` plans. The external vault-config lookup is mocked for
-environment tests so the suite does not need access to the private vault
+environment tests so the suite does not need access to `grayhaven-vault`
 repository. The mocked vault lookup returns both `config.yml` and
 `firewall.yml` content.
 
