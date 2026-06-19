@@ -78,10 +78,28 @@ locals {
   # from whichever branch is checked out in the local vault working tree.
   vault_config_yaml = (
     local.is_environment
-    ? data.external.vault_config[0].result.config_yml
+    ? (
+      var.grayhaven_test_vault_config_path != null
+      ? file(var.grayhaven_test_vault_config_path)
+      : data.external.vault_config[0].result.config_yml
+    )
     : "{}\n"
   )
   vault_config = yamldecode(local.vault_config_yaml)
+
+  grafana_cloud_config         = try(local.vault_config.observability.grafana_cloud, {})
+  grafana_cloud_enabled        = local.is_environment ? try(tobool(local.grafana_cloud_config.enabled), false) : false
+  grafana_cloud_logs_requested = local.is_environment ? try(tobool(local.grafana_cloud_config.logs_enabled), false) : false
+  grafana_cloud_logs_enabled   = local.grafana_cloud_enabled && local.grafana_cloud_logs_requested
+  grafana_cloud_tags = (
+    local.is_prod && local.grafana_cloud_enabled
+    ? concat(
+      ["alerts-in-grafana-cloud"],
+      local.grafana_cloud_logs_enabled ? ["logs-to-grafana-cloud"] : [],
+    )
+    : []
+  )
+  environment_host_common_tags = concat(local.common_tags, local.grafana_cloud_tags)
 
   firewall_policy_yaml = (
     local.is_environment
@@ -156,7 +174,7 @@ locals {
       is_control_node = key == local.control_bastion_key
       size            = try(instance.size, var.default_droplet_size)
       image           = try(instance.image, var.default_os_image)
-      tags = concat(local.common_tags, [
+      tags = concat(local.environment_host_common_tags, [
         "project-sec",
         "role-bastion",
         "scope-${local.client_name}-sec-${local.environment}-bastion",
@@ -172,7 +190,7 @@ locals {
       hostname = format("%s-core-%s-web-%02d.%s", local.client_name, local.environment, instance.index, local.environment_hostname_suffix)
       size     = try(instance.size, var.default_droplet_size)
       image    = try(instance.image, var.default_os_image)
-      tags = concat(local.common_tags, [
+      tags = concat(local.environment_host_common_tags, [
         "project-core",
         "role-web",
         "scope-${local.client_name}-core-${local.environment}-web",

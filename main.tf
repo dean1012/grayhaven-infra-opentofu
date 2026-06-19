@@ -52,6 +52,16 @@ resource "terraform_data" "environment_policy_guard" {
       condition     = local.is_environment ? contains(local.firewall_policy_web_tcp_ports, "80") && contains(local.firewall_policy_web_tcp_ports, "443") : true
       error_message = "The web inbound firewall policy must include tcp port_range \"80\" and tcp port_range \"443\"."
     }
+
+    precondition {
+      condition     = !local.grafana_cloud_enabled || local.is_prod
+      error_message = "Grafana Cloud observability is supported only in the prod workspace."
+    }
+
+    precondition {
+      condition     = !local.grafana_cloud_logs_requested || local.grafana_cloud_enabled
+      error_message = "Grafana Cloud log shipping requires observability.grafana_cloud.enabled to be true."
+    }
   }
 }
 

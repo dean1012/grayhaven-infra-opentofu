@@ -109,6 +109,13 @@ variable "grayhaven_test_firewall_policy_path" {
   nullable    = true
 }
 
+variable "grayhaven_test_vault_config_path" {
+  description = "Optional vault config.yml file path override for offline plan tests. Leave unset for operational deployments."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
 variable "grayhaven_vault_repo_url" {
   description = "SSH URL for the private grayhaven-vault repository used by bastion hosts."
   type        = string

@@ -11,6 +11,7 @@ Grayhaven Systems LLC infrastructure. Policy file schemas are documented in
 - [Admin SSH Keys](#admin-ssh-keys)
 - [Web TLS Modes](#web-tls-modes)
 - [Firewall Policy](#firewall-policy)
+- [Observability Tags](#observability-tags)
 - [Configuration Handoff](#configuration-handoff)
 
 ## Supported Runtime Roles
@@ -84,6 +85,20 @@ firewall so origin HTTP accepts traffic from the DigitalOcean load balancer and
 direct origin HTTPS is not exposed. The vault firewall policy remains the shared
 cloud and host firewall input, while the runtime TLS mode determines the
 effective web origin firewall shape.
+
+[Back to top](#runtime-architecture)
+
+## Observability Tags
+
+Production droplets can receive Grafana Cloud observability tags from
+`config.yml` in `grayhaven-vault`. When enabled, OpenTofu adds
+`alerts-in-grafana-cloud` to production droplets so
+[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+can configure metrics shipping and managed alert rules. When log shipping is
+also enabled, OpenTofu adds `logs-to-grafana-cloud`.
+
+Grafana Cloud observability is intentionally production-only at this time.
+Staging plans fail clearly if Grafana Cloud is enabled in staging config.
 
 [Back to top](#runtime-architecture)
 
