@@ -8,7 +8,7 @@ infrastructure.
 - [List Available Workspaces](#list-available-workspaces)
 - [Switch Active Workspace](#switch-active-workspace)
 - [Provisioning or Updating Infrastructure](#provisioning-or-updating-infrastructure)
-- [Managing Backups](#managing-backups)
+- [Backup & Restoration Operations](#backup--restoration-operations)
 - [Deploying Staging Workspace with Ansible Testing Branch](#deploying-staging-workspace-with-ansible-testing-branch)
 - [Destroy the Staging Workspace Environment](#destroy-the-staging-workspace-environment)
 - [DigitalOcean API Token Rotation](#digitalocean-api-token-rotation)
@@ -83,23 +83,24 @@ environment.
 
 [Back to top](#operations)
 
-## Managing Backups
+## Backup & Restoration Operations
 
-OpenTofu provisions the servers that run backups, but restic backup
-configuration, backup execution, snapshot inspection, restoration, and remote
-bucket cleanup are managed by
+OpenTofu provisions the servers that run backups, but backup execution,
+snapshot inspection, restoration, and stale remote bucket cleanup are managed by
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible).
 
-Use the `grayhaven-config-ansible` operations guide for:
+Use the `grayhaven-backupctl` operations guide for:
 
-- [triggering a manual backup](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#triggering-a-manual-backup);
-- [verifying local backups](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#verifying-local-backups);
-- [verifying remote backups](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#verifying-remote-backups);
-- [listing local backup contents](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#listing-the-contents-of-a-local-backup);
-- [listing remote backup contents](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#listing-the-contents-of-a-remote-backup);
-- [restoring a local backup](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#restoring-a-local-backup);
-- [restoring a remote backup](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#restoring-a-remote-backup);
-- [cleaning up stale GCS restic buckets](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#gcs-restic-bucket-cleanup).
+- [listing backups](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#listing-backups);
+- [creating backups](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#creating-backups);
+- [listing backup contents](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#listing-backup-contents);
+- [finding backups containing paths](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#finding-backups-containing-paths);
+- [restoring to a target directory](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#restoring-to-a-target-directory);
+- [restoring in place](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#restoring-in-place).
+
+If remote backups are configured, use the
+[`grayhaven-config-ansible` GCS restic bucket cleanup](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#gcs-restic-bucket-cleanup)
+procedure to remove stale remote buckets for decommissioned servers.
 
 [Back to top](#operations)
 
