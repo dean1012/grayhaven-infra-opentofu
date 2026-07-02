@@ -94,7 +94,11 @@ mock_provider "external" {
     defaults = {
       result = {
         config_yml   = <<-EOT
-          certificate_environment: production
+          certificate:
+            environment: production
+            email: admin@example.com
+          network:
+            vpc_cidr: 10.30.0.0/16
           discord_webhook: production
           backup:
             repositories:

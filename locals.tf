@@ -33,11 +33,6 @@ locals {
     local.state_encryption_passphrase,
   )
 
-  environment_vpc_cidrs = {
-    staging = "10.20.0.0/16"
-    prod    = "10.30.0.0/16"
-  }
-
   #############################################################################
   # Shared selectors and committed policy
   #############################################################################
@@ -87,6 +82,15 @@ locals {
   )
   vault_config = yamldecode(local.vault_config_yaml)
 
+  network_config = try(local.vault_config.network, {})
+  environment_vpc_cidr = (
+    local.is_environment
+    ? try(local.network_config.vpc_cidr, null)
+    : null
+  )
+
+  certificate_config = try(local.vault_config.certificate, {})
+
   grafana_cloud_config         = try(local.vault_config.observability.grafana_cloud, {})
   grafana_cloud_enabled        = local.is_environment ? try(tobool(local.grafana_cloud_config.enabled), false) : false
   grafana_cloud_logs_requested = local.is_environment ? try(tobool(local.grafana_cloud_config.logs_enabled), false) : false
@@ -117,12 +121,11 @@ locals {
     ? var.grayhaven_vault_password_prod
     : var.grayhaven_vault_password_staging
   )
-  certificate_env_auto = local.is_prod ? "production" : "staging"
-
-  certificate_environment = local.is_environment ? coalesce(
-    try(local.vault_config.certificate_environment, null),
-    local.certificate_env_auto
-  ) : "staging"
+  certificate_environment = (
+    local.is_environment
+    ? try(local.certificate_config.environment, null)
+    : "staging"
+  )
 
   bastion_instances = local.is_environment ? local.compute_policy.bastions.instances : {}
   web_instances     = local.is_environment ? local.compute_policy.web.instances : {}
