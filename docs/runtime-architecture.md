@@ -114,8 +114,8 @@ The cloud-init handoff writes bootstrap variables to
 against
 `grayhaven-config-ansible`.
 All hosts receive their hostname, role, environment, configuration repository
-ref, active control bastion selector, certificate selector, TLS mode, and
-first-boot deployment public key.
+ref, active control bastion selector, vault-selected certificate environment,
+TLS mode, and first-boot deployment public key.
 
 Bastion hosts also receive the `grayhaven-vault` repository URL and ref, Ansible
 Vault passphrase, deployment SSH keypair, and control-node flag. Those values
@@ -123,8 +123,8 @@ are used only to prepare the first runner execution. The bootstrap playbook
 removes the handoff file before starting the initial full convergence run.
 
 Environment workspaces read `config.yml` and `firewall.yml` from the intended
-`grayhaven-vault` Git ref
-instead of whichever branch is checked out locally. Production uses the `main`
-ref and staging uses the `staging` ref.
+`grayhaven-vault` Git ref instead of whichever branch is checked out locally.
+Production uses the `main` ref and staging uses the `staging` ref. The
+environment VPC CIDR comes from `config.yml` `network.vpc_cidr`.
 
 [Back to top](#runtime-architecture)

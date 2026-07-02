@@ -30,7 +30,12 @@ resource "terraform_data" "environment_policy_guard" {
 
     precondition {
       condition     = local.is_environment ? contains(["staging", "production"], local.certificate_environment) : true
-      error_message = "certificate_environment must be staging or production."
+      error_message = "certificate.environment must be staging or production."
+    }
+
+    precondition {
+      condition     = local.is_environment ? local.environment_vpc_cidr != null && can(cidrnetmask(local.environment_vpc_cidr)) : true
+      error_message = "network.vpc_cidr must be a valid CIDR block for staging and prod workspaces."
     }
 
     precondition {
@@ -100,7 +105,7 @@ module "vpc" {
 
   name        = "${local.client_name}-core-${local.environment}-vpc"
   region      = var.default_region
-  vpc_cidr    = lookup(local.environment_vpc_cidrs, local.environment, var.baseline_vpc_cidr)
+  vpc_cidr    = local.environment_vpc_cidr
   description = "${title(local.environment)} VPC for Grayhaven Systems LLC"
 }
 
