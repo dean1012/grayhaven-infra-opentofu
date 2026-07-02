@@ -71,7 +71,7 @@ variable "baseline_vpc_cidr" {
 }
 
 variable "grayhaven_config_repo_ref" {
-  description = "Git ref used by staging cloud-init and the bastion runner when checking out grayhaven-config-ansible. Production always uses main."
+  description = "Git ref used by environment cloud-init and the bastion runner when checking out grayhaven-config-ansible. Production uses main unless allow_prod_config_repo_ref_override is true."
   type        = string
   default     = "main"
 
@@ -79,6 +79,12 @@ variable "grayhaven_config_repo_ref" {
     condition     = can(regex("^[A-Za-z0-9._/-]+$", var.grayhaven_config_repo_ref)) && !strcontains(var.grayhaven_config_repo_ref, "..")
     error_message = "grayhaven_config_repo_ref must be a simple Git ref containing only letters, numbers, dots, underscores, hyphens, and slashes."
   }
+}
+
+variable "allow_prod_config_repo_ref_override" {
+  description = "Allow the prod workspace to use grayhaven_config_repo_ref instead of main for explicit disposable production-shape testing."
+  type        = bool
+  default     = false
 }
 
 variable "grayhaven_test_compute_policy_path" {

@@ -174,6 +174,51 @@ run "prod_committed_policy_plan" {
   }
 }
 
+run "prod_config_ref_override_requires_explicit_approval" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_config_repo_ref = "issue-test-branch"
+  }
+
+  assert {
+    condition     = local.config_repo_ref == "main"
+    error_message = "Production must ignore grayhaven_config_repo_ref unless the explicit approval variable is true."
+  }
+}
+
+run "prod_config_ref_override_uses_approved_ref" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    allow_prod_config_repo_ref_override = true
+    grayhaven_config_repo_ref           = "issue-test-branch"
+  }
+
+  assert {
+    condition     = local.config_repo_ref == "issue-test-branch"
+    error_message = "Production must use grayhaven_config_repo_ref when the explicit approval variable is true."
+  }
+}
+
 run "prod_1x1_auto_host_plan" {
   command = plan
 

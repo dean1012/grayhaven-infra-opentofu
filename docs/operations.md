@@ -9,7 +9,7 @@ infrastructure.
 - [Switch Active Workspace](#switch-active-workspace)
 - [Provisioning or Updating Infrastructure](#provisioning-or-updating-infrastructure)
 - [Backup & Restoration Operations](#backup--restoration-operations)
-- [Deploying Staging Workspace with Ansible Testing Branch](#deploying-staging-workspace-with-ansible-testing-branch)
+- [Deploying an Environment with an Ansible Testing Branch](#deploying-an-environment-with-an-ansible-testing-branch)
 - [Destroy the Staging Workspace Environment](#destroy-the-staging-workspace-environment)
 - [DigitalOcean API Token Rotation](#digitalocean-api-token-rotation)
 - [OpenTofu State Encryption Passphrase Rotation](#opentofu-state-encryption-passphrase-rotation)
@@ -104,11 +104,11 @@ procedure to remove stale remote buckets for decommissioned servers.
 
 [Back to top](#operations)
 
-## Deploying Staging Workspace with Ansible Testing Branch
+## Deploying an Environment with an Ansible Testing Branch
 
 To run bootstrap and convergence from a
 [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
-branch other than `main`, from the repository root run:
+branch other than `main` in `staging`, from the repository root run:
 
 ```bash
 tofu workspace select staging
@@ -125,6 +125,30 @@ tofu apply -var 'grayhaven_config_repo_ref=<branch-name>'
 The `grayhaven_config_repo_ref` override is intended to be used with a fresh
 `staging` workspace deployment only. If you need to change this value, you must
 first destroy the `staging` workspace environment.
+
+Production uses the `main` branch of `grayhaven-config-ansible` by default.
+For disposable production-shape testing before a config branch is merged, use
+the explicit production override:
+
+```bash
+tofu workspace select prod
+tofu plan \
+  -var 'grayhaven_config_repo_ref=<branch-name>' \
+  -var 'allow_prod_config_repo_ref_override=true'
+```
+
+Review planned changes carefully, then run this command to create the temporary
+production-shape environment:
+
+```bash
+tofu apply \
+  -var 'grayhaven_config_repo_ref=<branch-name>' \
+  -var 'allow_prod_config_repo_ref_override=true'
+```
+
+Do not use the production override for ordinary production operation. Destroy
+the temporary `prod` workspace environment before switching refs or returning
+to the default `main` behavior.
 
 [Back to top](#operations)
 
