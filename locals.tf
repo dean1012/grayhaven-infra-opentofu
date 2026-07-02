@@ -13,7 +13,7 @@ locals {
   is_environment         = contains(local.environment_workspaces, local.environment)
   is_prod                = local.environment == "prod"
 
-  config_repo_ref = local.is_prod ? "main" : var.grayhaven_config_repo_ref
+  config_repo_ref = local.is_prod && !var.allow_prod_config_repo_ref_override ? "main" : var.grayhaven_config_repo_ref
   vault_repo_ref  = local.is_prod ? "main" : "staging"
 
   state_encryption_passphrase = (
