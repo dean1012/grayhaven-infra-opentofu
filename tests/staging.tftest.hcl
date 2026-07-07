@@ -206,6 +206,24 @@ run "staging_1x1_auto_host_plan" {
   }
 
   assert {
+    condition = !contains([
+      for rule in output.web_firewall_inbound_rules :
+      rule.port_range
+      if rule.protocol == "tcp"
+    ], "8791")
+    error_message = "The 1/1 staging policy must not expose web deploy fanout ingress."
+  }
+
+  assert {
+    condition = !contains([
+      for rule in output.web_firewall_outbound_rules :
+      rule.port_range
+      if rule.protocol == "tcp"
+    ], "8791")
+    error_message = "The 1/1 staging policy must not expose web deploy fanout egress."
+  }
+
+  assert {
     condition     = output.control_bastion.key == "bastion-01"
     error_message = "The 1/1 staging policy must keep bastion-01 as the control node."
   }
@@ -299,6 +317,26 @@ run "staging_2x2_auto_load_balancer_plan" {
       if rule.protocol == "tcp"
     ], "443")
     error_message = "Staging load-balancer TLS must not expose direct web HTTPS origin traffic."
+  }
+
+  assert {
+    condition = length([
+      for rule in output.web_firewall_inbound_rules :
+      rule if rule.protocol == "tcp" &&
+      rule.port_range == "8791" &&
+      jsonencode(rule.source_tags) == jsonencode(["scope-grayhaven-core-staging-web"])
+    ]) == 1
+    error_message = "Staging multi-web load-balancer plans must allow private deploy fanout ingress from web hosts."
+  }
+
+  assert {
+    condition = length([
+      for rule in output.web_firewall_outbound_rules :
+      rule if rule.protocol == "tcp" &&
+      rule.port_range == "8791" &&
+      jsonencode(rule.destination_tags) == jsonencode(["scope-grayhaven-core-staging-web"])
+    ]) == 1
+    error_message = "Staging multi-web load-balancer plans must allow private deploy fanout egress to web hosts."
   }
 
   assert {

@@ -98,6 +98,8 @@ workspaces, plus fixed scenario fixtures:
 - validation that web aliases require an apex record;
 - load-balancer certificate domain name ordering;
 - load-balancer TLS web firewall behavior;
+- conditional web-to-web deploy fanout firewall behavior for multi-web
+  load-balancer plans;
 - rejection of web firewall policy that omits required HTTP or HTTPS origin
   rules;
 - rejection of Grafana Cloud observability outside production;
