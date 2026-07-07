@@ -216,7 +216,7 @@ run "staging_1x1_auto_host_plan" {
 
   assert {
     condition = !contains([
-      for rule in output.web_firewall_outbound_rules :
+      for rule in local.web_firewall_outbound_rules :
       rule.port_range
       if rule.protocol == "tcp"
     ], "8791")
@@ -331,7 +331,7 @@ run "staging_2x2_auto_load_balancer_plan" {
 
   assert {
     condition = length([
-      for rule in output.web_firewall_outbound_rules :
+      for rule in local.web_firewall_outbound_rules :
       rule if rule.protocol == "tcp" &&
       rule.port_range == "8791" &&
       jsonencode(rule.destination_tags) == jsonencode(["scope-grayhaven-core-staging-web"])
