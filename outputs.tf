@@ -51,11 +51,6 @@ output "web_firewall_inbound_rules" {
   value       = local.is_environment ? try(module.web_firewall[0].inbound_rules, []) : []
 }
 
-output "web_firewall_outbound_rules" {
-  description = "Effective outbound firewall rules for web hosts"
-  value       = local.is_environment ? local.web_firewall_outbound_rules : []
-}
-
 output "workspace" {
   description = "Active OpenTofu workspace"
   value       = terraform.workspace
