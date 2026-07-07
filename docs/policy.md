@@ -168,6 +168,11 @@ When load-balancer TLS is active, OpenTofu derives the effective web cloud
 firewall from `firewall.yml` by allowing web origin HTTP from the DigitalOcean
 load balancer and omitting direct web origin HTTPS.
 
+When load-balancer TLS is active with two or more web hosts, OpenTofu also adds
+web-to-web TCP `8791` cloud firewall rules scoped to the environment web tag.
+This private path is reserved for website deployment fanout between web hosts.
+Single-web-host environments do not receive these fanout rules.
+
 The web inbound firewall policy must include TCP `80` and TCP `443` rules.
 OpenTofu validates that shape before applying the TLS-mode-specific effective
 firewall.
@@ -253,6 +258,7 @@ Supported TLS modes:
 Host TLS points web DNS at the primary web host. Load-balancer TLS creates a
 DigitalOcean load balancer, points web DNS at the load balancer, and configures
 web hosts as HTTP backends for load-balanced traffic.
+Environments with two or more web hosts must resolve to load-balancer TLS.
 
 Example shape:
 

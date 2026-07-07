@@ -298,8 +298,10 @@ locals {
 
   web_load_balancer_origin_ports = toset(["80"])
   web_direct_origin_tls_ports    = toset(["443"])
+  web_deploy_fanout_port         = "8791"
+  web_deploy_fanout_enabled      = local.use_load_balancer && length(local.web_instances) > 1
 
-  web_firewall_inbound_rules = local.is_environment ? [
+  web_firewall_inbound_base_rules = local.is_environment ? [
     for rule in try(local.firewall_policy_rules.web.inbound, []) : merge(rule, (
       local.use_load_balancer &&
       rule.protocol == "tcp" &&
@@ -318,11 +320,37 @@ locals {
     )
   ] : []
 
+  web_deploy_fanout_inbound_rule = {
+    protocol                  = "tcp"
+    port_range                = local.web_deploy_fanout_port
+    source_addresses          = []
+    source_load_balancer_uids = []
+    source_tags               = local.is_environment ? [digitalocean_tag.web_scope[0].name] : []
+  }
+
+  web_firewall_inbound_rules = concat(
+    local.web_firewall_inbound_base_rules,
+    local.web_deploy_fanout_enabled ? [local.web_deploy_fanout_inbound_rule] : [],
+  )
+
+  web_deploy_fanout_outbound_rule = {
+    protocol              = "tcp"
+    port_range            = local.web_deploy_fanout_port
+    destination_addresses = []
+    destination_tags      = local.is_environment ? [digitalocean_tag.web_scope[0].name] : []
+  }
+
+  web_firewall_outbound_rules = concat(
+    try(local.firewall_policy_rules.web.outbound, []),
+    local.web_deploy_fanout_enabled ? [local.web_deploy_fanout_outbound_rule] : [],
+  )
+
   firewall_rules = local.is_environment ? merge(
     local.firewall_policy_rules,
     {
       web = merge(try(local.firewall_policy_rules.web, { inbound = [], outbound = [] }), {
-        inbound = local.web_firewall_inbound_rules
+        inbound  = local.web_firewall_inbound_rules
+        outbound = local.web_firewall_outbound_rules
       })
     }
   ) : {}

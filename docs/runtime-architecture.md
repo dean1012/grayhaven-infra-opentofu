@@ -86,6 +86,11 @@ direct origin HTTPS is not exposed. The vault firewall policy remains the shared
 cloud and host firewall input, while the runtime TLS mode determines the
 effective web origin firewall shape.
 
+For load-balanced environments with two or more web hosts, OpenTofu adds a
+web-tag-scoped TCP `8791` path between web hosts for private website deployment
+fanout. The path is omitted when an environment has only one web host, including
+single-web-host environments that explicitly use load-balancer TLS.
+
 [Back to top](#runtime-architecture)
 
 ## Observability Tags

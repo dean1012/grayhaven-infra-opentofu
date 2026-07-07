@@ -29,6 +29,11 @@ resource "terraform_data" "environment_policy_guard" {
     }
 
     precondition {
+      condition     = local.is_environment ? length(local.web_instances) <= 1 || local.use_load_balancer : true
+      error_message = "Environments with two or more web hosts must use load-balancer TLS."
+    }
+
+    precondition {
       condition     = local.is_environment ? contains(["staging", "production"], local.certificate_environment) : true
       error_message = "certificate.environment must be staging or production."
     }
