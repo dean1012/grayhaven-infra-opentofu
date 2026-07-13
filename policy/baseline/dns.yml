@@ -35,6 +35,10 @@ domains:
         type: TXT
         name: "@"
         value: protonmail-verification=37192d42ca1137baa2a213f8969d2722de1bedb5
+      google_site_verification_txt:
+        type: TXT
+        name: "@"
+        value: google-site-verification=5ei8aROsLNv0h1Lo00WW1BtePAd-536xwdsvssF5U3g
       dmarc_txt:
         type: TXT
         name: _dmarc
