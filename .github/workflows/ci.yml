@@ -29,7 +29,7 @@ jobs:
         uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4  # v2.0.2
 
       - name: Run actionlint
-        uses: devops-actions/actionlint@af0b0b80a693706a4bd87890fa15196c15ad0b80  # v0.1.12
+        uses: devops-actions/actionlint@2e68a47f3cd2b36da50cd4ce259eb3db11d72c80  # v0.1.12
 
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@00b27aa7cb85167568cb48a3838b75f4265f2bca  # master
