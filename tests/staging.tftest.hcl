@@ -172,6 +172,11 @@ run "staging_committed_policy_plan" {
     condition     = output.workspace == "staging"
     error_message = "The committed staging policy must plan in the staging workspace."
   }
+
+  assert {
+    condition     = length(digitalocean_record.environment_cname) == 1 && digitalocean_record.environment_cname["grayhaven_systems.timetracker_cname"].type == "CNAME" && digitalocean_record.environment_cname["grayhaven_systems.timetracker_cname"].name == "timetracker.staging" && digitalocean_record.environment_cname["grayhaven_systems.timetracker_cname"].value == "staging.grayhavensystems.com."
+    error_message = "The committed staging policy must include the timetracker.staging CNAME."
+  }
 }
 
 run "staging_1x1_auto_host_plan" {
