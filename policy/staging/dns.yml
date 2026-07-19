@@ -7,6 +7,11 @@ domains:
     environment:
       apex: true
       web_aliases: true
+    records:
+      timetracker_cname:
+        type: CNAME
+        name: timetracker.staging
+        value: staging.grayhavensystems.com.
 
   jerry_smith:
     name: jerry-smith.net

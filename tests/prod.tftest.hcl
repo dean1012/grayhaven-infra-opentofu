@@ -172,6 +172,11 @@ run "prod_committed_policy_plan" {
     condition     = output.workspace == "prod"
     error_message = "The committed production policy must plan in the prod workspace."
   }
+
+  assert {
+    condition     = length(digitalocean_record.environment_cname) == 1 && digitalocean_record.environment_cname["grayhaven_systems.timetracker_cname"].type == "CNAME" && digitalocean_record.environment_cname["grayhaven_systems.timetracker_cname"].name == "timetracker" && digitalocean_record.environment_cname["grayhaven_systems.timetracker_cname"].value == "grayhavensystems.com."
+    error_message = "The committed production policy must include the timetracker CNAME."
+  }
 }
 
 run "prod_config_ref_override_requires_explicit_approval" {
