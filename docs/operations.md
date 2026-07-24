@@ -126,6 +126,11 @@ The `grayhaven_config_repo_ref` override is intended to be used with a fresh
 `staging` workspace deployment only. If you need to change this value, you must
 first destroy the `staging` workspace environment.
 
+Set `grayhaven_config_repo_ref` to a mutable branch name. Do not use a commit
+SHA or tag. The bastion's Ansible poller watches the same deployed branch and
+starts convergence when that branch advances; immutable refs cannot provide
+that behavior.
+
 Production uses the `main` branch of `grayhaven-config-ansible` by default.
 For disposable production-shape testing before a config branch is merged, use
 the explicit production override:
