@@ -37,8 +37,10 @@ source "$HOME/.bashrc"
 2. Create a feature branch for the issue.
 3. Sign all commits and reference the issue number.
 4. Validate changes locally.
-5. Create a pull request to the `main` branch.
-6. Reference or close the issue number in the pull request as appropriate for
+5. Push the feature branch and open a ready-for-review pull request targeting
+   the `main` branch. Direct pushes to `main` are forbidden.
+6. Resolve every review conversation before the pull request is merged.
+7. Reference or close the issue number in the pull request as appropriate for
    code review and merge.
 
 [Back to top](#contributing)
@@ -119,8 +121,14 @@ Pull requests must meet all of these requirements to be merged:
 - Reference or close a GitHub issue as appropriate.
 - Contain signed commits.
 - Have no open review conversations.
-- Pass all CI checks.
+- Be ready for review; do not leave the pull request as a draft.
+- Pass exactly these required checks: `Offline Plan Tests` and `Validate`.
 - Document all changes appropriately.
+
+The `main` branch forbids direct pushes. Do not bypass required checks or other
+branch protections. Merge pull requests with squash only; merge commits and
+rebase merges are not allowed. Automatic feature-branch deletion is disabled,
+so manually delete the feature branch after the pull request is merged.
 
 [Back to top](#contributing)
 
