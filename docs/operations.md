@@ -202,11 +202,17 @@ To rotate the OpenTofu DigitalOcean API token:
    fi
    ```
 
-5. Deploy the `staging` workspace environment to test your new DigitalOcean
-   API token.
-6. Destroy the `staging` workspace environment once your new DigitalOcean API
-   token has been validated.
-7. Delete your old DigitalOcean API token.
+5. Select the `baseline` workspace and run a plan to verify the new
+   DigitalOcean API token:
+
+   ```bash
+   tofu workspace select baseline
+   tofu plan
+   ```
+
+   Confirm the plan completes successfully.
+
+6. Delete your old DigitalOcean API token.
 
 If you have added or removed a permission from your DigitalOcean API token,
 please update the documented
