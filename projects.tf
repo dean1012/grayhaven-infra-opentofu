@@ -20,6 +20,7 @@ resource "digitalocean_project_resources" "environment" {
   resources = concat(
     [for droplet in module.bastion : droplet.urn],
     [for droplet in module.web : droplet.urn],
+    [for droplet in module.mcp : droplet.urn],
     local.use_load_balancer ? [digitalocean_loadbalancer.web[0].urn] : []
   )
 }

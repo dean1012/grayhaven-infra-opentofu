@@ -9,3 +9,8 @@ resource "digitalocean_tag" "web_scope" {
 
   name = "scope-${local.client_name}-core-${local.environment}-web"
 }
+
+resource "digitalocean_tag" "mcp_scope" {
+  count = length(local.mcp_instances) > 0 ? 1 : 0
+  name  = "scope-${local.client_name}-core-${local.environment}-mcp"
+}

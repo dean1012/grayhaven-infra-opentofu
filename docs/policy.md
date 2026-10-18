@@ -277,3 +277,13 @@ web:
 ```
 
 [Back to top](#policy-files)
+
+## MCP hosts
+
+The optional `mcp.instances` compute-policy map permits at most one host per
+environment. Staging defines one `s-1vcpu-1gb` host; production defines none.
+MCP hosts use the environment VPC, `project-core` and `role-mcp` tags, a dedicated
+scope firewall, host DNS and the `mcp[.staging].grayhavensystems.com` endpoint.
+The Vault `firewalls.mcp` policy must provide HTTPS and restrict SSH ingress to
+bastions. The bootstrap handoff provides the host role and existing public
+Ansible key; application credentials and paths are configured by convergence.

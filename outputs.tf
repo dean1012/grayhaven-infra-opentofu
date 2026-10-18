@@ -65,3 +65,20 @@ output "admin_ssh_key_fingerprints" {
   description = "Admin SSH key fingerprints attached to environment droplets"
   value       = local.admin_ssh_key_fingerprints
 }
+
+output "mcp_public_ipv4_addresses" {
+  description = "Public IPv4 addresses of MCP hosts by policy key"
+  value       = { for key, droplet in module.mcp : key => droplet.public_ipv4_address }
+}
+output "mcp_private_ipv4_addresses" {
+  description = "Private IPv4 addresses of MCP hosts by policy key"
+  value       = { for key, droplet in module.mcp : key => droplet.private_ipv4_address }
+}
+output "mcp_tags" {
+  description = "DigitalOcean tags assigned to MCP hosts by policy key"
+  value       = { for key, host in local.mcp_hosts : key => host.tags }
+}
+output "mcp_firewall_inbound_rules" {
+  description = "Effective inbound firewall rules for MCP hosts"
+  value       = try(module.mcp_firewall[0].inbound_rules, [])
+}
