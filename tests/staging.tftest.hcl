@@ -150,6 +150,25 @@ mock_provider "external" {
                   port_range: "443"
                   destination_addresses:
                     - 0.0.0.0/0
+            mcp:
+              inbound:
+                - protocol: tcp
+                  port_range: "22"
+                  source_tags:
+                    - bastion
+                - protocol: tcp
+                  port_range: "443"
+                  source_addresses:
+                    - 0.0.0.0/0
+              outbound:
+                - protocol: tcp
+                  port_range: "22"
+                  destination_tags:
+                    - bastion
+                - protocol: tcp
+                  port_range: "443"
+                  destination_addresses:
+                    - 0.0.0.0/0
         EOT
       }
     }
@@ -171,6 +190,23 @@ run "staging_committed_policy_plan" {
   assert {
     condition     = output.workspace == "staging"
     error_message = "The committed staging policy must plan in the staging workspace."
+  }
+
+  assert {
+    condition     = length(module.mcp) == 1 && local.mcp_hosts["mcp-01"].size == "s-1vcpu-1gb" && local.mcp_hosts["mcp-01"].hostname == "grayhaven-core-staging-mcp-01.staging.grayhavensystems.com"
+    error_message = "The committed staging policy must include exactly one 1 GiB MCP host."
+  }
+  assert {
+    condition     = contains(local.mcp_hosts["mcp-01"].tags, "role-mcp") && contains(local.mcp_hosts["mcp-01"].tags, "scope-grayhaven-core-staging-mcp") && digitalocean_record.grayhaven_mcp_a[0].name == "mcp.staging"
+    error_message = "MCP must use its own role/scope tags and staging endpoint."
+  }
+  assert {
+    condition     = yamldecode(yamldecode(local.mcp_user_data["mcp-01"]).write_files[0].content).grayhaven_role == "mcp" && !strcontains(local.mcp_user_data["mcp-01"], "offline-test-private-key") && !strcontains(local.mcp_user_data["mcp-01"], "offline-test-staging-vault-password")
+    error_message = "MCP bootstrap must hand off its role without private deploy keys or Vault passwords."
+  }
+  assert {
+    condition     = length(output.mcp_firewall_inbound_rules) == 2 && alltrue([for rule in output.mcp_firewall_inbound_rules : rule.port_range != "80" && (rule.port_range != "22" || (length(rule.source_addresses) == 0 && jsonencode(rule.source_tags) == jsonencode(["scope-grayhaven-sec-staging-bastion"])))])
+    error_message = "MCP ingress must allow HTTPS and bastion-only SSH without HTTP."
   }
 
   assert {
@@ -579,5 +615,34 @@ run "staging_3x3_explicit_load_balancer_plan" {
   assert {
     condition     = length(digitalocean_loadbalancer.web) == 1 && length(digitalocean_certificate.web_lb_staging) == 1
     error_message = "A 3/3 staging load-balancer plan must include a load balancer and staging certificate."
+  }
+}
+
+run "mcp_scaling_is_rejected" {
+  command = plan
+  plan_options { refresh = false }
+  variables { grayhaven_test_compute_policy_path = "tests/fixtures/compute-two-mcp.yml" }
+  expect_failures = [terraform_data.environment_policy_guard]
+}
+run "mcp_requires_vault_firewall" {
+  command = plan
+  plan_options { refresh = false }
+  variables { grayhaven_test_firewall_policy_path = "tests/fixtures/firewall-without-mcp.yml" }
+  expect_failures = [terraform_data.environment_policy_guard]
+}
+run "mcp_rejects_public_ssh" {
+  command = plan
+  plan_options { refresh = false }
+  variables { grayhaven_test_firewall_policy_path = "tests/fixtures/firewall-public-mcp-ssh.yml" }
+  expect_failures = [terraform_data.environment_policy_guard]
+}
+
+run "mcp_keeps_host_tls_when_web_scales" {
+  command = plan
+  plan_options { refresh = false }
+  variables { grayhaven_test_compute_policy_path = "tests/fixtures/compute-mcp-with-web-lb.yml" }
+  assert {
+    condition     = output.web_tls_mode == "load_balancer" && local.mcp_bootstrap_vars["mcp-01"].grayhaven_tls_mode == "host" && contains(local.mcp_hosts["mcp-01"].tags, "tls-mode-host") && !contains(local.mcp_hosts["mcp-01"].tags, "tls-mode-load-balancer")
+    error_message = "MCP must terminate its own TLS independently of web load-balancer scaling."
   }
 }

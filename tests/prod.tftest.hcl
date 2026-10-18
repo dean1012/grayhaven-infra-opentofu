@@ -169,6 +169,11 @@ run "prod_committed_policy_plan" {
   }
 
   assert {
+    condition     = length(module.mcp) == 0 && length(digitalocean_tag.mcp_scope) == 0 && length(digitalocean_record.grayhaven_mcp_a) == 0
+    error_message = "MCP must remain absent from the committed production policy."
+  }
+
+  assert {
     condition     = output.workspace == "prod"
     error_message = "The committed production policy must plan in the prod workspace."
   }

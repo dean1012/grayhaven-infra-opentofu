@@ -49,20 +49,7 @@ locals {
 
   compute_policy_path = coalesce(var.grayhaven_test_compute_policy_path, "${local.policy_directory}/compute.yml")
 
-  compute_policy = (
-    local.is_environment
-    ? yamldecode(file(local.compute_policy_path))
-    : {
-      bastions = {
-        control_node = ""
-        instances    = {}
-      }
-      web = {
-        tls_mode  = "auto"
-        instances = {}
-      }
-    }
-  )
+  compute_policy = local.is_environment ? yamldecode(file(local.compute_policy_path)) : null
 
   vault_checkout_path = coalesce(
     var.grayhaven_vault_checkout_path,
@@ -128,6 +115,7 @@ locals {
   )
 
   bastion_instances = local.is_environment ? local.compute_policy.bastions.instances : {}
+  mcp_instances     = local.is_environment ? try(local.compute_policy.mcp.instances, {}) : {}
   web_instances     = local.is_environment ? local.compute_policy.web.instances : {}
   web_tls_setting   = local.is_environment ? try(local.compute_policy.web.tls_mode, "auto") : "auto"
 
@@ -165,10 +153,10 @@ locals {
     )
   ]) : []
 
-  firewall_tag_names = local.is_environment ? {
+  firewall_tag_names = local.is_environment ? merge({
     bastion = digitalocean_tag.bastion_scope[0].name
     web     = digitalocean_tag.web_scope[0].name
-  } : {}
+  }, length(local.mcp_instances) > 0 ? { mcp = digitalocean_tag.mcp_scope[0].name } : {}) : {}
 
   bastion_hosts = {
     for key, instance in local.bastion_instances : key => {
@@ -198,6 +186,22 @@ locals {
         "role-web",
         "scope-${local.client_name}-core-${local.environment}-web",
         "web-${format("%02d", instance.index)}"
+      ])
+    }
+  }
+
+  mcp_hosts = {
+    for key, instance in local.mcp_instances : key => {
+      index    = instance.index
+      hostname = format("%s-core-%s-mcp-%02d.%s", local.client_name, local.environment, instance.index, local.environment_hostname_suffix)
+      size     = try(instance.size, var.default_droplet_size)
+      image    = try(instance.image, var.default_os_image)
+      tags = concat([for tag in local.environment_host_common_tags : tag if !startswith(tag, "tls-mode-")], [
+        "tls-mode-host",
+        "project-core",
+        "role-mcp",
+        "scope-${local.client_name}-core-${local.environment}-mcp",
+        "mcp-${format("%02d", instance.index)}"
       ])
     }
   }
@@ -233,6 +237,19 @@ locals {
     }
   }
 
+  mcp_bootstrap_vars = {
+    for key, host in local.mcp_hosts : key => {
+      grayhaven_hostname                  = host.hostname
+      grayhaven_environment               = local.environment
+      grayhaven_role                      = "mcp"
+      grayhaven_config_repo_ref           = local.config_repo_ref
+      grayhaven_control_bastion_key       = local.control_bastion_key
+      grayhaven_ansible_deploy_public_key = var.grayhaven_ansible_deploy_public_key
+      grayhaven_certificate_environment   = local.certificate_environment
+      grayhaven_tls_mode                  = "host"
+    }
+  }
+
   bastion_user_data = {
     for key, bootstrap_vars in local.bastion_bootstrap_vars : key => templatefile("${path.module}/templates/cloud-init/bootstrap-vars.yml.tftpl", {
       bootstrap_vars_yaml = yamlencode(bootstrap_vars)
@@ -242,6 +259,13 @@ locals {
 
   web_user_data = {
     for key, bootstrap_vars in local.web_bootstrap_vars : key => templatefile("${path.module}/templates/cloud-init/bootstrap-vars.yml.tftpl", {
+      bootstrap_vars_yaml = yamlencode(bootstrap_vars)
+      config_repo_ref     = local.config_repo_ref
+    })
+  }
+
+  mcp_user_data = {
+    for key, bootstrap_vars in local.mcp_bootstrap_vars : key => templatefile("${path.module}/templates/cloud-init/bootstrap-vars.yml.tftpl", {
       bootstrap_vars_yaml = yamlencode(bootstrap_vars)
       config_repo_ref     = local.config_repo_ref
     })
@@ -264,6 +288,13 @@ locals {
         domain = local.client_domain
         name   = trimsuffix(module.web[key].name, ".${local.client_domain}")
         value  = module.web[key].public_ipv4_address
+      }
+    },
+    {
+      for key, host in local.mcp_hosts : "mcp-${key}" => {
+        domain = local.client_domain
+        name   = trimsuffix(module.mcp[key].name, ".${local.client_domain}")
+        value  = module.mcp[key].public_ipv4_address
       }
     }
   ) : {}

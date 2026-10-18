@@ -473,3 +473,13 @@ resource "digitalocean_record" "environment_txt" {
 
   depends_on = [digitalocean_record.environment_cname]
 }
+
+resource "digitalocean_record" "grayhaven_mcp_a" {
+  count      = length(local.mcp_instances) > 0 ? 1 : 0
+  domain     = local.client_domain
+  type       = "A"
+  name       = local.is_prod ? "mcp" : "mcp.staging"
+  value      = try(module.mcp[sort(keys(local.mcp_hosts))[0]].public_ipv4_address, "")
+  ttl        = local.dns_ttl
+  depends_on = [data.digitalocean_domain.managed]
+}

@@ -49,6 +49,22 @@ resource "terraform_data" "environment_policy_guard" {
     }
 
     precondition {
+      condition     = length(local.mcp_instances) <= 1
+      error_message = "The compute policy permits at most one MCP server per environment."
+    }
+
+    precondition {
+      condition = length(local.mcp_instances) == 0 || (
+        contains(keys(try(local.firewall_policy.firewalls, {})), "mcp") &&
+        alltrue([for rule in try(local.firewall_policy.firewalls.mcp.inbound, []) : rule.protocol == "tcp" && contains(["22", "443"], rule.port_range)]) &&
+        anytrue([for rule in try(local.firewall_policy.firewalls.mcp.inbound, []) : rule.protocol == "tcp" && rule.port_range == "443"]) &&
+        anytrue([for rule in try(local.firewall_policy.firewalls.mcp.inbound, []) : rule.protocol == "tcp" && rule.port_range == "22" && jsonencode(try(rule.source_tags, [])) == jsonencode(["bastion"]) && length(try(rule.source_addresses, [])) == 0]) &&
+        alltrue([for rule in try(local.firewall_policy.firewalls.mcp.inbound, []) : !(rule.protocol == "tcp" && rule.port_range == "22") || (jsonencode(try(rule.source_tags, [])) == jsonencode(["bastion"]) && length(try(rule.source_addresses, [])) == 0)])
+      )
+      error_message = "MCP requires a Vault firewall policy with HTTPS and SSH restricted to the bastion tag."
+    }
+
+    precondition {
       condition     = local.vault_checkout_path != null && trimspace(local.vault_checkout_path) != ""
       error_message = "grayhaven_vault_checkout_path is required for staging and prod workspaces."
     }
@@ -142,6 +158,20 @@ module "web" {
   user_data            = local.web_user_data[each.key]
 }
 
+module "mcp" {
+  for_each = local.mcp_hosts
+  source   = "./modules/droplet"
+
+  name                 = each.value.hostname
+  region               = var.default_region
+  vpc_id               = module.vpc[0].id
+  ssh_key_fingerprints = local.admin_ssh_key_fingerprints
+  size                 = each.value.size
+  image                = each.value.image
+  tags                 = each.value.tags
+  user_data            = local.mcp_user_data[each.key]
+}
+
 module "bastion_firewall" {
   count  = local.is_environment ? 1 : 0
   source = "./modules/firewall"
@@ -162,4 +192,13 @@ module "web_firewall" {
 
   inbound_rules  = try(local.firewall_rules.web.inbound, [])
   outbound_rules = try(local.firewall_rules.web.outbound, [])
+}
+
+module "mcp_firewall" {
+  count          = length(local.mcp_instances) > 0 ? 1 : 0
+  source         = "./modules/firewall"
+  name           = "${local.client_name}-core-${local.environment}-mcp-fw"
+  target_tags    = [digitalocean_tag.mcp_scope[0].name]
+  inbound_rules  = try(local.firewall_rules.mcp.inbound, [])
+  outbound_rules = try(local.firewall_rules.mcp.outbound, [])
 }
