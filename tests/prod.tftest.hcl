@@ -1,4 +1,5 @@
 variables {
+  grayhaven_test_compute_policy_path   = "tests/fixtures/compute-1x1-auto.yml"
   state_encryption_passphrase_prod     = "offline-test-prod-state-passphrase"
   do_token                             = "offline-test-token"
   grayhaven_vault_checkout_path        = "/tmp/grayhaven-vault-offline-test"
@@ -150,13 +151,32 @@ mock_provider "external" {
                   port_range: "443"
                   destination_addresses:
                     - 0.0.0.0/0
+            mcp:
+              inbound:
+                - protocol: tcp
+                  port_range: "22"
+                  source_tags:
+                    - bastion
+                - protocol: tcp
+                  port_range: "443"
+                  source_addresses:
+                    - 0.0.0.0/0
+              outbound:
+                - protocol: tcp
+                  port_range: "22"
+                  destination_tags:
+                    - bastion
+                - protocol: tcp
+                  port_range: "443"
+                  destination_addresses:
+                    - 0.0.0.0/0
         EOT
       }
     }
   }
 }
 
-run "prod_committed_policy_plan" {
+run "prod_without_mcp_policy_plan" {
   command = plan
 
   plan_options {
@@ -170,7 +190,7 @@ run "prod_committed_policy_plan" {
 
   assert {
     condition     = length(module.mcp) == 0 && length(digitalocean_tag.mcp_scope) == 0 && length(digitalocean_record.grayhaven_mcp_a) == 0
-    error_message = "MCP must remain absent from the committed production policy."
+    error_message = "An input policy without MCP must not create MCP resources."
   }
 
   assert {
@@ -641,5 +661,32 @@ run "prod_3x3_explicit_load_balancer_plan" {
   assert {
     condition     = length(digitalocean_loadbalancer.web) == 1 && length(digitalocean_certificate.web_lb_production) == 1
     error_message = "A 3/3 production load-balancer plan must include a load balancer and production certificate."
+  }
+}
+
+run "prod_with_mcp_policy_plan" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path = "tests/fixtures/compute-1x1-mcp.yml"
+  }
+
+  assert {
+    condition     = length(module.mcp) == 1 && length(digitalocean_tag.mcp_scope) == 1 && length(digitalocean_record.grayhaven_mcp_a) == 1
+    error_message = "An input policy with one MCP host must create its host, scope tag, and endpoint."
+  }
+
+  assert {
+    condition     = length(module.bastion) == 1 && length(module.web) == 1
+    error_message = "Adding MCP must preserve the requested bastion and web instance counts."
   }
 }
