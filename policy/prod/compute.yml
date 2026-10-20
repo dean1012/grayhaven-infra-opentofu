@@ -10,3 +10,9 @@ web:
   instances:
     web-01:
       index: 1
+
+mcp:
+  instances:
+    mcp-01:
+      index: 1
+      size: s-1vcpu-1gb-amd
