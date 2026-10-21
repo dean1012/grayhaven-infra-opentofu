@@ -44,8 +44,8 @@ resource "terraform_data" "environment_policy_guard" {
     }
 
     precondition {
-      condition     = length(local.web_instances) > 0 && length(local.bastion_instances) > 0
-      error_message = "The compute policy must define at least one bastion and one web host."
+      condition     = length(local.bastion_instances) > 0
+      error_message = "The compute policy must define at least one bastion host."
     }
 
     precondition {
@@ -75,7 +75,7 @@ resource "terraform_data" "environment_policy_guard" {
     }
 
     precondition {
-      condition     = local.is_environment ? contains(local.firewall_policy_web_tcp_ports, "80") && contains(local.firewall_policy_web_tcp_ports, "443") : true
+      condition     = length(local.web_instances) == 0 || (contains(local.firewall_policy_web_tcp_ports, "80") && contains(local.firewall_policy_web_tcp_ports, "443"))
       error_message = "The web inbound firewall policy must include tcp port_range \"80\" and tcp port_range \"443\"."
     }
 
@@ -184,7 +184,7 @@ module "bastion_firewall" {
 }
 
 module "web_firewall" {
-  count  = local.is_environment ? 1 : 0
+  count  = length(local.web_instances) > 0 ? 1 : 0
   source = "./modules/firewall"
 
   name        = "${local.client_name}-core-${local.environment}-web-fw"

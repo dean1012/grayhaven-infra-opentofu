@@ -5,7 +5,7 @@ resource "digitalocean_tag" "bastion_scope" {
 }
 
 resource "digitalocean_tag" "web_scope" {
-  count = local.is_environment ? 1 : 0
+  count = length(local.web_instances) > 0 ? 1 : 0
 
   name = "scope-${local.client_name}-core-${local.environment}-web"
 }

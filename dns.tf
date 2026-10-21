@@ -85,7 +85,7 @@ locals {
     if anytrue([can(record.record.flags), can(record.record.tag)]) && !(local.is_baseline && upper(tostring(try(record.record.type, ""))) == "CAA")
   ])
 
-  environment_apex_dns = local.is_environment ? {
+  environment_apex_dns = local.is_environment && length(local.web_instances) > 0 ? {
     for domain_key, domain in local.dns_domains : domain_key => {
       domain       = domain.name
       site_name    = local.is_prod ? domain.name : "staging.${domain.name}"

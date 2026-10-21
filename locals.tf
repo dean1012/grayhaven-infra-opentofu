@@ -124,9 +124,9 @@ locals {
   # consistent during scale-out.
   use_load_balancer = (
     local.is_environment
-    ? local.web_tls_setting == "load_balancer" || (
+    ? length(local.web_instances) > 0 && (local.web_tls_setting == "load_balancer" || (
       local.web_tls_setting == "auto" && length(local.web_instances) > 1
-    )
+    ))
     : false
   )
 
@@ -153,10 +153,11 @@ locals {
     )
   ]) : []
 
-  firewall_tag_names = local.is_environment ? merge({
-    bastion = digitalocean_tag.bastion_scope[0].name
-    web     = digitalocean_tag.web_scope[0].name
-  }, length(local.mcp_instances) > 0 ? { mcp = digitalocean_tag.mcp_scope[0].name } : {}) : {}
+  firewall_tag_names = local.is_environment ? merge(
+    { bastion = digitalocean_tag.bastion_scope[0].name },
+    length(local.web_instances) > 0 ? { web = digitalocean_tag.web_scope[0].name } : {},
+    length(local.mcp_instances) > 0 ? { mcp = digitalocean_tag.mcp_scope[0].name } : {},
+  ) : {}
 
   bastion_hosts = {
     for key, instance in local.bastion_instances : key => {
@@ -313,18 +314,21 @@ locals {
           port_range                = rule.port_range
           source_addresses          = try(rule.source_addresses, [])
           source_load_balancer_uids = []
-          source_tags               = [for tag in try(rule.source_tags, []) : local.firewall_tag_names[tag]]
+          source_tags               = [for tag in try(rule.source_tags, []) : local.firewall_tag_names[tag] if !contains(["web", "mcp"], tag) || contains(keys(local.firewall_tag_names), tag)]
         }
+        if length(try(rule.source_tags, [])) == 0 || length(try(rule.source_addresses, [])) > 0 || anytrue([for tag in try(rule.source_tags, []) : !contains(["web", "mcp"], tag) || contains(keys(local.firewall_tag_names), tag)])
       ]
       outbound = [
         for rule in try(policy.outbound, []) : {
           protocol              = rule.protocol
           port_range            = rule.port_range
           destination_addresses = try(rule.destination_addresses, [])
-          destination_tags      = [for tag in try(rule.destination_tags, []) : local.firewall_tag_names[tag]]
+          destination_tags      = [for tag in try(rule.destination_tags, []) : local.firewall_tag_names[tag] if !contains(["web", "mcp"], tag) || contains(keys(local.firewall_tag_names), tag)]
         }
+        if length(try(rule.destination_tags, [])) == 0 || length(try(rule.destination_addresses, [])) > 0 || anytrue([for tag in try(rule.destination_tags, []) : !contains(["web", "mcp"], tag) || contains(keys(local.firewall_tag_names), tag)])
       ]
     }
+    if contains(keys(local.firewall_tag_names), role)
   } : {}
 
   web_load_balancer_origin_ports = toset(["80"])
@@ -356,7 +360,7 @@ locals {
     port_range                = local.web_deploy_fanout_port
     source_addresses          = []
     source_load_balancer_uids = []
-    source_tags               = local.is_environment ? [digitalocean_tag.web_scope[0].name] : []
+    source_tags               = length(local.web_instances) > 0 ? [digitalocean_tag.web_scope[0].name] : []
   }
 
   web_firewall_inbound_rules = concat(
@@ -368,7 +372,7 @@ locals {
     protocol              = "tcp"
     port_range            = local.web_deploy_fanout_port
     destination_addresses = []
-    destination_tags      = local.is_environment ? [digitalocean_tag.web_scope[0].name] : []
+    destination_tags      = length(local.web_instances) > 0 ? [digitalocean_tag.web_scope[0].name] : []
   }
 
   web_firewall_outbound_rules = concat(
