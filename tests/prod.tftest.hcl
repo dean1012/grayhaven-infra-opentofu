@@ -690,3 +690,115 @@ run "prod_with_mcp_policy_plan" {
     error_message = "Adding MCP must preserve the requested bastion and web instance counts."
   }
 }
+
+run "prod_bastion_only_plan" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path  = "tests/fixtures/compute-bastion-only.yml"
+    grayhaven_test_firewall_policy_path = "tests/fixtures/firewall-bastion-only.yml"
+  }
+
+  assert {
+    condition     = length(module.bastion) == 1 && length(module.web) == 0 && length(module.mcp) == 0
+    error_message = "Empty web instances must preserve the requested bastion and MCP hosts."
+  }
+
+  assert {
+    condition     = length(module.web_firewall) == 0 && length(digitalocean_tag.web_scope) == 0 && length(digitalocean_loadbalancer.web) == 0 && length(digitalocean_certificate.web_lb_staging) == 0 && length(digitalocean_certificate.web_lb_production) == 0
+    error_message = "A policy without web hosts must omit web firewall, tag, load-balancer and certificate resources."
+  }
+
+  assert {
+    condition     = length(digitalocean_record.web_root_a) == 0 && length(digitalocean_record.web_www_cname) == 0 && length(digitalocean_record.web_dev_cname) == 0 && length(digitalocean_record.grayhaven_bastion_a) == 1
+    error_message = "A policy without web hosts must omit automatic web DNS and retain bastion DNS."
+  }
+
+  assert {
+    condition     = alltrue([for rule in local.firewall_policy_rules.bastion.outbound : !contains(rule.destination_tags, "scope-grayhaven-core-prod-web")])
+    error_message = "Bastion egress must not reference an absent web scope tag."
+  }
+}
+
+run "prod_bastion_mcp_plan" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path = "tests/fixtures/compute-bastion-mcp.yml"
+  }
+
+  assert {
+    condition     = length(module.bastion) == 1 && length(module.web) == 0 && length(module.mcp) == 1
+    error_message = "Empty web instances must preserve the requested bastion and MCP hosts."
+  }
+
+  assert {
+    condition     = length(module.web_firewall) == 0 && length(digitalocean_tag.web_scope) == 0 && length(digitalocean_loadbalancer.web) == 0 && length(digitalocean_certificate.web_lb_staging) == 0 && length(digitalocean_certificate.web_lb_production) == 0
+    error_message = "A policy without web hosts must omit web firewall, tag, load-balancer and certificate resources."
+  }
+
+  assert {
+    condition     = length(digitalocean_record.web_root_a) == 0 && length(digitalocean_record.web_www_cname) == 0 && length(digitalocean_record.web_dev_cname) == 0 && length(digitalocean_record.grayhaven_bastion_a) == 1
+    error_message = "A policy without web hosts must omit automatic web DNS and retain bastion DNS."
+  }
+
+  assert {
+    condition     = alltrue([for rule in local.firewall_policy_rules.bastion.outbound : !contains(rule.destination_tags, "scope-grayhaven-core-prod-web")])
+    error_message = "Bastion egress must not reference an absent web scope tag."
+  }
+}
+
+run "prod_no_web_load_balancer_plan" {
+  command = plan
+
+  plan_options {
+    refresh = false
+  }
+
+  providers = {
+    digitalocean = digitalocean
+    external     = external
+  }
+
+  variables {
+    grayhaven_test_compute_policy_path = "tests/fixtures/compute-bastion-only-lb.yml"
+  }
+
+  assert {
+    condition     = length(module.bastion) == 1 && length(module.web) == 0 && length(module.mcp) == 0
+    error_message = "Empty web instances must preserve the requested bastion and MCP hosts."
+  }
+
+  assert {
+    condition     = length(module.web_firewall) == 0 && length(digitalocean_tag.web_scope) == 0 && length(digitalocean_loadbalancer.web) == 0 && length(digitalocean_certificate.web_lb_staging) == 0 && length(digitalocean_certificate.web_lb_production) == 0
+    error_message = "A policy without web hosts must omit web firewall, tag, load-balancer and certificate resources."
+  }
+
+  assert {
+    condition     = length(digitalocean_record.web_root_a) == 0 && length(digitalocean_record.web_www_cname) == 0 && length(digitalocean_record.web_dev_cname) == 0 && length(digitalocean_record.grayhaven_bastion_a) == 1
+    error_message = "A policy without web hosts must omit automatic web DNS and retain bastion DNS."
+  }
+
+  assert {
+    condition     = alltrue([for rule in local.firewall_policy_rules.bastion.outbound : !contains(rule.destination_tags, "scope-grayhaven-core-prod-web")])
+    error_message = "Bastion egress must not reference an absent web scope tag."
+  }
+}

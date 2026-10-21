@@ -246,14 +246,17 @@ Supported web keys:
 - `web.instances.<instance_key>.image`: optional DigitalOcean image slug.
 
 `bastions.control_node` must match a key under `bastions.instances`. Each
-environment compute policy must define at least one bastion and one web host.
+environment compute policy must define at least one bastion host. Set
+`web.instances: {}` to omit web hosts and their firewall, scope tag, automatic
+web DNS, load balancer, and certificate. Explicit DNS records remain
+policy-controlled.
 `web.tls_mode` defaults to `auto` when omitted.
 
 Supported TLS modes:
 
 - `auto`: uses host TLS when the environment has one web host and load-balancer
   TLS when the environment has two or more web hosts.
-- `load_balancer`: always uses DigitalOcean load-balancer TLS.
+- `load_balancer`: uses DigitalOcean load-balancer TLS when web hosts exist.
 
 Host TLS points web DNS at the primary web host. Load-balancer TLS creates a
 DigitalOcean load balancer, points web DNS at the load balancer, and configures
@@ -281,7 +284,7 @@ web:
 ## MCP hosts
 
 The optional `mcp.instances` compute-policy map permits at most one host per
-environment. Staging defines one `s-1vcpu-1gb` host; production defines none.
+environment. Set `mcp.instances: {}` to omit MCP hosts and their resources.
 MCP hosts use the environment VPC, `project-core` and `role-mcp` tags, a dedicated
 scope firewall, host DNS and the `mcp[.staging].grayhavensystems.com` endpoint.
 The Vault `firewalls.mcp` policy must provide HTTPS and restrict SSH ingress to

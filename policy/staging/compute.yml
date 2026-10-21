@@ -7,11 +7,7 @@ bastions:
 
 web:
   tls_mode: auto
-  instances:
-    web-01:
-      index: 1
+  instances: {}
 
 mcp:
-  instances:
-    mcp-01:
-      index: 1
+  instances: {}
