@@ -29,7 +29,7 @@ private SSH keys, secrets, generated state, or other private operational data.
   configuration files.
 - Manage resource project assignment and tagging for supported resources.
 - Bootstrap hosts into
-  [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+  [`grayhaven-config-ansible`](https://github.com/grayhavensystemsllc/grayhaven-config-ansible)
   for first-boot configuration and setup for automated full Ansible
   convergence.
 - Interface with a
@@ -83,7 +83,7 @@ For staging and production, the approved `tofu apply` is the single command
 that carries the environment from infrastructure provisioning through
 configuration convergence. It provisions DigitalOcean resources, renders
 cloud-init, bootstraps hosts into
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible),
+[`grayhaven-config-ansible`](https://github.com/grayhavensystemsllc/grayhaven-config-ansible),
 and starts full Ansible convergence from the active control bastion.
 
 See [Operations](docs/operations.md) for routine plan/apply workflows, destroy
