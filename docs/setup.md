@@ -139,9 +139,9 @@ Do not commit or print the private key.
 ## Set Up the Vault Repository
 
 Follow the
-[setup instructions](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/setup.md)
+[setup instructions](https://github.com/grayhavensystemsllc/grayhaven-vault-example/blob/main/docs/setup.md)
 in the
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+[`grayhaven-vault-example`](https://github.com/grayhavensystemsllc/grayhaven-vault-example)
 repository
 using the values generated above as applicable for each environment.
 

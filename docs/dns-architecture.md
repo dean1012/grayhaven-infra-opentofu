@@ -30,9 +30,9 @@ transaction contention. The sequence depends on the active workspace:
   TXT.
 
 Please see the
-[hosted domain documentation](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/schema.md#hosted-domain-dns-coordination)
+[hosted domain documentation](https://github.com/grayhavensystemsllc/grayhaven-vault-example/blob/main/docs/schema.md#hosted-domain-dns-coordination)
 in the
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+[`grayhaven-vault-example`](https://github.com/grayhavensystemsllc/grayhaven-vault-example)
 repository for information on how to keep hosted web domains aligned with DNS
 policy.
 
