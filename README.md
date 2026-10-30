@@ -33,7 +33,7 @@ private SSH keys, secrets, generated state, or other private operational data.
   for first-boot configuration and setup for automated full Ansible
   convergence.
 - Interface with a
-  [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+  [`grayhaven-vault-example`](https://github.com/grayhavensystemsllc/grayhaven-vault-example)
   based private configuration repository with separate configuration supported
   for staging and production environments.
 - Maintain local encrypted OpenTofu state.

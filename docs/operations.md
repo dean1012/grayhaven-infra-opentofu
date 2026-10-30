@@ -55,7 +55,7 @@ To provision or update infrastructure:
    [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
    and `grayhaven-vault` as
    well. Refer to
-   [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+   [`grayhaven-vault-example`](https://github.com/grayhavensystemsllc/grayhaven-vault-example)
    for additional information as needed.
 
 3. Run `tofu plan` and review planned changes carefully.
@@ -371,9 +371,9 @@ environment:
    passphrase.
 2. Rotate the configuration Ansible Vault passphrase for the correct workspace
    environment by following the
-   [vault password rotation documentation](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/operations.md#vault-password-rotation)
+   [vault password rotation documentation](https://github.com/grayhavensystemsllc/grayhaven-vault-example/blob/main/docs/operations.md#vault-password-rotation)
    in the
-   [`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+   [`grayhaven-vault-example`](https://github.com/grayhavensystemsllc/grayhaven-vault-example)
    repository.
 3. Rotate the Ansible Vault passphrase for existing resources by following the
    [vault password rotation documentation](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#vault-password-rotation)

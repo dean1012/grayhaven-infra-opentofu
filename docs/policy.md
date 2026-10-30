@@ -178,9 +178,9 @@ OpenTofu validates that shape before applying the TLS-mode-specific effective
 firewall.
 
 The public
-[grayhaven-vault-example](https://github.com/dean1012/grayhaven-vault-example)
+[grayhaven-vault-example](https://github.com/grayhavensystemsllc/grayhaven-vault-example)
 repository documents the expected
-[firewall.yml schema](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/schema.md#firewallyml).
+[firewall.yml schema](https://github.com/grayhavensystemsllc/grayhaven-vault-example/blob/main/docs/schema.md#firewallyml).
 
 [Back to top](#policy-files)
 
@@ -194,9 +194,9 @@ during convergence.
 
 These keys are only useful for first-boot access and configuration. If you are
 looking to manage user SSH access to a server, please refer to the
-[managing users documentation](https://github.com/dean1012/grayhaven-vault-example/blob/main/docs/operations.md#managing-users)
+[managing users documentation](https://github.com/grayhavensystemsllc/grayhaven-vault-example/blob/main/docs/operations.md#managing-users)
 in the
-[`grayhaven-vault-example`](https://github.com/dean1012/grayhaven-vault-example)
+[`grayhaven-vault-example`](https://github.com/grayhavensystemsllc/grayhaven-vault-example)
 repository and modify
 `grayhaven-vault` appropriately.
 
