@@ -160,7 +160,7 @@ This keeps DigitalOcean cloud firewall policy and host firewalld policy tied to
 the same environment-specific configuration.
 
 OpenTofu reads `firewall.yml` from the local vault checkout during plan and
-apply. [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+apply. [`grayhaven-config-ansible`](https://github.com/grayhavensystemsllc/grayhaven-config-ansible)
 reads the same file from the vault checkout on the active control bastion during
 convergence.
 
@@ -189,7 +189,7 @@ repository documents the expected
 The `policy/baseline/ssh-keys.yml` policy configuration file defines public SSH
 keys that are provided to DigitalOcean for first-boot SSH access to new servers.
 The bootstrap account is removed by
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+[`grayhaven-config-ansible`](https://github.com/grayhavensystemsllc/grayhaven-config-ansible)
 during convergence.
 
 These keys are only useful for first-boot access and configuration. If you are

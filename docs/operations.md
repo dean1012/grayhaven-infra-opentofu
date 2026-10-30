@@ -52,7 +52,7 @@ To provision or update infrastructure:
 
 2. Make changes to this repository and/or adjust configuration. Make any
    relevant adjustments to
-   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+   [`grayhaven-config-ansible`](https://github.com/grayhavensystemsllc/grayhaven-config-ansible)
    and `grayhaven-vault` as
    well. Refer to
    [`grayhaven-vault-example`](https://github.com/grayhavensystemsllc/grayhaven-vault-example)
@@ -74,7 +74,7 @@ To provision or update infrastructure:
    or more web hosts, from two or more web hosts to one web host, or explicitly
    changing `tls_mode`, manually start the runner from the active control node
    using the
-   [manual runner invocation instructions](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#manual-runner-invocation)
+   [manual runner invocation instructions](https://github.com/grayhavensystemsllc/grayhaven-config-ansible/blob/main/docs/operations.md#manual-runner-invocation)
    in the `grayhaven-config-ansible` repository.
 
 It is recommended that all changes to this repository be tested in a `staging`
@@ -87,19 +87,19 @@ environment.
 
 OpenTofu provisions the servers that run backups, but backup execution,
 snapshot inspection, restoration, and stale remote bucket cleanup are managed by
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible).
+[`grayhaven-config-ansible`](https://github.com/grayhavensystemsllc/grayhaven-config-ansible).
 
 Use the `grayhaven-backupctl` operations guide for:
 
-- [listing backups](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#listing-backups);
-- [creating backups](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#creating-backups);
-- [listing backup contents](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#listing-backup-contents);
-- [finding backups containing paths](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#finding-backups-containing-paths);
-- [restoring to a target directory](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#restoring-to-a-target-directory);
-- [restoring in place](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#restoring-in-place).
+- [listing backups](https://github.com/grayhavensystemsllc/grayhaven-backupctl/blob/main/docs/operations.md#listing-backups);
+- [creating backups](https://github.com/grayhavensystemsllc/grayhaven-backupctl/blob/main/docs/operations.md#creating-backups);
+- [listing backup contents](https://github.com/grayhavensystemsllc/grayhaven-backupctl/blob/main/docs/operations.md#listing-backup-contents);
+- [finding backups containing paths](https://github.com/grayhavensystemsllc/grayhaven-backupctl/blob/main/docs/operations.md#finding-backups-containing-paths);
+- [restoring to a target directory](https://github.com/grayhavensystemsllc/grayhaven-backupctl/blob/main/docs/operations.md#restoring-to-a-target-directory);
+- [restoring in place](https://github.com/grayhavensystemsllc/grayhaven-backupctl/blob/main/docs/operations.md#restoring-in-place).
 
 If remote backups are configured, use the
-[`grayhaven-config-ansible` GCS restic bucket cleanup](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#gcs-restic-bucket-cleanup)
+[`grayhaven-config-ansible` GCS restic bucket cleanup](https://github.com/grayhavensystemsllc/grayhaven-config-ansible/blob/main/docs/operations.md#gcs-restic-bucket-cleanup)
 procedure to remove stale remote buckets for decommissioned servers.
 
 [Back to top](#operations)
@@ -107,7 +107,7 @@ procedure to remove stale remote buckets for decommissioned servers.
 ## Deploying an Environment with an Ansible Testing Branch
 
 To run bootstrap and convergence from a
-[`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+[`grayhaven-config-ansible`](https://github.com/grayhavensystemsllc/grayhaven-config-ansible)
 branch other than `main` in `staging`, from the repository root run:
 
 ```bash
@@ -376,9 +376,9 @@ environment:
    [`grayhaven-vault-example`](https://github.com/grayhavensystemsllc/grayhaven-vault-example)
    repository.
 3. Rotate the Ansible Vault passphrase for existing resources by following the
-   [vault password rotation documentation](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#vault-password-rotation)
+   [vault password rotation documentation](https://github.com/grayhavensystemsllc/grayhaven-config-ansible/blob/main/docs/operations.md#vault-password-rotation)
    in the
-   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+   [`grayhaven-config-ansible`](https://github.com/grayhavensystemsllc/grayhaven-config-ansible)
    repository.
 
 Do not discard your original Ansible Vault passphrase until you have
@@ -431,9 +431,9 @@ existing bastions.
 
 6. Rotate the retained vault deployment SSH keypair on existing bastions in
    every deployed workspace environment by following the
-   [deploy key rotation documentation](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#deploy-key-rotation)
+   [deploy key rotation documentation](https://github.com/grayhavensystemsllc/grayhaven-config-ansible/blob/main/docs/operations.md#deploy-key-rotation)
    in the
-   [`grayhaven-config-ansible`](https://github.com/dean1012/grayhaven-config-ansible)
+   [`grayhaven-config-ansible`](https://github.com/grayhavensystemsllc/grayhaven-config-ansible)
    repository.
 
 Once the new bootstrap deployment SSH keypair is verified as operational, the
