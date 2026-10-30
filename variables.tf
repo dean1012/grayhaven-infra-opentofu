@@ -125,7 +125,7 @@ variable "grayhaven_test_vault_config_path" {
 variable "grayhaven_vault_repo_url" {
   description = "SSH URL for grayhaven-vault, used by bastion hosts."
   type        = string
-  default     = "git@github.com:dean1012/grayhaven-vault.git"
+  default     = "git@github.com:grayhavensystemsllc/grayhaven-vault.git"
 }
 
 variable "grayhaven_vault_checkout_path" {
