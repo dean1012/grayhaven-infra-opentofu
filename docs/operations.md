@@ -91,12 +91,12 @@ snapshot inspection, restoration, and stale remote bucket cleanup are managed by
 
 Use the `grayhaven-backupctl` operations guide for:
 
-- [listing backups](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#listing-backups);
-- [creating backups](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#creating-backups);
-- [listing backup contents](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#listing-backup-contents);
-- [finding backups containing paths](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#finding-backups-containing-paths);
-- [restoring to a target directory](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#restoring-to-a-target-directory);
-- [restoring in place](https://github.com/dean1012/grayhaven-backupctl/blob/main/docs/operations.md#restoring-in-place).
+- [listing backups](https://github.com/grayhavensystemsllc/grayhaven-backupctl/blob/main/docs/operations.md#listing-backups);
+- [creating backups](https://github.com/grayhavensystemsllc/grayhaven-backupctl/blob/main/docs/operations.md#creating-backups);
+- [listing backup contents](https://github.com/grayhavensystemsllc/grayhaven-backupctl/blob/main/docs/operations.md#listing-backup-contents);
+- [finding backups containing paths](https://github.com/grayhavensystemsllc/grayhaven-backupctl/blob/main/docs/operations.md#finding-backups-containing-paths);
+- [restoring to a target directory](https://github.com/grayhavensystemsllc/grayhaven-backupctl/blob/main/docs/operations.md#restoring-to-a-target-directory);
+- [restoring in place](https://github.com/grayhavensystemsllc/grayhaven-backupctl/blob/main/docs/operations.md#restoring-in-place).
 
 If remote backups are configured, use the
 [`grayhaven-config-ansible` GCS restic bucket cleanup](https://github.com/dean1012/grayhaven-config-ansible/blob/main/docs/operations.md#gcs-restic-bucket-cleanup)
